@@ -17,9 +17,6 @@ const Sidebar = () => (
     <Nav.Link href="profile" className="text-dark mb-2 p-2">
       <FaUserFriends className="me-2" /> Bạn bè
     </Nav.Link>
-    <Nav.Link href="profile" className="text-dark mb-2 p-2">
-      <FaUserFriends className="me-2" />
-    </Nav.Link>
     <Nav.Link href="ProductGallery" className="text-dark mb-2 p-2">
       <FaStore className="me-2" /> Mua hàng
     </Nav.Link>
@@ -330,165 +327,155 @@ const handleDeleteComment = async (commentID) => {
   //mã hóa userName
   const encodedUserName = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(userName));
   return (
-    <Card className="mb-3 mt-3 p-3 border shadow-sm">
-      <Card.Body>
-        <Row>
-          <Col xs={2}>
-            <img
-              src={userImage || 'default-avatar.png'}
-              alt="user-avatar"
-              className="img-fluid rounded-circle"
+    <Card className="mb-3 mt-3 p-3 border shadow-sm card-post">
+  <Card.Body>
+    <Row>
+      <Col xs={2}>
+        <img
+          src={userImage || 'default-avatar.png'}
+          alt="user-avatar"
+          className="img-fluid rounded-circle"
+        />
+      </Col>
+      <Col xs={10}>
+        <Link
+          key={userName}
+          to={`/profiles/${encodedUserName}`}
+          className="text-decoration-none text-dark"
+          onClick={handleClick}
+        >
+          <h5>{userFullname}</h5>
+        </Link>
+        <p>{timeStamp}</p>
+        <div variant="link" className="text-danger float-end" onClick={handleDeletePost}>
+          <FaTrash />
+        </div>
+      </Col>
+    </Row>
+    <Row className="mt-2">
+      <Col>
+        <p>{content}</p>
+      </Col>
+    </Row>
+    <hr />
+    <Row className="text-center mt-3">
+      <Col>
+        <div
+          variant="link"
+          className="text-dark"
+          onClick={handleLikePost}
+          style={{ color: liked ? 'hotpink' : 'inherit' }} // Thêm style để thay đổi màu khi liked
+        >
+          <FaThumbsUp /> {liked ? 'Bỏ thích' : 'Thích'} ({likes.length})
+        </div>
+      </Col>
+      <Col>
+        <div variant="link" className="text-dark" onClick={() => setShowCommentBox(!showCommentBox)}>
+          <FaComment /> Bình luận
+        </div>
+      </Col>
+      <Col>
+        <div variant="link" className="text-dark">
+          <FaShare /> Chia sẻ
+        </div>
+      </Col>
+    </Row>
+    {showCommentBox && (
+      <div className="mt-3">
+        <Form onSubmit={handleCommentSubmit}>
+          <Form.Group>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              placeholder="Viết bình luận..."
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
             />
-          </Col>
-          <Col xs={10}>
-            {/* <Link  key={userName} to={`/profiles/${userName}`} className="text-decoration-none text-dark" onClick={handleClick}>
-              <h5>{userFullname}</h5>
-            </Link> */}
-            <Link
-              key={userName}
-              to={`/profiles/${encodedUserName}`}
-              className="text-decoration-none text-dark"
-              onClick={handleClick}
-            >
-              <h5>{userFullname}</h5>
-            </Link>
-
-
-            <p>{timeStamp}</p>
-
-
-            <div variant="link" className="text-danger float-end" onClick={handleDeletePost}>
-              <FaTrash />
-            </div>
-
-          </Col>
-        </Row>
-        <Row className="mt-2">
-          <Col>
-            <p>{content}</p>
-          </Col>
-        </Row>
-        <hr></hr>
-        <Row className="text-center mt-3">
-          <Col>
-            <div
-              variant="link"
-              className="text-dark"
-              style={{ color: liked ? 'hotpink' : 'inherit' }}
-              onClick={handleLikePost}
-            >
-              <FaThumbsUp /> {liked ? 'Thích' : 'Bỏ thích'} ({likes.length})
-            </div>
-          </Col>
-          <Col>
-            <div variant="link" className="text-dark" onClick={() => setShowCommentBox(!showCommentBox)}>
-              <FaComment /> Bình luận
-            </div>
-          </Col>
-          <Col>
-            <div variant="link" className="text-dark">
-              <FaShare /> Chia sẻ
-            </div>
-          </Col>
-        </Row>
-
-        {showCommentBox && (
-          <div className="mt-3">
-            <Form onSubmit={handleCommentSubmit}>
-              <Form.Group>
-                <Form.Control
-                  as="textarea"  // Thay đổi thành textarea
-                  rows={3}       // Số hàng cho textarea
-                  placeholder="Viết bình luận..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                />
-              </Form.Group>
-              <Button type="submit" variant="primary" className="mt-2">
-                Đăng
-              </Button>
-            </Form>
-            <ListGroup className="mt-3">
-              {initialComments.length > 0 ? (
-                initialComments.map((commentItem, index) => {
-                  // console.log(commentItem);  // Debugging: Xem dữ liệu của mỗi bình luận
-                  return (
-                    <ListGroup.Item
-                      key={index}
+          </Form.Group>
+          <Button type="submit" variant="primary" className="mt-2">
+            Đăng
+          </Button>
+        </Form>
+        <ListGroup className="mt-3">
+          {initialComments.length > 0 ? (
+            initialComments.map((commentItem, index) => {
+              return (
+                <ListGroup.Item
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    padding: '10px',
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <strong>{commentItem?.account?.fullname || 'Người dùng ẩn'}:</strong>
+                    {isEditing === commentItem.id ? (
+                      <textarea
+                        value={editedComment}
+                        onChange={(e) => setEditedComment(e.target.value)}
+                        rows={3}
+                        style={{
+                          width: '100%',
+                          marginLeft: '10px',
+                          resize: 'none',
+                          padding: '5px',
+                          borderRadius: '4px',
+                          border: '1px solid #ccc',
+                          marginBottom: '5px',
+                        }}
+                      />
+                    ) : (
+                      <span style={{ marginLeft: '10px' }}>{commentItem.content}</span>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    {isEditing === commentItem.id ? (
+                      <div
+                        className="text-success"
+                        onClick={() => handleUpdateComment(commentItem.id)}
+                        style={{
+                          cursor: 'pointer',
+                          marginLeft: '10px',
+                        }}
+                      >
+                        <FaSave />
+                      </div>
+                    ) : (
+                      <div
+                        className="text-warning"
+                        onClick={() => handleEditComment(commentItem.id, commentItem.content)}
+                        style={{
+                          cursor: 'pointer',
+                          marginRight: '10px',
+                        }}
+                      >
+                        <FaEdit />
+                      </div>
+                    )}
+                    <div
+                      className="text-danger"
+                      onClick={() => handleDeleteComment(commentItem.id)}
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start', // Đặt căn chỉnh tại đầu
-                        padding: '10px', // Thêm padding để tạo không gian
+                        cursor: 'pointer',
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <strong>{commentItem?.account?.fullname || 'Người dùng ẩn'}:</strong>
-                        {isEditing === commentItem.id ? (
-                          <textarea
-                            value={editedComment}
-                            onChange={(e) => setEditedComment(e.target.value)}
-                            rows={3} // Số hàng của ô nhập
-                            style={{
-                              width: '100%',
-                              marginLeft: '10px',
-                              resize: 'none', // Ngăn người dùng thay đổi kích thước ô nhập
-                              padding: '5px', // Thêm padding cho nội dung bên trong
-                              borderRadius: '4px', // Thêm bo tròn cho viền
-                              border: '1px solid #ccc', // Đường viền
-                              marginBottom: '5px', // Thêm khoảng cách dưới ô nhập
-                            }}
-                          />
-                        ) : (
-                          <span style={{ marginLeft: '10px' }}>{commentItem.content}</span>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {isEditing === commentItem.id ? (
-                          <div
-                            className='text-success'
-                            onClick={() => handleUpdateComment(commentItem.id)}
-                            style={{
-                              cursor: 'pointer',
-                              marginLeft: '10px', // Đặt khoảng cách bên trái cho nút lưu
-                            }}
-                          >
-                            <FaSave />
-                          </div>
-                        ) : (
-                          <div
-                            className='text-warning'
-                            onClick={() => handleEditComment(commentItem.id, commentItem.content)}
-                            style={{
-                              cursor: 'pointer',
-                              marginRight: '10px',
-                            }}
-                          >
-                            <FaEdit />
-                          </div>
-                        )}
-                        <div
-                          className='text-danger'
-                          onClick={() => handleDeleteComment(commentItem.id)}
-                          style={{
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <FaTrash />
-                        </div>
-                      </div>
-                    </ListGroup.Item>
-                  );
-                })
-              ) : (
-                <p>Chưa có bình luận nào.</p>
-              )}
-            </ListGroup>
-          </div>
+                      <FaTrash />
+                    </div>
+                  </div>
+                </ListGroup.Item>
+              );
+            })
+          ) : (
+            <p>Chưa có bình luận nào.</p>
+          )}
+        </ListGroup>
+      </div>
+    )}
+  </Card.Body>
+</Card>
 
-        )}
-      </Card.Body>
-    </Card>
   );
 };
 

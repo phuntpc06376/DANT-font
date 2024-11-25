@@ -34,4 +34,134 @@
   opacity: 1;
 }
 
-  
+.card-post .text-dark {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+.card-post .text-dark:hover {
+  color: #007bff; /* Thay đổi màu khi hover */
+}
+
+.card-post .fa-thumbs-up {
+  font-size: 18px;
+}
+
+.card-post .text-dark {
+  transition: color 0.3s ease-in-out;
+}
+
+.card-post .liked {
+  color: hotpink; /* Thay đổi màu khi thích */
+}
+
+.card-post .not-liked {
+  color: inherit; /* Màu mặc định khi chưa thích */
+}
+.card-post {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-post:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-post img {
+  max-width: 50px;
+  max-height: 50px;
+  object-fit: cover;
+}
+
+.card-post .card-body {
+  padding: 15px;
+}
+
+.card-post h5 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.card-post p {
+  font-size: 14px;
+  color: #777;
+}
+
+.card-post .text-danger {
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-post .card-footer {
+  padding: 10px 0;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+
+.card-post .card-footer .text-dark {
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+.card-post .card-footer .text-dark:hover {
+  color: #007bff;
+}
+
+.card-post .fa-trash {
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.card-post .text-danger:hover {
+  color: red;
+}
+
+.card-post .text-warning:hover {
+  color: orange;
+}
+
+.card-post .text-success:hover {
+  color: green;
+}
+
+.card-post .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.card-post .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.card-post .mt-2 {
+  margin-top: 10px;
+}
+
+.card-post .mt-3 {
+  margin-top: 15px;
+}
+
+.card-post .list-group-item {
+  border: none;
+  padding: 10px 0;
+}
+
+.card-post .list-group-item .text-dark {
+  font-size: 14px;
+}
+
+.card-post .list-group-item .text-dark:hover {
+  color: #007bff;
+}
+
+.card-post .list-group-item .fa-trash {
+  font-size: 18px;
+}
