@@ -1,0 +1,148 @@
+/* Container của trang */
+.statical-ad-container {
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Tiêu đề trang */
+.statical-ad-title {
+    text-align: center;
+    font-size: 2rem;
+    color: #007bff;
+    margin-bottom: 40px;
+}
+
+/* Form lọc */
+.statical-ad-form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.statical-ad-form .form-label {
+    font-weight: bold;
+}
+
+.statical-ad-form .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    width: 100%;
+    font-size: 16px;
+    padding: 12px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.statical-ad-form .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Thông báo lỗi ngày */
+.statical-ad-date-error {
+    color: #dc3545;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Phần dữ liệu bảng */
+.statical-ad-table {
+    margin-top: 20px;
+    
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.statical-ad-table thead {
+    background-color: #007bff; /* Màu nền xanh dương cho thead */
+}
+
+.statical-ad-table th {
+    color: #ffffff; /* Màu chữ trắng cho các th trong thead */
+}
+
+
+
+
+/* Loading và thông báo lỗi */
+.statical-ad-loading {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 20px;
+}
+
+.statical-ad-error {
+    color: #dc3545;
+    text-align: center;
+    font-size: 1.2rem;
+    margin-top: 20px;
+}
+
+/* Phân trang */
+.statical-ad-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px; /* Khoảng cách trên */
+}
+
+.statical-ad-pagination button {
+    border-radius: 6px; /* Bo tròn góc */
+    padding: 6px 12px; /* Padding cho nút */
+    background-color: #007bff; /* Màu xanh biển */
+    color: white;
+    border: none;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi */
+}
+
+.statical-ad-pagination button:disabled {
+    background-color: #d6d6d6; /* Màu khi vô hiệu */
+    cursor: not-allowed; /* Con trỏ chuột khi vô hiệu */
+}
+
+.statical-ad-pagination span {
+    font-weight: bold;
+    color: #555; /* Màu chữ */
+}
+
+/* Biểu đồ */
+.statical-ad-chart {
+    margin-top: 30px;
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.statical-ad-chart .recharts-wrapper {
+    margin-top: 20px;
+}
+
+.statical-ad-chart .recharts-cartesian-axis-line {
+    stroke: #ddd;
+}
+
+.statical-ad-chart .recharts-cartesian-axis-tick-value {
+    font-size: 14px;
+}
+
+.statical-ad-chart .recharts-tooltip-item {
+    font-size: 14px;
+}
+
+/* Biểu đồ các thanh */
+.statical-ad-chart .recharts-bar-rectangles {
+    border-radius: 4px;
+}
+
+/* Thêm padding cho các thanh biểu đồ */
+.recharts-bar-rectangles rect {
+    padding: 5px;
+}

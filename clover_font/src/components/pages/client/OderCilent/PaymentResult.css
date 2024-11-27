@@ -1,0 +1,67 @@
+/* PaymentResult.css */
+.payment-result-container {
+    width: 400px;
+    margin: 50px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+}
+
+.payment-header h2 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.payment-details .detail {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.payment-details label {
+    font-weight: bold;
+}
+
+.payment-details .success {
+    color: #28a745;
+}
+
+.payment-details .error {
+    color: #dc3545;
+}
+
+.actions button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 5px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.actions button:hover {
+    background-color: #0056b3;
+}
+
+.btn-continue {
+    background-color: #28a745;
+}
+
+.btn-continue:hover {
+    background-color: #218838;
+}
+
+.btn-home {
+    background-color: #6c757d;
+}
+
+.btn-home:hover {
+    background-color: #5a6268;
+}

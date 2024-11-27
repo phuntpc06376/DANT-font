@@ -1,0 +1,18 @@
+.form-group-horizontal {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem; /* Tương ứng với "mb-4" của Bootstrap */
+}
+
+.form-group-horizontal .form-outline {
+    flex-grow: 1;
+    margin-right: 0.5rem; /* Tương ứng với "me-2" */
+}
+
+.form-group-horizontal button {
+    height: calc(1.5em + 1rem + 2px); /* Căn chỉnh chiều cao với input */
+    white-space: nowrap; /* Chữ không bị xuống dòng */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Căn giữa nội dung */
+}

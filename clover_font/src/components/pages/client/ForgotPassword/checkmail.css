@@ -1,0 +1,21 @@
+.card {
+    border: none;
+}
+
+.card h3 {
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    font-size: 1rem;
+}
+
+.btn-secondary {
+    font-size: 1rem;
+    color: #6c757d;
+    border-color: #6c757d;
+    background-color: white;
+}

@@ -36,3 +36,14 @@
     transform: rotate(360deg);
   }
 }
+
+/* Phần content container */
+.content-container {
+  margin-left: 250px; /* Kích thước mặc định khi navbar mở rộng */
+  transition: margin-left 0.3s ease;
+  padding: 80px; /* Khoảng cách bên trong */
+  background-color: #f8f9fa;
+  min-height: 100vh; /* Đảm bảo full chiều cao */
+}
+
+

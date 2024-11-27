@@ -1,0 +1,9 @@
+/* CSS cho hiệu ứng hover và thay đổi con trỏ */
+.hover-link {
+    cursor: pointer; /* Thay đổi con trỏ thành hình bàn tay */
+  }
+  
+  .hover-link:hover {
+    color: #007bff !important; /* Màu xanh khi hover */
+  }
+  
