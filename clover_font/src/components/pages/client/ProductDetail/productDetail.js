@@ -4,6 +4,8 @@ import { FaShoppingCart, FaStar } from "react-icons/fa";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import './productDetail.css';
+
 
 const ProductDetail = () => {
   const { id } = useParams(); // Get the ID from the URL
@@ -19,7 +21,6 @@ const ProductDetail = () => {
         const data = await response.json();
         setProduct(data);
 
-        // Fetch related products
         const relatedResponse = await fetch(`http://localhost:8080/api/user/shopping/product`);
         const relatedData = await relatedResponse.json();
         const filteredRelatedProducts = relatedData
@@ -35,7 +36,8 @@ const ProductDetail = () => {
     };
 
     fetchProductDetails();
-  }, [id]);
+  }, [id]); // <--- Lắng nghe id để tái render khi chuyển sản phẩm
+
 
   if (loading) {
     return <p>Đang tải chi tiết sản phẩm...</p>;
@@ -46,7 +48,7 @@ const ProductDetail = () => {
   }
 
   // Destructure product and shop information
-  const { name, price = 0, description, ratings = 0, prodImages, shop } = product;
+  const { name, price = 0, description, ratings = 0, prodImages, shop, quantity } = product;
   const imageUrl = prodImages && prodImages[0] ? `http://localhost:8080/images/${prodImages[0].name}` : "https://via.placeholder.com/150";
 
   const shopInfo = shop
@@ -102,26 +104,34 @@ const ProductDetail = () => {
 
       <Row>
         <Col md={5}>
-          <img src={imageUrl} alt={name} className="img-fluid rounded" />
+          <img
+            src={imageUrl}
+            alt={name}
+            className="productDetail-img"
+          />
         </Col>
         <Col md={7}>
-          <h2 className="mb-3">{name}</h2>
-          <div className="mb-3">
-            {Array(ratings).fill().map((_, i) => (
-              <FaStar key={i} color="#FFD700" />
-            ))}
+          <h2 className="productDetail-title">{name}</h2>
+          <div className="productDetail-stars">
+            {Array(ratings)
+              .fill()
+              .map((_, i) => (
+                <FaStar key={i} />
+              ))}
           </div>
-          <h3 className="text-danger mb-3">{price.toLocaleString()} VNĐ</h3>
-          <p className="mb-4">
+          <h3 className="productDetail-price">{price.toLocaleString()} Đ</h3>
+          <div className="productDetail-description">
             <h5>Mô tả sản phẩm:</h5>
-            {description}
-          </p>
-          <div className="d-flex">
-            <Button variant="warning" className="me-3" onClick={handleAddToCart}>
+            <p>{description}</p>
+            <h6 className="mt-2">Số lượng: {quantity}</h6>
+          </div>
+          <div>
+            <Button className="productDetail-cartButton" onClick={handleAddToCart}>
               <FaShoppingCart /> Thêm vào giỏ hàng
             </Button>
           </div>
         </Col>
+
       </Row>
 
       {shopInfo && (

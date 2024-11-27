@@ -375,9 +375,9 @@ const handleDeleteComment = async (commentID) => {
         </div>
       </Col>
       <Col>
-        <div variant="link" className="text-dark">
+        {/* <div variant="link" className="text-dark">
           <FaShare /> Chia sẻ
-        </div>
+        </div> */}
       </Col>
     </Row>
     {showCommentBox && (
@@ -637,7 +637,7 @@ const handlePostSubmit = async (e) => {
 // Contacts Component
 const Contacts = () => (
   <Card className="mt-3 p-3 bg-white shadow-sm contacts">
-    <Card.Title>Bạn bè trực tuyến</Card.Title>
+    <Card.Title>Danh sách bạn bè</Card.Title>
     <ListGroup variant="flush">
       <ListGroup.Item className="d-flex align-items-center">
         <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />

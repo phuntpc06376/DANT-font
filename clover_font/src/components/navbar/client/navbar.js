@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { IoLogOutOutline } from "react-icons/io5";
 import { RiBillLine } from "react-icons/ri";
 import { RiMessengerLine } from "react-icons/ri";
+import { FaShop } from "react-icons/fa6";
 
 const FacebookNavbar = () => {
   const navigate = useNavigate();
@@ -93,7 +94,9 @@ const FacebookNavbar = () => {
                   <Dropdown.Item href="chat">
                     <RiMessengerLine style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Nhắn tin
                   </Dropdown.Item>
-
+                  <Dropdown.Item href="shopRegister">
+                    <FaShop style={{ fontSize: '1.5rem', marginRight: '10px' }} />Kênh người bán
+                  </Dropdown.Item>
                   {/* Conditionally render the Logout option */}
                   {isLoggedIn && (
                     <Dropdown.Item onClick={handleLogout}>
@@ -106,7 +109,6 @@ const FacebookNavbar = () => {
           </Row>
         </Container>
       </Navbar>
-
       {/* Show the logout success message */}
       {logoutMessage && (
         <div className="alert alert-success text-center" role="alert">

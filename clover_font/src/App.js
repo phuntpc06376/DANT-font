@@ -17,6 +17,7 @@ import OrderSummary from './components/pages/client/OrderSummary/OrderSummary';
 import Order from './components/pages/client/OderCilent/oder_client';
 import UserProfile from './components/pages/client/UserProfile/UserProfile';
 import ResultPayment from './components/pages/client/OderCilent/ResultPayment';
+import ShopRegister from './components/pages/client/ShopRegister/ShopRegister';
 
 
 
@@ -61,6 +62,7 @@ function UserLayout() {
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
           <Route path="order" element={<Order />} />
+          <Route path="shopRegister" element={<ShopRegister />} />
           <Route path="orderSummary" element={<OrderSummary />} />
           <Route path="chat" element={<ChatApp />} />
           <Route path="resultpayment" element={<ResultPayment />} />

@@ -190,7 +190,7 @@ export default function ProductCards() {
                             </Button>
                           </Col>
                           <Col md="2" className="d-flex align-items-center justify-content-end">
-                            <h5 className="mb-0">{(item.prod?.price * item.quantity).toFixed(2)} VNĐ</h5>
+                            <h5 className="mb-0">{(item.prod?.price * item.quantity).toFixed(0)} VNĐ</h5>
                           </Col>
                           <Col md="1" className="d-flex align-items-center justify-content-end">
                             <Button variant="link" className="text-danger" onClick={() => handleRemove(item.id)}>
@@ -212,11 +212,11 @@ export default function ProductCards() {
                 <Card.Body>
                   <Row className="align-items-center">
                     <Col md="6" className="d-flex justify-content-start">
-                      <h5 className="mb-0">Total: {totalPrice.toFixed(2)} VNĐ</h5>
+                      <h5 className="mb-0">Tổng tiền: {totalPrice.toFixed(0)} VNĐ</h5>
                     </Col>
                     <Col md="6" className="d-flex justify-content-end">
                       <Button variant="warning" size="lg" onClick={handlePayment} disabled={selectedItems.length === 0}>
-                        Create Order
+                        Tạo hóa đơn
                       </Button>
                     </Col>
                   </Row>
