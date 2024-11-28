@@ -5,33 +5,32 @@ import {
     createPropertyValue,
     updatePropertyValue,
     deletePropertyValue,
-    getPropertyValueById,
 } from '../api/propertiesValueApi';
-import { getAllProperties } from '../api/propertyApi';  // Import API lấy danh mục
+import { getAllProperties } from '../api/propertyApi';
+import './PropertiesValues.css';
 
 const PropertyValueManager = () => {
-    const [propertiesValues, setPropertiesValues] = useState([]); // Danh sách PropertiesValue
-    const [properties, setProperties] = useState([]); // Danh sách Properties (Danh mục)
+    const [propertiesValues, setPropertiesValues] = useState([]);
+    const [properties, setProperties] = useState([]);
     const [propertyValue, setPropertyValue] = useState({
         id: '',
         name: '',
         description: '',
-        propertyId: ''
-    }); // Dữ liệu PropertiesValue hiện tại
-    const [isEditing, setIsEditing] = useState(false); // Kiểm tra trạng thái chỉnh sửa
-    const [error, setError] = useState(''); // Lỗi nếu có
+        propertyId: '',
+    });
+    const [isEditing, setIsEditing] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [error, setError] = useState('');
 
-    // Lấy tất cả Properties
     const fetchProperties = async () => {
         try {
-            const data = await getAllProperties();  // Gọi API lấy danh mục
+            const data = await getAllProperties();
             setProperties(data);
         } catch (err) {
             setError('Lỗi khi lấy danh mục: ' + err.message);
         }
     };
 
-    // Lấy tất cả PropertiesValue
     const fetchPropertiesValues = async () => {
         try {
             const data = await getAllPropertiesValues();
@@ -42,8 +41,8 @@ const PropertyValueManager = () => {
     };
 
     useEffect(() => {
-        fetchProperties();  // Lấy danh mục khi component mount
-        fetchPropertiesValues(); // Lấy PropertiesValue
+        fetchProperties();
+        fetchPropertiesValues();
     }, []);
 
     const handleChange = (e) => {
@@ -51,7 +50,6 @@ const PropertyValueManager = () => {
         setPropertyValue({ ...propertyValue, [name]: value });
     };
 
-    // Xử lý khi gửi form
     const handleSubmit = async (e) => {
         e.preventDefault();
         const propertyValueData = { ...propertyValue };
@@ -70,21 +68,21 @@ const PropertyValueManager = () => {
             }
             setPropertyValue({ id: '', name: '', description: '', propertyId: '' });
             setIsEditing(false);
+            setIsModalOpen(false);
             setError('');
-            fetchPropertiesValues(); // Cập nhật lại danh sách
+            fetchPropertiesValues();
         } catch (err) {
             setError('Lỗi khi thao tác: ' + err.message);
         }
     };
 
-    // Chỉnh sửa PropertiesValue
     const handleEdit = (propValue) => {
         setPropertyValue(propValue);
         setIsEditing(true);
+        setIsModalOpen(true);
         setError('');
     };
 
-    // Xóa PropertiesValue với xác nhận Swal
     const handleDelete = async (id) => {
         const result = await Swal.fire({
             title: 'Xác nhận xóa?',
@@ -109,82 +107,26 @@ const PropertyValueManager = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center mb-4">Quản lý thuộc tính</h1>
+        <div className="pv-container mt-5">
+            <h2 className="pv-title">Quản lý thuộc tính</h2>
 
-            {/* Hiển thị lỗi nếu có */}
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && <div className="pv-alert-error">{error}</div>}
 
-            {/* Form Thêm/Sửa PropertiesValue */}
-            <form onSubmit={handleSubmit} className="card mb-4 shadow-sm p-4">
-                <h4 className="text-center">{isEditing ? 'Cập nhật' : 'Thêm mới'}</h4>
-                <div className="form-group mt-3">
-                    <label htmlFor="name">Tên</label>
-                    <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        className="form-control"
-                        placeholder="Nhập tên"
-                        value={propertyValue.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group mt-3">
-                    <label htmlFor="description">Mô tả</label>
-                    <textarea
-                        name="description"
-                        id="description"
-                        className="form-control"
-                        placeholder="Nhập mô tả"
-                        value={propertyValue.description}
-                        onChange={handleChange}
-                        required
-                    ></textarea>
-                </div>
-                {/* Dropdown để chọn danh mục */}
-                <div className="form-group mt-3">
-                    <label htmlFor="propertyId">Danh mục</label>
-                    <select
-                        name="propertyId"
-                        id="propertyId"
-                        className="form-control"
-                        value={propertyValue.propertyId}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Chọn danh mục</option>
-                        {properties.map((prop) => (
-                            <option key={prop.id} value={prop.id}>
-                                {prop.name} {/* Hiển thị tên danh mục */}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="d-flex justify-content-end mt-4">
-                    <button type="submit" className="btn btn-primary">
-                        {isEditing ? 'Cập nhật' : 'Thêm mới'}
-                    </button>
-                    {isEditing && (
-                        <button
-                            type="button"
-                            className="btn btn-secondary ml-2"
-                            onClick={() => {
-                                setPropertyValue({ id: '', name: '', description: '', propertyId: '' });
-                                setIsEditing(false);
-                                setError('');
-                            }}
-                        >
-                            Hủy
-                        </button>
-                    )}
-                </div>
-            </form>
+            <div className="d-flex justify-content-end mb-3">
+                <button
+                    className="pv-btn-primary"
+                    onClick={() => {
+                        setPropertyValue({ id: '', name: '', description: '', propertyId: '' });
+                        setIsEditing(false);
+                        setIsModalOpen(true);
+                    }}
+                >
+                    Thêm mới
+                </button>
+            </div>
 
-            {/* Bảng danh sách PropertiesValue */}
-            <table className="table table-hover table-bordered shadow-sm">
-                <thead className="thead-dark">
+            <table className="pv-table">
+                <thead>
                     <tr>
                         <th>Tên</th>
                         <th>Mô tả</th>
@@ -201,13 +143,13 @@ const PropertyValueManager = () => {
                                 <td>{propValue.properties?.name}</td>
                                 <td>
                                     <button
-                                        className="btn btn-warning btn-sm mr-2"
+                                        className="pv-btn-action pv-btn-edit me-1"
                                         onClick={() => handleEdit(propValue)}
                                     >
                                         Sửa
                                     </button>
                                     <button
-                                        className="btn btn-danger btn-sm"
+                                        className="pv-btn-action pv-btn-delete"
                                         onClick={() => handleDelete(propValue.id)}
                                     >
                                         Xóa
@@ -224,6 +166,71 @@ const PropertyValueManager = () => {
                     )}
                 </tbody>
             </table>
+
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <form onSubmit={handleSubmit}>
+                            <h4 className="text-center">{isEditing ? 'Cập nhật' : 'Thêm mới'}</h4>
+                            <div className="form-group mt-3">
+                                <label htmlFor="name">Tên</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    id="name"
+                                    className="pv-form-control"
+                                    placeholder="Nhập tên"
+                                    value={propertyValue.name}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group mt-3">
+                                <label htmlFor="description">Mô tả</label>
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    className="pv-form-control"
+                                    placeholder="Nhập mô tả"
+                                    value={propertyValue.description}
+                                    onChange={handleChange}
+                                    required
+                                ></textarea>
+                            </div>
+                            <div className="form-group mt-3">
+                                <label htmlFor="propertyId">Danh mục</label>
+                                <select
+                                    name="propertyId"
+                                    id="propertyId"
+                                    className="pv-form-control"
+                                    value={propertyValue.propertyId}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Chọn danh mục</option>
+                                    {properties.map((prop) => (
+                                        <option key={prop.id} value={prop.id}>
+                                            {prop.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="d-flex justify-content-end mt-4">
+                                <button type="submit" className="pv-btn-primary">
+                                    {isEditing ? 'Cập nhật' : 'Thêm mới'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="pv-btn-secondary ml-2"
+                                    onClick={() => setIsModalOpen(false)}
+                                >
+                                    Hủy
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

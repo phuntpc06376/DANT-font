@@ -24,12 +24,12 @@ axiosInstance.interceptors.request.use(
 );
 
 // Hàm gọi API để lấy danh sách Statical Ads
-export const getAllStaticalAds = async (startDate, endDate, shopid, ) => {
+export const getAllStaticalAds = async (startDate, endDate, nameShop, ) => {
     try {
         const response = await axiosInstance.post('', {
             startDate,
             endDate,
-            shopid
+            nameShop
         });
         return response.data; // Trả về dữ liệu nhận được
     } catch (error) {

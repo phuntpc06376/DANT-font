@@ -31,6 +31,11 @@ export default function Header({ onLogout, isLoggedIn }) {
                     <span className="fs-5 text-primary fw-bold">Quản lý Hóa đơn</span>
                 </Link>
             </li>
+            <li className="nav-item">
+                <Link className="nav-link" to="voucherManagement">
+                    <span className="fs-5 text-primary fw-bold">Quản lý voucher</span>
+                </Link>
+            </li>
             
         </ul>
         {/* <div className="mt-auto p-3">

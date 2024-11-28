@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { getAllStaticalAds } from '../api/stacticialAdApi'; // Import hàm API đã viết
+import { getAllStaticalAds } from '../api/stacticialAdApi'; // Import hàm API
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './StaticalAd.css'; // Thêm CSS tùy chỉnh
 import {
     BarChart,
     Bar,
@@ -11,6 +12,8 @@ import {
     Legend,
     ResponsiveContainer,
 } from 'recharts';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter, faArrowLeft, faArrowRight, faChartBar } from '@fortawesome/free-solid-svg-icons';
 
 const StaticalAd = () => {
     const [staticalAds, setStaticalAds] = useState([]);
@@ -20,7 +23,7 @@ const StaticalAd = () => {
     // Trạng thái cho các trường nhập liệu
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [shopId, setShopId] = useState('');
+    const [nameShop, setShopId] = useState('');
 
     // Thêm trạng thái lỗi cho ngày
     const [dateError, setDateError] = useState('');
@@ -29,46 +32,41 @@ const StaticalAd = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10; // Số lượng items trên mỗi trang
 
-    // Hàm gọi API để lấy dữ liệu với các tham số lọc
     const fetchStaticalAds = async (filterStartDate, filterEndDate, filterShopId) => {
-        setLoading(true); // Bắt đầu quá trình loading
+        setLoading(true);
         try {
             const data = await getAllStaticalAds(filterStartDate, filterEndDate, filterShopId);
-            setStaticalAds(data); // Cập nhật state với dữ liệu nhận được
-            setError(null); // Xóa lỗi nếu có
+            setStaticalAds(data);
+            setError(null);
         } catch (err) {
             setError('Có lỗi xảy ra. Vui lòng thử lại!');
         } finally {
-            setLoading(false); // Kết thúc quá trình loading
+            setLoading(false);
         }
     };
 
-    // Gọi API khi component được mount
     useEffect(() => {
-        fetchStaticalAds(startDate, endDate, shopId); // Gọi hàm fetch ban đầu
-    }, []); // Mảng rỗng nghĩa là chỉ gọi khi component được mount
+        fetchStaticalAds(startDate, endDate, nameShop);
+    }, []);
 
-    // Xử lý khi người dùng nhấn nút "Lọc"
     const handleFilter = (e) => {
-        e.preventDefault(); // Ngăn chặn reload trang
-        
-        // Kiểm tra ngày nhập
+        e.preventDefault();
+
         if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
             setDateError('Ngày bắt đầu không thể lớn hơn ngày kết thúc.');
-            return; // Dừng lại nếu có lỗi
+            return;
         } else {
-            setDateError(''); // Reset lỗi nếu hợp lệ
+            setDateError('');
         }
 
-        fetchStaticalAds(startDate, endDate, shopId); // Gọi API với giá trị mới của startDate, endDate, shopId
-        setCurrentPage(1); // Reset về trang 1 khi lọc
+        fetchStaticalAds(startDate, endDate, nameShop);
+        setCurrentPage(1);
     };
 
-    // Hàm nhóm dữ liệu theo `buyDay` và `nameShop` và cộng dồn các giá trị
     const groupByDateAndShop = (ads) => {
         return ads.reduce((acc, current) => {
             const { buyDay, nameShop, discount, totalPayment } = current;
-            const key = `${buyDay}-${nameShop}`; // Tạo key dựa trên buyDay và nameShop
+            const key = `${buyDay}-${nameShop}`;
 
             if (!acc[key]) {
                 acc[key] = {
@@ -86,25 +84,20 @@ const StaticalAd = () => {
         }, {});
     };
 
-    // Nhóm dữ liệu theo ngày và tên shop
     const groupedAds = Object.values(groupByDateAndShop(staticalAds));
 
-    // Tính toán dữ liệu hiển thị theo trang hiện tại
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentAds = groupedAds.slice(indexOfFirstItem, indexOfLastItem); // Chỉ lấy 10 kết quả
+    const currentAds = groupedAds.slice(indexOfFirstItem, indexOfLastItem);
 
-    // Tổng số trang
     const totalPages = Math.ceil(groupedAds.length / itemsPerPage);
 
-    // Hàm để chuyển sang trang tiếp theo
     const nextPage = () => {
         if (currentPage < totalPages) {
             setCurrentPage(currentPage + 1);
         }
     };
 
-    // Hàm để chuyển về trang trước đó
     const prevPage = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
@@ -112,54 +105,59 @@ const StaticalAd = () => {
     };
 
     return (
-        <div className="container mt-4">
-            <h2>Thống kê</h2>
+        <div className="statical-ad-container">
+            <h2 className="statical-ad-title">
+                <FontAwesomeIcon icon={faChartBar} className="me-2" style={{ color: "#007bff" }} />
+                Thống kê
+            </h2>
 
-            {/* Form lọc dữ liệu */}
-            <form onSubmit={handleFilter} className="mb-4">
-                <div className="mb-3">
-                    <label htmlFor="startDate" className="form-label">Ngày bắt đầu:</label>
-                    <input
-                        type="date"
-                        id="startDate"
-                        className="form-control"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
+            <form onSubmit={handleFilter} className="statical-ad-form">
+                <div className="row g-3">
+                    <div className="col-md-4">
+                        <label htmlFor="startDate" className="form-label">Ngày bắt đầu:</label>
+                        <input
+                            type="date"
+                            id="startDate"
+                            className="form-control"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="col-md-4">
+                        <label htmlFor="endDate" className="form-label">Ngày kết thúc:</label>
+                        <input
+                            type="date"
+                            id="endDate"
+                            className="form-control"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                    </div>
+                    <div className="col-md-4">
+                        <label htmlFor="nameShop" className="form-label">Tên Shop:</label>
+                        <input
+                            type="text"
+                            id="nameShop"
+                            className="form-control"
+                            value={nameShop}
+                            onChange={(e) => setShopId(e.target.value)}
+                        />
+                    </div>
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="endDate" className="form-label">Ngày kết thúc:</label>
-                    <input
-                        type="date"
-                        id="endDate"
-                        className="form-control"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="shopId" className="form-label">Shop ID:</label>
-                    <input
-                        type="number"
-                        id="shopId"
-                        className="form-control"
-                        value={shopId}
-                        onChange={(e) => setShopId(e.target.value)}
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Lọc</button>
-                {dateError && <p className="text-danger">{dateError}</p>} {/* Hiển thị lỗi ngày */}
+                <button type="submit" className="btn btn-primary mt-3 w-100">
+                    <FontAwesomeIcon icon={faFilter} className="me-2" />
+                    Lọc
+                </button>
+                {dateError && <p className="statical-ad-date-error">{dateError}</p>}
             </form>
 
-            {/* Hiển thị trạng thái loading */}
-            {loading && <p>Đang tải dữ liệu...</p>}
-            {error && <p className="text-danger">{error}</p>}
+            {loading && <p className="statical-ad-loading">Đang tải dữ liệu...</p>}
+            {error && <p className="statical-ad-error">{error}</p>}
 
-            {/* Hiển thị bảng nếu có dữ liệu */}
             {!loading && currentAds.length > 0 && (
                 <>
-                    <table className="table table-striped table-hover mt-3">
-                        <thead className="table-dark">
+                    <table className="table table-bordered mt-3 statical-ad-table">
+                        <thead>
                             <tr>
                                 <th scope="col">Ngày mua</th>
                                 <th scope="col">Tên Shop</th>
@@ -179,42 +177,43 @@ const StaticalAd = () => {
                         </tbody>
                     </table>
 
-                    {/* Pagination */}
-                    <div className="d-flex justify-content-between">
+                    <div className="statical-ad-pagination">
                         <button
                             className="btn btn-secondary"
                             onClick={prevPage}
-                            disabled={currentPage === 1} // Vô hiệu hóa nút nếu đang ở trang đầu
+                            disabled={currentPage === 1}
                         >
+                            <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
                             Trang trước
                         </button>
                         <span>Trang {currentPage} / {totalPages}</span>
                         <button
                             className="btn btn-secondary"
                             onClick={nextPage}
-                            disabled={currentPage === totalPages} // Vô hiệu hóa nút nếu đang ở trang cuối
+                            disabled={currentPage === totalPages}
                         >
-                            Tiếp theo
+                            Trang sau
+                            <FontAwesomeIcon icon={faArrowRight} className="ms-2" />
                         </button>
                     </div>
 
-                    {/* Biểu đồ cột theo discount */}
-                    <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={currentAds}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey={(ad) => `${ad.nameShop} - ${ad.buyDay}`} /> {/* Chú thích tên shop và ngày bán */}
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="totalDiscount" fill="#82ca9d" name="Tổng Chiết khấu" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                    <div className="statical-ad-chart">
+                        <ResponsiveContainer width="100%" height={400}>
+                            <BarChart data={currentAds}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey={(ad) => `${ad.nameShop} - ${ad.buyDay}`} />
+                                <YAxis />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="totalDiscount" fill="#82ca9d" name="Tổng Chiết khấu" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
                 </>
             )}
 
-            {/* Hiển thị thông báo khi không có dữ liệu */}
             {!loading && currentAds.length === 0 && !error && (
-                <p>Không có dữ liệu hiển thị.</p>
+                <p className="text-center mt-3">Không có dữ liệu hiển thị.</p>
             )}
         </div>
     );

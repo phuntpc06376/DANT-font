@@ -1,52 +1,108 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './Navbar.css'; // Import CSS tùy chỉnh
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faTimes, faChartPie, faClipboard, faUsers, faFolder, faTags, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'; // Import các icon cần dùng
 
 const Navbar = () => {
-    return (
-        <div className="bg-light" style={{ position: 'fixed', height: '100%', width: '250px', overflowY: 'auto', boxShadow: '2px 0 5px rgba(0,0,0,0.1)' }}>
-            <div className="d-flex align-items-center justify-content-center py-4">
-                <span className="fs-4 text-primary fw-bold">ADMIN</span>
-            </div>
-            <hr />
-            <ul className="nav flex-column mb-auto">
-            <li className="nav-item">
-                    <Link className="nav-link" to="stactial-management">
-                        <span className="fs-5 text-primary fw-bold">Thống kê</span>
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link className="nav-link active" to="post-management">
-                        <span className="fs-5 text-primary fw-bold">Quản lý bài đăng</span>
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link className="nav-link" to="account-management">
-                        <span className="fs-5 text-primary fw-bold">Quản lý người dùng</span>
-                    </Link>
-                </li>
-                {/* <li className="nav-item">
-                    <Link className="nav-link" to="supplier-management">
-                        <span className="fs-5 text-primary fw-bold">Quản lý nhà cung cấp</span>
-                    </Link>
-                </li> */}
-                <li className="nav-item">
-                    <Link className="nav-link active" to="property-management">
-                        <span className="fs-5 text-primary fw-bold">Quản lý danh mục</span>
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link className="nav-link active" to="properties-values-management">
-                        <span className="fs-5 text-primary fw-bold">Quản lý thuộc tính</span>
-                    </Link>
-                </li>
+    const [logoutMessage, setLogoutMessage] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false); // State để thu gọn/mở rộng menu
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            setIsLoggedIn(true);
+        }
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setLogoutMessage('Đăng xuất thành công!');
+        navigate('/login');
+        setTimeout(() => setLogoutMessage(''), 3000);
+    };
+
+    const toggleNavbar = () => {
+        setIsCollapsed(!isCollapsed);
+    };
+
+    return (
+        <div className={`navbar-container1 ${isCollapsed ? 'collapsed' : ''}`}>
+            <div className="navbar-header1 d-flex align-items-center justify-content-between">
+                <span>ADMIN</span>
+                <button className="btn btn-sm btn-outline-secondary" onClick={toggleNavbar}>
+                    <FontAwesomeIcon icon={isCollapsed ? faBars : faTimes} />
+                </button>
+            </div>
+            <ul className="nav flex-column mb-auto">
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="post-management"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faClipboard} className="me-2" />
+                        {!isCollapsed && 'Bài đăng'}
+                    </NavLink>
+                </li>
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="account-management"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faUsers} className="me-2" />
+                        {!isCollapsed && 'Người dùng'}
+                    </NavLink>
+                </li>
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="property-management"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faFolder} className="me-2" />
+                        {!isCollapsed && 'Thuộc tính con'}
+                    </NavLink>
+                </li>
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="properties-values-management"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faTags} className="me-2" />
+                        {!isCollapsed && 'Thuộc tính'}
+                    </NavLink>
+                </li>
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="stactial-management"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faChartPie} className="me-2" />
+                        {!isCollapsed && 'Thống kê'}
+                    </NavLink>
+                </li>
             </ul>
-            {/* <div className="mt-auto p-3">
-                <Link className="btn btn-outline-primary w-100" to="/logout">
-                    Đăng xuất
-                </Link>
-            </div> */}
+            {logoutMessage && (
+                <div className="alert alert-success mt-3" role="alert">
+                    {logoutMessage}
+                </div>
+            )}
+            <div className="navbar-footer1">
+                {isLoggedIn && (
+                    <button className="btn btn-outline-primary w-100" onClick={handleLogout}>
+                        <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
+                        {!isCollapsed && 'Đăng xuất'}
+                    </button>
+                )}
+            </div>
         </div>
     );
 };

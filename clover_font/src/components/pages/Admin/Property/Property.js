@@ -6,6 +6,7 @@ import {
     updateProperty,
     deleteProperty,
 } from '../api/propertyApi';
+import './Property.css';
 
 const PropertyManager = () => {
     const [properties, setProperties] = useState([]);
@@ -15,6 +16,7 @@ const PropertyManager = () => {
         description: '',
     });
     const [isEditing, setIsEditing] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false); // Quản lý modal
     const [error, setError] = useState('');
 
     const fetchProperties = async () => {
@@ -45,24 +47,26 @@ const PropertyManager = () => {
         try {
             if (isEditing) {
                 await updateProperty(property.id, propertyData);
-                Swal.fire('Thành công', 'Cập nhật danh mụcthành công!', 'success');
+                Swal.fire('Thành công', 'Cập nhật thuộc tính con thành công!', 'success');
             } else {
                 await createProperty(propertyData);
-                Swal.fire('Thành công', 'Thêm danh mục mới thành công!', 'success');
+                Swal.fire('Thành công', 'Thêm thuộc tính con mới thành công!', 'success');
             }
             setProperty({ id: '', name: '', description: '' });
             setIsEditing(false);
+            setIsModalOpen(false); // Ẩn modal sau khi thao tác thành công
             setError('');
             fetchProperties();
         } catch (err) {
-            setError('Lỗi khi thao tác với danh mục: ' + err.message);
-            Swal.fire('Lỗi', 'Có lỗi xảy ra khi thao tác với danh mục!', 'error');
+            setError('Lỗi khi thao tác với thuộc tính con: ' + err.message);
+            Swal.fire('Lỗi', 'Có lỗi xảy ra khi thao tác với thuộc tính con!', 'error');
         }
     };
 
     const handleEdit = (prop) => {
         setProperty(prop);
         setIsEditing(true);
+        setIsModalOpen(true); // Hiển thị modal khi chỉnh sửa
         setError('');
     };
 
@@ -75,114 +79,128 @@ const PropertyManager = () => {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Xóa!',
-            cancelButtonText: 'Hủy'
+            cancelButtonText: 'Hủy',
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
                     await deleteProperty(id);
-                    Swal.fire('Đã xóa!', 'danh mục đã được xóa.', 'success');
+                    Swal.fire('Đã xóa!', 'Thuộc tính con đã được xóa.', 'success');
                     fetchProperties();
                 } catch (err) {
                     setError('Lỗi khi xóa danh mục: ' + err.message);
-                    Swal.fire('Lỗi', 'Có lỗi xảy ra khi xóa danh mục!', 'error');
+                    Swal.fire('Lỗi', 'Có lỗi xảy ra khi xóa thuộc tính con!', 'error');
                 }
             }
         });
     };
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center mb-4">Quản lý danh mục</h1>
+        <div className="property-manager-container">
+    <h2 className="property-manager-title">Quản lý thuộc tính con</h2>
 
-            {error && <div className="alert alert-danger">{error}</div>}
+    {error && <div className="property-manager-alert-danger">{error}</div>}
 
-            <form onSubmit={handleSubmit} className="card mb-4 shadow-sm p-4">
-                <h4 className="text-center">{isEditing ? 'Cập nhật danh mục' : 'Thêm danh mục'}</h4>
-                <div className="form-group mt-3">
-                    <label htmlFor="name">Tên danh mục</label>
-                    <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        className="form-control"
-                        placeholder="Nhập tên danh mục"
-                        value={property.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="form-group mt-3">
-                    <label htmlFor="description">Mô tả</label>
-                    <textarea
-                        name="description"
-                        id="description"
-                        className="form-control"
-                        placeholder="Nhập mô tả danh mục"
-                        value={property.description}
-                        onChange={handleChange}
-                        required
-                    ></textarea>
-                </div>
-                <div className="d-flex justify-content-end mt-4">
-                    <button type="submit" className="btn btn-primary">
-                        {isEditing ? 'Cập nhật' : 'Thêm'}
-                    </button>
-                    {isEditing && (
+    <div className="d-flex justify-content-end mb-3">
+        <button
+            className="property-manager-btn-primary"
+            onClick={() => {
+                setIsModalOpen(true);
+                setIsEditing(false);
+                setProperty({ id: '', name: '', description: '' });
+            }}
+        >
+            Thêm thuộc tính con
+        </button>
+    </div>
+
+    {/* Modal thêm/sửa */}
+    {isModalOpen && (
+        <div className="property-manager-modal-overlay">
+            <div className="property-manager-modal-content">
+                <form onSubmit={handleSubmit} className="pm-form">
+                    <h4>{isEditing ? 'Cập nhật thuộc tính con' : 'Thêm thuộc tính con'}</h4>
+                    <div className="property-manager-form-group">
+                        <label htmlFor="name">Tên thuộc tính con</label>
+                        <input
+                            type="text"
+                            name="name"
+                            id="name"
+                            className="property-manager-form-control"
+                            value={property.name}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
+                    <div className="property-manager-form-group">
+                        <label htmlFor="description">Mô tả</label>
+                        <textarea
+                            name="description"
+                            id="description"
+                            className="property-manager-form-control"
+                            value={property.description}
+                            onChange={handleChange}
+                            required
+                        ></textarea>
+                    </div>
+                    <div className="d-flex justify-content-end">
+                        <button type="submit" className="property-manager-btn-primary">
+                            {isEditing ? 'Cập nhật' : 'Thêm'}
+                        </button>
                         <button
                             type="button"
-                            className="btn btn-secondary ml-2"
-                            onClick={() => {
-                                setProperty({ id: '', name: '', description: '' });
-                                setIsEditing(false);
-                                setError('');
-                            }}
+                            className="property-manager-btn-secondary ml-2"
+                            onClick={() => setIsModalOpen(false)}
                         >
                             Hủy
                         </button>
-                    )}
-                </div>
-            </form>
-
-            <table className="table table-hover table-bordered shadow-sm">
-                <thead className="thead-dark">
-                    <tr>
-                        <th style={{ width: '30%' }}>Tên danh mục</th>
-                        <th style={{ width: '50%' }}>Mô tả</th>
-                        <th style={{ width: '20%' }}>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {properties.length > 0 ? (
-                        properties.map((prop) => (
-                            <tr key={prop.id}>
-                                <td>{prop.name}</td>
-                                <td>{prop.description}</td>
-                                <td>
-                                    <button
-                                        className="btn btn-warning btn-sm mr-2"
-                                        onClick={() => handleEdit(prop)}
-                                    >
-                                        Sửa
-                                    </button>
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => handleDelete(prop.id)}
-                                    >
-                                        Xóa
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="3" className="text-center">
-                                Không có tài sản nào
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                    </div>
+                </form>
+            </div>
         </div>
+    )}
+
+    {/* Bảng tài sản */}
+    <table className="property-manager-table">
+        <thead>
+            <tr>
+                <th>Tên</th>
+                <th>Mô tả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {properties.length > 0 ? (
+                properties.map((prop) => (
+                    <tr key={prop.id}>
+                        <td>{prop.name}</td>
+                        <td>{prop.description}</td>
+                        <td>
+                            <button
+                                className="property-manager-table-action-btn property-manager-table-btn-edit me-1"
+                                onClick={() => handleEdit(prop)}
+                            >
+                                Sửa
+                            </button>
+                            <button
+                                className="property-manager-table-action-btn property-manager-table-btn-delete"
+                                onClick={() => handleDelete(prop.id)}
+                            >
+                                Xóa
+                            </button>
+                        </td>
+                    </tr>
+                ))
+            ) : (
+                <tr>
+                    <td colSpan="3" className="text-center">
+                        Không có dữ liệu
+                    </td>
+                </tr>
+            )}
+        </tbody>
+    </table>
+</div>
+
     );
 };
 
