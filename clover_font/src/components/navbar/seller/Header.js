@@ -22,11 +22,6 @@ export default function Header({ onLogout, isLoggedIn }) {
                 </Link>
             </li>
             <li className="nav-item">
-                <Link className="nav-link" to="supplier">
-                    <span className="fs-5 text-primary fw-bold">Quản lý Nhà cung cấp</span>
-                </Link>
-            </li>
-            <li className="nav-item">
                 <Link className="nav-link" to="bill">
                     <span className="fs-5 text-primary fw-bold">Quản lý Hóa đơn</span>
                 </Link>

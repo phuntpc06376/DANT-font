@@ -9,7 +9,7 @@ const PostList = () => {
     const [browsePosts, setBrowsePosts] = useState([]);
     const [denouncePosts, setDenouncePosts] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage] = useState(5); // Số bài đăng hiển thị trên mỗi trang
+    const [postsPerPage] = useState(10); // Số bài đăng hiển thị trên mỗi trang
 
     useEffect(() => {
         const fetchPosts = async () => {

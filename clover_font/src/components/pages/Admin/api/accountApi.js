@@ -42,3 +42,13 @@ export const updateAccount = async (id, accountBean) => {
 export const deleteAccount = async (id) => {
     await axiosInstance.delete(`/${id}`);
 };
+
+export const getAllAccountsRegisterSeller = async () => {
+    const response = await axiosInstance.get(`/listRegisterSell`);
+    return response.data;
+};
+
+export const censorRegisterSeller = async (id) => {
+    const response = await axiosInstance.put(`/listRegisterSell/${id}`)
+    return response.data;
+};

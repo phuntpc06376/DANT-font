@@ -31,13 +31,23 @@ const Navbar = () => {
                     </Link>
                 </li> */}
                 <li className="nav-item">
-                    <Link className="nav-link active" to="property-management">
+                    <Link className="nav-link active" to="type-product-management">
                         <span className="fs-5 text-primary fw-bold">Quản lý danh mục</span>
                     </Link>
                 </li>
                 <li className="nav-item">
-                    <Link className="nav-link active" to="properties-values-management">
+                    <Link className="nav-link active" to="property-management">
                         <span className="fs-5 text-primary fw-bold">Quản lý thuộc tính</span>
+                    </Link>
+                </li>
+                <li className="nav-item">
+                    <Link className="nav-link active" to="properties-values-management">
+                        <span className="fs-5 text-primary fw-bold">Quản lý thuộc tính con</span>
+                    </Link>
+                </li>
+                <li className="nav-item">
+                    <Link className="nav-link active" to="register-seller-management">
+                        <span className="fs-5 text-primary fw-bold">Quản lý đăng ký người bán</span>
                     </Link>
                 </li>
 
