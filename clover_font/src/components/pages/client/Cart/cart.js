@@ -15,6 +15,9 @@ export default function ProductCards() {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
+
+  
+
   // Fetch cart data from API
   const fetchCart = async () => {
     setLoading(true);
@@ -109,7 +112,7 @@ export default function ProductCards() {
     if (selectedItems.length === 0) {
         toast.error("Vui lòng chọn sản phẩm để đặt hàng.");
         return;
-    }
+    } 
     // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
     localStorage.setItem('ids', selectedItems);
     navigate("/user/order");
@@ -134,6 +137,8 @@ export default function ProductCards() {
     setSelectAll(!selectAll);
   };
 
+
+  
   return (
     <section className="h-100" style={{ backgroundColor: "#eee" }}>
       <Container className="py-5 h-100">

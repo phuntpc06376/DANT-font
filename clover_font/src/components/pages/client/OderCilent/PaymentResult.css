@@ -1,6 +1,6 @@
 /* PaymentResult.css */
 .payment-result-container {
-    width: 400px;
+    width: 900px;
     margin: 50px auto;
     background-color: #fff;
     border-radius: 8px;
@@ -17,7 +17,7 @@
 .payment-details .detail {
     display: flex;
     justify-content: space-between;
-    margin: 10px 0;
+    margin: 20px 0;
     font-size: 16px;
     color: #333;
 }

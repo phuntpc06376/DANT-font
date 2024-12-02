@@ -107,14 +107,14 @@ const PropertyValueManager = () => {
     };
 
     return (
-        <div className="pv-container mt-5">
-            <h2 className="pv-title">Quản lý thuộc tính</h2>
+        <div className="property-value-manager-container mt-5">
+            <h2 className="property-value-manager-title">Quản lý thuộc tính</h2>
 
-            {error && <div className="pv-alert-error">{error}</div>}
+            {error && <div className="property-value-manager-alert-error">{error}</div>}
 
             <div className="d-flex justify-content-end mb-3">
                 <button
-                    className="pv-btn-primary"
+                    className="property-value-manager-btn-primary"
                     onClick={() => {
                         setPropertyValue({ id: '', name: '', description: '', propertyId: '' });
                         setIsEditing(false);
@@ -125,7 +125,7 @@ const PropertyValueManager = () => {
                 </button>
             </div>
 
-            <table className="pv-table">
+            <table className="property-value-manager-table">
                 <thead>
                     <tr>
                         <th>Tên</th>
@@ -143,13 +143,13 @@ const PropertyValueManager = () => {
                                 <td>{propValue.properties?.name}</td>
                                 <td>
                                     <button
-                                        className="pv-btn-action pv-btn-edit me-1"
+                                        className="property-value-manager-btn-action property-value-manager-btn-edit me-1"
                                         onClick={() => handleEdit(propValue)}
                                     >
                                         Sửa
                                     </button>
                                     <button
-                                        className="pv-btn-action pv-btn-delete"
+                                        className="property-value-manager-btn-action property-value-manager-btn-delete"
                                         onClick={() => handleDelete(propValue.id)}
                                     >
                                         Xóa
@@ -168,8 +168,8 @@ const PropertyValueManager = () => {
             </table>
 
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
+                <div className="property-value-manager-modal-overlay">
+                    <div className="property-value-manager-modal-content">
                         <form onSubmit={handleSubmit}>
                             <h4 className="text-center">{isEditing ? 'Cập nhật' : 'Thêm mới'}</h4>
                             <div className="form-group mt-3">
@@ -178,7 +178,7 @@ const PropertyValueManager = () => {
                                     type="text"
                                     name="name"
                                     id="name"
-                                    className="pv-form-control"
+                                    className="property-value-manager-form-control"
                                     placeholder="Nhập tên"
                                     value={propertyValue.name}
                                     onChange={handleChange}
@@ -190,7 +190,7 @@ const PropertyValueManager = () => {
                                 <textarea
                                     name="description"
                                     id="description"
-                                    className="pv-form-control"
+                                    className="property-value-manager-form-control"
                                     placeholder="Nhập mô tả"
                                     value={propertyValue.description}
                                     onChange={handleChange}
@@ -202,7 +202,7 @@ const PropertyValueManager = () => {
                                 <select
                                     name="propertyId"
                                     id="propertyId"
-                                    className="pv-form-control"
+                                    className="property-value-manager-form-control"
                                     value={propertyValue.propertyId}
                                     onChange={handleChange}
                                     required
@@ -216,12 +216,12 @@ const PropertyValueManager = () => {
                                 </select>
                             </div>
                             <div className="d-flex justify-content-end mt-4">
-                                <button type="submit" className="pv-btn-primary">
+                                <button type="submit" className="property-value-manager-btn-primary">
                                     {isEditing ? 'Cập nhật' : 'Thêm mới'}
                                 </button>
                                 <button
                                     type="button"
-                                    className="pv-btn-secondary ml-2"
+                                    className="property-value-manager-btn-secondary ml-2"
                                     onClick={() => setIsModalOpen(false)}
                                 >
                                     Hủy

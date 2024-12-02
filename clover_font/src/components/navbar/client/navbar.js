@@ -13,7 +13,7 @@ import { FaShop } from "react-icons/fa6";
 
 const FacebookNavbar = () => {
   const navigate = useNavigate();
-  
+
   // State to track if the user is logged in
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState('');
@@ -29,13 +29,13 @@ const FacebookNavbar = () => {
   const handleLogout = () => {
     // Clear token from localStorage
     localStorage.removeItem('token');
-    
+
     // Update state to reflect that the user is logged out
     setIsLoggedIn(false);
-    
+
     // Set a logout success message
     setLogoutMessage('Logout successful!');
-    
+
     // Redirect to the login page
     navigate('/');
 
@@ -82,28 +82,34 @@ const FacebookNavbar = () => {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item href="cart">
-                    <FaCartShopping style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Giỏ hàng
+                  {/* <Dropdown.Item href="cart">
+                    <FaCartShopping style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                    Giỏ hàng
+                  </Dropdown.Item> */}
+                  <Dropdown.Item href="chat">
+                    <RiMessengerLine style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                    Nhắn tin
                   </Dropdown.Item>
                   <Dropdown.Item href="profile">
-                    <CgProfile style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Thông tin cá nhân
+                    <CgProfile style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                    Thông tin cá nhân
                   </Dropdown.Item>
-                  <Dropdown.Item href="orderSummary">
-                    <RiBillLine style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Hóa đơn của bạn
+                  {/* <Dropdown.Item href="orderSummary">
+                    <RiBillLine style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                    Hóa đơn của bạn
+                  </Dropdown.Item> */}
+                  <Dropdown.Item href="/seller/*">
+                    <FaShop style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                    Kênh người bán
                   </Dropdown.Item>
-                  <Dropdown.Item href="chat">
-                    <RiMessengerLine style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Nhắn tin
-                  </Dropdown.Item>
-                  <Dropdown.Item href="shopRegister">
-                    <FaShop style={{ fontSize: '1.5rem', marginRight: '10px' }} />Kênh người bán
-                  </Dropdown.Item>
-                  {/* Conditionally render the Logout option */}
                   {isLoggedIn && (
                     <Dropdown.Item onClick={handleLogout}>
-                      <IoLogOutOutline style={{ fontSize: '1.5rem', marginRight: '10px' }} /> Đăng xuất
+                      <IoLogOutOutline style={{ fontSize: '1.5rem', marginRight: '10px' }} />
+                      Đăng xuất
                     </Dropdown.Item>
                   )}
                 </Dropdown.Menu>
+
               </Dropdown>
             </Col>
           </Row>

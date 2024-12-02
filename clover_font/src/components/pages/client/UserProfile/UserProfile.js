@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import CryptoJS from 'crypto-js';
+import "./Profile.css";
 const UserProfile = () => {
   const { userName } = useParams(); // Lấy username từ URL params
   const decodedUserName = CryptoJS.enc.Utf8.stringify(CryptoJS.enc.Base64.parse(userName));
@@ -103,6 +104,7 @@ const UserProfile = () => {
         // Safely access products field
         const productsData = response.data?.products ?? []; // Fallback to an empty array if products is undefined
         setProducts(productsData);
+
       } catch (error) {
         console.error("Có lỗi khi tải sản phẩm:", error.message);
         setProducts([]); // Ensure state is updated to avoid undefined errors
@@ -178,26 +180,27 @@ const UserProfile = () => {
         <p className="profile-email">Email: {profileData.email || "N/A"}</p>
       </div>
       {/* About Section */}
-      <div className="about-section">
+      {/* <div className="about-section">
         <h3 className="about-title">About</h3>
         <p className="about-text">{profileData.about || "This user has no bio yet."}</p>
-      </div>
+      </div> */}
       {/* Post List Section */}
       <Tabs
         defaultActiveKey="profile"
         id="uncontrolled-tab-example"
         className="mb-3 mt-3"
       >
-        <Tab eventKey="home" title="Bài đăng ">
+        <Tab eventKey="profile" title="Bài đăng " className="mt-3">
           <div className="post-list">
             {posts.length === 0 ? (
               <p>Người dùng này chưa có bài đăng nào.</p>
             ) : (
+          
               posts.map((post) => (
-                <div className="post-card" key={post.id}>
-                  <div className="post-header">
+                <div className="card-post mb-3" key={post.id}>
+                  <div className="d-flex align-items-center">
                     <img
-                      className="post-avatar"
+                      className="rounded-circle me-3"
                       src={
                         post.account?.avatar
                           ? `http://localhost:8080/uploads/avatars/${post.account.avatar}`
@@ -205,7 +208,7 @@ const UserProfile = () => {
                       }
                       alt="User Avatar"
                     />
-                    <div className="post-info">
+                    <div className="mb-0">
                       <h4>{post.account?.fullname || "Người dùng"}</h4>
                       <p>{new Date(post.postDay).toLocaleDateString()}</p>
                     </div>
@@ -225,15 +228,15 @@ const UserProfile = () => {
                       </div>
                     )}
                   </div>
-                  <div className="post-footer">
-                    <button className="like-button">Số lượt thích: {post.numberLikes}</button>
+                  <div className="card-footer mt-3 d-flex justify-content-between">
+                    <div className="text-dark">Số lượt thích: {post.numberLikes}</div>
                   </div>
                 </div>
               ))
             )}
           </div>
         </Tab>
-        <Tab eventKey="profile" title="Cửa hàng" className="text-center">
+        <Tab eventKey="store" title="Cửa hàng" className="text-center">
           <div className="product-grid">
             {loading ? (
               <p>Đang tải...</p>

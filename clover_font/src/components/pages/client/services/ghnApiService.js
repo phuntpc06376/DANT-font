@@ -23,6 +23,28 @@ export const createOrder = async (shopID, orderDetail) => {
     }
   };
    
+  // tinh phi ghn
+  export const calculateGhnFee = async (orderDetail, shopDetaiil) => {
+    try {
+      const response = await axios.post(
+        `${API_URL}/shiip/public-api/v2/shipping-order/fee`,
+        orderDetail,
+        {
+          headers: {
+            shopid: shopDetaiil.shopid,
+            token: 'f2bc89d4-90d2-11ef-8e53-0a00184fe694',
+          },
+        }
+      );
+      console.log("GHN Response sv:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("L��i từ API GHN:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+   
+  // lay danh sach tinh thanh
 export const getProvince = async () => {
     const response = await axios.get(`${API_URL}/shiip/public-api/master-data/province`, {headers: { 'token': 'f2bc89d4-90d2-11ef-8e53-0a00184fe694'}});
     return response.data;

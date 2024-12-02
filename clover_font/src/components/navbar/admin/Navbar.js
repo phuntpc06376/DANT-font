@@ -89,6 +89,16 @@ const Navbar = () => {
                         {!isCollapsed && 'Thống kê'}
                     </NavLink>
                 </li>
+                <li className="nav-item">
+                    <NavLink
+                        className="navbar-link1"
+                        to="shopRegistration"
+                        activeClassName="active"
+                    >
+                        <FontAwesomeIcon icon={faChartPie} className="me-2" />
+                        {!isCollapsed && 'Đăng ký người bán'}
+                    </NavLink>
+                </li>
             </ul>
             {logoutMessage && (
                 <div className="alert alert-success mt-3" role="alert">

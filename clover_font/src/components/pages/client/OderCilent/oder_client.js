@@ -14,7 +14,8 @@ import {
   createOrder
   , getProvince
   , getDistrict
-  , getWard
+  , getWard,
+  calculateGhnFee
 } from "../services/ghnApiService";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
@@ -75,6 +76,17 @@ const Order = () => {
  const [province, setProvince] = useState([]);
  const [distrinct, setDistrict] = useState([]);
  const [ward, setWard] = useState([]);
+ const [fee, setFee] = useState(0);
+ const [groupedCartItems, setGroupedCartItems] = useState(null);
+
+useEffect(() => {
+  const fetchGroupedItems = async () => {
+    const grouped = await groupByShop(cartPay);
+    setGroupedCartItems(grouped);
+  };
+  fetchGroupedItems();
+}, [cartPay]);
+
   useEffect(() => {
     if (!ids) {
       navigate("/");
@@ -95,7 +107,7 @@ const Order = () => {
 
         setCartPay(cart);
         const provinces = await getProvince();
-        
+       
         setProvince(provinces.data);
         console.log(province);
         
@@ -108,6 +120,80 @@ const Order = () => {
 
     fetchUserData();
   }, [token, ids, navigate]);
+  const calculateGhnFeeForShop = async  (bill) => {
+ 
+    const updatedOrder = {
+      items: bill.map((itemDetail) => ({
+        name: itemDetail.prod.name,
+        quantity: itemDetail.quantity,
+        price: itemDetail.prod.price,
+        length: 12,
+        width: 12,
+        weight: 12,
+        height: 12,
+      })),
+      from_district_id:bill[0].prod.shop.districtId,
+      from_ward_code:bill[0].prod.shop.wardCode,
+      service_id:53321,
+      service_type_id:5,
+      to_ward_code: accounts.addresses.wardCode,
+      to_district_id: accounts.addresses.districtId,
+      height: 10,
+      length: 1,
+      weight: 200,
+      width: 19,
+    };
+  
+    console.log("Order:", bill[0].id);
+  
+    try {
+      // Gửi đơn hàng tới GHN
+      
+      const ghnResponse = await calculateGhnFee(updatedOrder,bill[0].prod.shop.shopGhnId);
+      console.log("GHN Response - fe:", ghnResponse.data.total);
+      
+      if (ghnResponse.status === 400) {
+        console.error("Lỗi từ GHN:", ghnResponse);
+      }
+      return ghnResponse.data.total;
+    } catch (err) {
+      console.error("Lỗi khi tạo đơn hàng GHN:", err);
+    }
+  
+}
+const groupByShop = async (items) => {
+  const groups = items.reduce((acc, item) => {
+    const shopId = item?.prod?.shop?.id || "unknown"; 
+    const shopName = item?.prod?.shop?.name || "Unknown Shop"; 
+    if (!acc[shopId]) {
+      acc[shopId] = { name: shopName, items: [], Ghnfee: 0 };
+    }
+    acc[shopId].items.push(item);
+    return acc;
+  }, {});
+
+  // Tạo biến tạm để lưu tổng phí
+  let totalFee = 0;
+
+  // Tính phí GHN cho từng nhóm shop
+  for (const shopId in groups) {
+    const group = groups[shopId];
+    const shopGhnFee = await calculateGhnFeeForShop(group.items);
+    group.Ghnfee = shopGhnFee;
+
+    // Cộng dồn phí vào biến tạm
+    totalFee += shopGhnFee;
+  }
+
+  // Sau khi tính toán xong, cập nhật state fee một lần
+  setFee(totalFee);
+setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
+  console.log("Total Fee:", totalFee);
+  return groups;
+};
+
+
+   
 
   useEffect(() => {
     const handlePaymentResponse = async () => {
@@ -130,7 +216,7 @@ const Order = () => {
 
     handlePaymentResponse();
   }, [cartPay, inputValue, token]);
-
+ 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleInputChange = (event) => setInputValue(event.target.value);
@@ -140,29 +226,29 @@ const Order = () => {
     setTotalPrice(total);
   }, [cartPay]); // Tính toán lại khi `cartPay` thay đổi
   
-  const handleInput = async (event) => {
-    event.preventDefault();
+  // const handleInput = async (event) => {
+  //   event.preventDefault();
 
-    try {
-      const check = await postCheckPoint(inputValue, token); // Dùng token làm parameter
-      if (!check) {
-        toast.error("Số điểm có giá trị tối đa 10% số điểm bạn có!");
-      } else {
-        const discountAmount = inputValue * 100;
-        setTotalPrice((prevPrice) => prevPrice - discountAmount);
-        toggleVisibility();
-        setUsePoint(true);
-      }
-    } catch (error) {
-      console.error("Error applying points:", error);
-    }
-  };
+  //   try {
+  //     const check = await postCheckPoint(inputValue, token); // Dùng token làm parameter
+  //     if (!check) {
+  //       toast.error("Số điểm có giá trị tối đa 10% số điểm bạn có!");
+  //     } else {
+  //       const discountAmount = inputValue * 100;
+  //       setTotalPrice((prevPrice) => prevPrice - discountAmount);
+  //       toggleVisibility();
+  //       setUsePoint(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error applying points:", error);
+  //   }
+  // };
 
   const handlePayment = async (event) => {
     event.preventDefault();
     const shopID = null;
     const formdata = new FormData();
-    formdata.append("shipMoney", 0);
+    formdata.append("shipMoney", fee);
     formdata.append("paymentMethods", "new");
     formdata.append("voucher", 4);
     formdata.append("toAddress",  accounts.addresses.address);
@@ -186,78 +272,26 @@ const Order = () => {
         if (formdata.has("status")) {
           formdata.delete("status"); // Xóa nếu key tồn tại
       }
-      formdata.append("status", "1"); // Thêm lại giá trị mới
+      // formdata.append("status", "1"); // Thêm lại giá trị mới
         console.log("COD");
         bill = await addCartToBill(formdata); // Dùng token
         toast.success("Tạo hóa đơn thành công!");
-        // navigate("/bills");
+        navigate("/user/index");
       } else if (parseInt(payMent) === 1) {
         if (parseInt(payMent) === 0) {
           if (formdata.has("status")) {
             formdata.delete("status"); // Xóa nếu key tồn tại
         }
       }
-        formdata.append("status", "5"); // Thêm lại giá trị mới
+        // formdata.append("status", "5"); // Thêm lại giá trị mới
         // Tạo hóa đơn
         // Duyệt qua tất cả các cặp key-value trong FormData
         for (let [key, value] of formdata.entries()) {
           console.log(`${key}: ${value}`);
         }
-        
-        
         bill = await addCartToBill(formdata); // Dùng token
         console.log("Bill:", bill);
-        for (const item of bill) {
-          const updatedOrder = {
-            items: item.detailBills.map((itemDetail) => ({
-              name: itemDetail.prod.name,
-              quantity: itemDetail.quantity,
-              price: itemDetail.prod.price,
-              length: 12,
-              width: 12,
-              weight: 12,
-              height: 12,
-            })),
-            to_name: accounts.fullname,
-            to_phone: accounts.phone,
-            to_address: accounts.addresses.address,
-            to_ward_code: accounts.addresses.wardCode,
-            to_district_id: accounts.addresses.districtId,
-            payment_type_id: 2,
-            required_note: "CHOXEMHANGKHONGTHU",
-            deliver_station_id: null,
-            height: 10,
-            length: 1,
-            service_type_id: 5,
-            weight: 200,
-            width: 19,
-          };
         
-          console.log("Order:", item.id);
-        
-          try {
-            // Gửi đơn hàng tới GHN
-            console.log(item.detailBills[0].prod);
-            
-            const ghnResponse = await createOrder(item.detailBills[0].prod.shop.shopGhnId, updatedOrder);
-            console.log("GHN Response:", ghnResponse);
-            // Cập nhật order ngay trong hàm
-            const formOrder = new FormData();
-            formOrder.append("billId", item.id);
-            formOrder.append("orderId", ghnResponse.data.order_code);
-            for (let [key, value] of formOrder.entries()) {
-              console.log(`${key}: ${value}`);
-            }
-            const updateBillGhn  = await updateBillOrderId(formOrder);
-            console.log(updateBillGhn);
-            
-            if (ghnResponse.status === 400) {
-              console.error("Lỗi từ GHN:", ghnResponse.data);
-            }
-          } catch (err) {
-            console.error("Lỗi khi tạo đơn hàng GHN:", err);
-          }
-        }
         let billIds = '';
         bill.forEach( (item, index) => {
           if(index === 0) {
@@ -266,18 +300,19 @@ const Order = () => {
               billIds += '-'+item.id;
           }
           item.detailBills.forEach( (item, index) => {
-            totalPriceToPay +=  item.price *item.quantity;//cần xác đinh discuont
+            totalPriceToPay +=  (item.price *item.quantity);//cần xác đinh discuont
           })
         })
         // Thanh toán qua VNPay
         console.log('total price: '+totalPriceToPay);
-        
-        const payUrl = await payment(totalPriceToPay, billIds);
+        console.log('total fee: '+fee);
+        console.log(fee+totalPriceToPay);
+        const payUrl = await payment(totalPriceToPay+fee, billIds);
         console.log("Payment URL:", payUrl);
     
         if (payUrl?.data?.paymentUrl) {
           // Chuyển hướng đến trang thanh toán VNPay
-          // window.location.href = payUrl.data.paymentUrl;
+          window.location.href = payUrl.data.paymentUrl;
           // Lưu thông tin hóa đơn thanh toán
           localStorage.setItem("IdPayment", bill);
         } else {
@@ -347,6 +382,7 @@ const Order = () => {
 }, [selectedDistrict, selectedProvince]); // Chỉ theo dõi selectedProvince thay đổi
 
   return (
+    
 <div className="App">
   <div className="container-fluid py-5">
     <div className="container py-5">
@@ -366,34 +402,52 @@ const Order = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {cartPay.map((p) => (
-                    <tr key={p.id}>
-                      <td>
-                        <img
-                          className="img-fluid rounded"
-                          src={`../image/${p?.prod[0]?.productImages[0]?.name}`}
-                          alt=""
-                          style={{ width: "80px", height: "80px" }}
-                        />
-                      </td>
-                      <td>{p.prod?.name}</td>
-                      <td>
-                        {p.prod?.price?.toLocaleString("vi", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </td>
-                      <td>{p.quantity}</td>
-                      <td>
-                        {(p.prod.price * p.quantity)?.toLocaleString("vi", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </td>
-                    </tr>
-                  ))}
-
-                  <tr className="address-row">
+                {groupedCartItems
+  ? Object.entries(groupedCartItems).map(([shopId, group]) => (
+      <React.Fragment key={shopId}>
+        <tr className="table-light">
+          <td colSpan="5">
+            <strong className="text-primary">{group.name}</strong>
+          </td>
+        </tr>
+        {group.items.map((p) => (
+          <tr key={p.id}>
+            <td>
+              <img
+                className="img-fluid rounded"
+                src={`../image/${p?.prod[0]?.productImages[0]?.name}`}
+                alt={p.prod?.name || "Product"}
+                style={{ width: "80px", height: "80px" }}
+              />
+            </td>
+            <td>{p.prod?.name || "Không rõ tên sản phẩm"}</td>
+            <td>
+              {p.prod?.price?.toLocaleString("vi", {
+                style: "currency",
+                currency: "VND",
+              }) || "0 VND"}
+            </td>
+            <td>{p.quantity || 0}</td>
+            <td>
+              {(p.prod?.price * p.quantity)?.toLocaleString("vi", {
+                style: "currency",
+                currency: "VND",
+              }) || "0 VND"}
+            </td>
+          </tr>
+        ))}
+        <tr>
+          <td className="text-secondary fw-bold fs-6">
+          Phí vận chuyển:   {group.Ghnfee?.toLocaleString("vi", {
+              style: "currency",
+              currency: "VND",
+            }) || "Đang tải..."}
+          </td>
+        </tr>
+      </React.Fragment>
+    ))
+  : "Đang tải..."}
+ <tr className="address-row">
                     <td colSpan="2"><strong>Địa chỉ:</strong></td>
                     <td colSpan="3" className="text-center">
                       {accounts.addresses ? (
@@ -414,7 +468,7 @@ const Order = () => {
                         className="form-select"
                         onChange={(e) => setPayMent(e.target.value)}
                       >
-                        <option value="0">Thanh toán khi nhận hàng</option>
+                        <option value="0" selected>Thanh toán khi nhận hàng</option>
                         <option value="1">Thanh toán qua VNpay</option>
                       </select>
                     </td>
@@ -430,9 +484,24 @@ const Order = () => {
                       </strong>
                     </td>
                   </tr>
-                </tbody>
+</tbody>
+
               </table>
-              {/* <div>
+     
+            </div>
+            <button
+              onClick={handlePayment}
+              className="btn btn-primary w-100 mt-4"
+            >
+              Đặt hàng
+            </button>
+            <Toaster />
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {/* <div>
             <h2>Chọn tỉnh</h2>
             <select 
                 value={selectedProvince} 
@@ -480,22 +549,10 @@ const Order = () => {
             </select>
             {selectedDistrict && <div>Đã chọn Phường/Xã: {selectedDistrict}</div>}
         </div> */}
-            </div>
-            <button
-              onClick={handlePayment}
-              className="btn btn-primary w-100 mt-4"
-            >
-              Đặt hàng
-            </button>
-            <Toaster />
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
 </div>
 
   );
+            
 };
 
 export default Order;

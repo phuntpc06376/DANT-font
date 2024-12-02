@@ -21,34 +21,54 @@ const ShopRegistration = () => {
             [name]: value
         });
     };
-    const handleSubmit = async (event) => {
-        event.preventDefault();
-        
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (Object.values(formData).some((field) => !field.trim())) {
+            toast.error('Vui lòng điền đầy đủ thông tin!');
+            return;
+        }
+    
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Bạn chưa đăng nhập!');
+            return;
+        }
+    
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                toast.error("Bạn cần đăng nhập để tạo cửa hàng.");
-                return;
-            }
+            // Tạo FormData và thêm các giá trị
+            const formBody = new FormData();
+            Object.entries(formData).forEach(([key, value]) => {
+                formBody.append(key, value);
+            });
+    
             const response = await fetch('http://localhost:8080/api/shop/create', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`, // Không thêm Content-Type, FormData tự xử lý
                 },
-                body: JSON.stringify(formData),
+                body: formBody, // Gửi FormData thay vì JSON
             });
     
-            if (!response.ok) {
-                const errorText = await response.text();  // Đọc lỗi trả về
-                throw new Error(errorText);  // Ném lỗi để xử lý
+            const result = await response.json();
+            if (response.ok) {
+                toast.success('Shop đã được tạo thành công!');
+                setFormData({
+                    name: '',
+                    address: '',
+                    districtName: '',
+                    districtId: '',
+                    wardCode: '',
+                    wardName: '',
+                    phone: ''
+                });
+                console.log(setFormData);
+                
+            } else {
+                throw new Error(result.message || 'Lỗi không xác định');
             }
-    
-            const data = await response.json();
-            // Xử lý dữ liệu trả về ở đây
-        } catch (error) {
-            console.error("Lỗi khi tạo shop: ", error);
-            alert("Lỗi khi tạo shop: " + error.message);
+        } catch (err) {
+            toast.error('Lỗi khi tạo shop: ' + err.message);
         }
     };
     
@@ -59,7 +79,7 @@ const ShopRegistration = () => {
             <h2 className="mt-5">Đăng ký cửa hàng</h2>
             <Form onSubmit={handleSubmit} className="mt-4">
                 <Row>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formName">
                             <Form.Label>Tên cửa hàng</Form.Label>
                             <Form.Control
@@ -72,7 +92,7 @@ const ShopRegistration = () => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formPhone">
                             <Form.Label>Số điện thoại</Form.Label>
                             <Form.Control
@@ -88,7 +108,7 @@ const ShopRegistration = () => {
                 </Row>
 
                 <Row>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formAddress">
                             <Form.Label>Địa chỉ</Form.Label>
                             <Form.Control
@@ -101,12 +121,12 @@ const ShopRegistration = () => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formDistrictName">
                             <Form.Label>Tên quận</Form.Label>
                             <Form.Control
                                 type="text"
-                                placeholder="Nhập tên quận"
+                                placeholder="Ví dụ: Quận 1"
                                 name="districtName"
                                 value={formData.districtName}
                                 onChange={handleInputChange}
@@ -117,7 +137,7 @@ const ShopRegistration = () => {
                 </Row>
 
                 <Row>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formDistrictId">
                             <Form.Label>Mã quận</Form.Label>
                             <Form.Control
@@ -130,7 +150,7 @@ const ShopRegistration = () => {
                             />
                         </Form.Group>
                     </Col>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formWardCode">
                             <Form.Label>Mã phường</Form.Label>
                             <Form.Control
@@ -146,7 +166,7 @@ const ShopRegistration = () => {
                 </Row>
 
                 <Row>
-                    <Col md={6}>
+                    <Col sm={12} md={6}>
                         <Form.Group controlId="formWardName">
                             <Form.Label>Tên phường</Form.Label>
                             <Form.Control

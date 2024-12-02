@@ -21,11 +21,11 @@ export default function Header({ onLogout, isLoggedIn }) {
                     <span className="fs-5 text-primary fw-bold">Quản lý Khuyến mãi</span>
                 </Link>
             </li>
-            <li className="nav-item">
+            {/* <li className="nav-item">
                 <Link className="nav-link" to="supplier">
                     <span className="fs-5 text-primary fw-bold">Quản lý Nhà cung cấp</span>
                 </Link>
-            </li>
+            </li> */}
             <li className="nav-item">
                 <Link className="nav-link" to="bill">
                     <span className="fs-5 text-primary fw-bold">Quản lý Hóa đơn</span>
@@ -34,6 +34,11 @@ export default function Header({ onLogout, isLoggedIn }) {
             <li className="nav-item">
                 <Link className="nav-link" to="voucherManagement">
                     <span className="fs-5 text-primary fw-bold">Quản lý voucher</span>
+                </Link>
+            </li>
+            <li className="nav-item">
+                <Link className="nav-link" to="staticalseller">
+                    <span className="fs-5 text-primary fw-bold">Thống kê</span>
                 </Link>
             </li>
             

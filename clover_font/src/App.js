@@ -19,6 +19,7 @@ import Order from './components/pages/client/OderCilent/oder_client';
 import UserProfile from './components/pages/client/UserProfile/UserProfile';
 import ResultPayment from './components/pages/client/OderCilent/ResultPayment';
 import ShopRegister from './components/pages/client/ShopRegister/ShopRegister';
+import AddAddressForm from './components/pages/client/AddAddress/AddAddressForm';
 
 
 
@@ -36,6 +37,8 @@ import PostList from './components/pages/Admin/Post/Post';
 import StaticalAd from './components/pages/Admin/StaticalAd/StaticalAd';
 import PropertyManager from './components/pages/Admin/Property/Property';
 import PropertyValueManager from './components/pages/Admin/PropertiesValues/PropertiesValue';
+import ShopRegistration from './components/pages/Admin/RegisterSeller/RegisterSeller';
+import StaticalSeller from './components/pages/seller/StaticalSeller/StaticalSeller';
 //các trang của seller
 import Product from './components/pages/seller/Product/Product'
 import Promotion from './components/pages/seller/Promotions/Promotions';
@@ -60,6 +63,7 @@ function UserLayout() {
         <Routes>
           <Route path="index" element={<Index />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="addAddressForm" element={<AddAddressForm />} />
           <Route path="productGallery" element={<ProductGallery />} />
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
@@ -96,6 +100,8 @@ function AdminLayout() {
             <Route path="stactial-management" element={<StaticalAd />} />
             <Route path="property-management" element={<PropertyManager />} />
             <Route path="properties-values-management" element={<PropertyValueManager />} />
+            <Route path="shopRegistration" element={<ShopRegistration />} />
+            
             <Route path="*" element={<Navigate to="/admin/stactial-management" />} />
           </Routes>
         </div>
@@ -119,6 +125,7 @@ function SellerLayout() {
             <Route path="supplier" element={<Supplier />} />
             <Route path="bill" element={<Bill />} />
             <Route path="voucherManagement" element={<VoucherManagement />} />
+            <Route path="staticalseller" element={<StaticalSeller />} />
             {/* <Route path="/oders" element={<Oder />} />
             <Route path="/products" element={<Product />} />
            

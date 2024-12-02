@@ -1,4 +1,84 @@
-.no-caret .dropdown-toggle::after {
-    display: none !important;
+/* General Navbar styling */
+.navbar {
+  background: linear-gradient(90deg, #007bff, #0056b3); /* Gradient hiện đại */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+  border-radius: 8px; /* Bo góc */
+  padding: 10px 20px; /* Khoảng cách hợp lý */
+}
+
+.navbar .navbar-brand img {
+  border-radius: 8px; /* Bo góc cho logo */
+  transition: transform 0.3s ease; /* Hiệu ứng hover */
+}
+
+.navbar .navbar-brand img:hover {
+  transform: scale(1.1); /* Phóng to nhẹ logo khi hover */
+}
+
+.navbar .form-control {
+  border-radius: 20px; /* Bo góc mềm mại */
+  border: none; /* Loại bỏ viền mặc định */
+  padding: 10px 15px; /* Tăng khoảng cách padding */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+.navbar .form-control:focus {
+  box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); /* Đổ bóng xanh khi focus */
+  outline: none; /* Xóa viền mặc định */
+}
+
+/* Dropdown menu styling */
+.dropdown-menu {
+  border-radius: 12px; /* Bo góc đẹp */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Đổ bóng mềm mại */
+  border: none; /* Xóa viền mặc định */
+  animation: fadeIn 0.3s ease-in-out; /* Hiệu ứng xuất hiện */
+}
+
+.dropdown-menu .dropdown-item {
+  padding: 10px 15px; /* Tăng kích thước để dễ bấm */
+  font-size: 16px; /* Tăng kích thước chữ */
+  font-weight: 500; /* Chữ rõ ràng hơn */
+  transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng hover */
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #e9ecef; /* Nền sáng hơn khi hover */
+  color: #007bff; /* Chữ đổi sang màu xanh */
+  border-radius: 8px; /* Bo góc khi hover */
+}
+
+.dropdown-menu .dropdown-item svg {
+  margin-right: 8px; /* Khoảng cách giữa icon và chữ */
+  color: #495057; /* Màu icon */
+  transition: color 0.3s ease; /* Hiệu ứng hover icon */
+}
+
+.dropdown-menu .dropdown-item:hover svg {
+  color: #007bff; /* Màu icon xanh khi hover */
+}
+
+/* Responsive design for search bar */
+@media (max-width: 768px) {
+  .navbar .form-control {
+    width: 100%; /* Search bar chiếm toàn bộ màn hình nhỏ */
   }
-  
+}
+
+/* Alert message styling */
+.alert {
+  margin-top: 15px; /* Khoảng cách với navbar */
+  border-radius: 8px; /* Bo góc mềm mại */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

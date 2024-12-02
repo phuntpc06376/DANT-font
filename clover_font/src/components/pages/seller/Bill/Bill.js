@@ -6,12 +6,15 @@ export default function Bills() {
     const [bills, setBills] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const [expandedBillId, setExpandedBillId] = useState(null); // Lưu ID hóa đơn đang mở rộng
+    const [detailBills, setDetailBill] = useState([]); // Lưu sản phẩm của hóa đơn được mở rộng
 
     useEffect(() => {
         const fetchBills = async () => {
             setLoading(true);
             try {
                 const data = await BillService.getBillsByShop(); // Lấy hóa đơn theo shop
+                console.log(data);
                 setBills(data);
             } catch (error) {
                 Swal.fire('Lỗi', 'Không thể lấy danh sách hóa đơn', 'error');
@@ -47,6 +50,25 @@ export default function Bills() {
         }
     };
 
+    const handleToggleProducts = (billId) => {
+        if (expandedBillId === billId) {
+            // Nếu đã mở thì đóng lại
+            setExpandedBillId(null);
+            setDetailBill([]);
+        } else {
+            // Lấy detailBills từ bill được chọn
+            const selectedBill = bills.find((bill) => bill.id === billId);
+            if (selectedBill && selectedBill.detailBills) {
+                setDetailBill(selectedBill.detailBills); // Gán detailBills vào products
+            } else {
+                Swal.fire('Thông báo', 'Không tìm thấy sản phẩm trong hóa đơn', 'info');
+                setDetailBill([]);
+            }
+            setExpandedBillId(billId);
+        }
+    };
+    
+
     const filteredBills = bills.filter((bill) => {
         const fullname = bill.fullname || ''; // Đảm bảo không bị lỗi khi fullname là null
         return fullname.toLowerCase().includes(searchTerm.toLowerCase());
@@ -74,7 +96,7 @@ export default function Bills() {
                     <table className="table table-striped table-bordered">
                         <thead className="table-dark">
                             <tr>
-                                <th scope="col">ID</th>
+                                
                                 <th scope="col">Tên khách hàng</th>
                                 <th scope="col">Ngày mua</th>
                                 <th scope="col">Email</th>
@@ -88,35 +110,81 @@ export default function Bills() {
                         <tbody>
                             {filteredBills.length > 0 ? (
                                 filteredBills.map((bill) => (
-                                    <tr key={bill.id}>
-                                        <td>{bill.id}</td>
-                                        <td>{bill.fullname}</td>
-                                        <td>{bill.buyDay}</td>
-                                        <td>{bill.email}</td>
-                                        <td>{bill.phone}</td>
-                                        <td>{bill.totalPayment}</td>
-                                        <td>{bill.paymentMethods}</td>
-                                        <td>{bill.status?.name}</td>
-                                        <td className="text-center">
-                                            {bill.status.id === 1 && (
-                                                <>
-                                                    <button
-                                                        onClick={() => handleConfirmBill(bill.id)}
-                                                        className="btn btn-sm btn-success me-2"
-                                                    >
-                                                        <i className="bi bi-check-circle"></i> Xác nhận
-                                                    </button>
-                                                    
-                                                    <button
-                                                        onClick={() => handleCancelBill(bill.id)}
-                                                        className="btn btn-sm btn-danger"
-                                                    >
-                                                        <i className="bi bi-x-circle"></i> Hủy
-                                                    </button>
-                                                </>
-                                            )}
-                                        </td>
-                                    </tr>
+                                    <React.Fragment key={bill.id}>
+                                        <tr>
+                                            
+                                            <td>{bill.fullname}</td>
+                                            <td>{bill.buyDay}</td>
+                                            <td>{bill.email}</td>
+                                            <td>{bill.phone}</td>
+                                            <td>{bill.totalPayment}</td>
+                                            <td>{bill.paymentMethods}</td>
+                                            <td>{bill.status?.name}</td>
+                                            <td className="text-center">
+                                                {bill.status.id === 1 && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleConfirmBill(bill.id)}
+                                                            className="btn btn-sm btn-success me-2"
+                                                        >
+                                                            <i className="bi bi-check-circle"></i> Xác nhận
+                                                        </button>
+                                                        
+                                                        <button
+                                                            onClick={() => handleCancelBill(bill.id)}
+                                                            className="btn btn-sm btn-danger"
+                                                        >
+                                                            <i className="bi bi-x-circle"></i> Hủy
+                                                        </button>
+                                                    </>
+                                                )}
+                                                <button
+                                                    onClick={() => handleToggleProducts(bill.id)}
+                                                    className="btn btn-sm btn-info"
+                                                >
+                                                    {expandedBillId === bill.id ? 'Đóng' : 'Xem sản phẩm'}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {expandedBillId === bill.id && (
+                                            <tr>
+                                                <td colSpan="9">
+                                                    <div className="table-responsive">
+                                                        <table className="table table-sm table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Tên sản phẩm</th>
+                                                                    <th>Số lượng</th>
+                                                                    <th>Giá</th>
+                                                                    <th>Khuyến mãi</th>
+                                                                    <th>Thành tiền</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {detailBills.length > 0 ? (
+                                                                    detailBills.map((detailBill) => (
+                                                                        <tr key={detailBill.id}>
+                                                                            <td>{detailBill.prodName}</td>
+                                                                            <td>{detailBill.quantity}</td>
+                                                                            <td>{detailBill.price}</td>
+                                                                            <td>{detailBill.percentDiscount}</td>
+                                                                            <td>{detailBill.totalMoney}</td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr>
+                                                                        <td colSpan="4" className="text-center">
+                                                                            Không có sản phẩm.
+                                                                        </td>
+                                                                    </tr>
+                                                                )}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 ))
                             ) : (
                                 <tr>
