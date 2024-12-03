@@ -186,7 +186,7 @@ export default function Products() {
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     product.status === true,
-    console.log(products.propertiesValues)
+    console.log(products)
   );
 
   return (
@@ -367,6 +367,7 @@ export default function Products() {
           <table className="table table-striped table-bordered">
             <thead className="table-dark">
               <tr>
+                <th>Ảnh sản phẩm</th>
                 <th>Tên sản phẩm</th>
                 <th>Giá</th>
                 <th>Số lượng</th>
@@ -380,6 +381,15 @@ export default function Products() {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id}>
+                    <td>
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                        <img
+                          src={`http://localhost:8080/image/${product.prodImages?.[0]?.name}`}
+                          alt={product.name}
+                          style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                        />
+                      </div>
+                    </td>
                     <td>{product.name}</td>
                     <td>{product.price}</td>
                     <td>{product.quantity}</td>

@@ -200,7 +200,7 @@ const UserProfile = () => {
                       className="post-avatar"
                       src={
                         post.account?.avatar
-                          ? `http://localhost:8080/uploads/avatars/${post.account.avatar}`
+                          ? `http://localhost:8080/image/${post.account.avatar}`
                           : "https://via.placeholder.com/50"
                       }
                       alt="User Avatar"
@@ -217,7 +217,7 @@ const UserProfile = () => {
                         {post.postImages.map((image) => (
                           <img
                             key={image.id}
-                            src={`http://localhost:8080/uploads/posts/${image.nameImage}`}
+                            src={`http://localhost:8080/image/${image.nameImage}`}
                             alt="Post"
                             className="post-image"
                           />

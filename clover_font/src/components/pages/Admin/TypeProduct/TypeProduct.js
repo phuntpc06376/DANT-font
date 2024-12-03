@@ -175,16 +175,16 @@ function TypeProductForm({ formType, typeProduct, typeProducts, onClose, onRefre
         }
 
         // Kiểm tra trùng tên (case-insensitive)
-        const checkNameTypeProduct = typeProducts.some(
-            (typeProd) =>
-                typeProd.name.toLowerCase() === formData.name.toLowerCase() &&
-                (formType === "add" || typeProd.id !== typeProduct.id) // Chỉ kiểm tra các mục khác với mục hiện tại khi đang sửa
-        );
+    const checkNameTypeProduct = typeProducts.some(
+        (typeProd) =>
+            typeProd.name.toLowerCase() === formData.name.toLowerCase() &&
+            (formType === "add" || typeProd.id !== typeProduct.id) // Chỉ kiểm tra các mục khác với mục hiện tại khi đang sửa
+    );
 
-        if (checkNameTypeProduct) {
-            Swal.fire("Lỗi", "Tên loại sản phẩm đã tồn tại!", "error");
-            return;
-        }
+    if (checkNameTypeProduct) {
+        Swal.fire("Lỗi", "Tên loại sản phẩm đã tồn tại!", "error");
+        return;
+    }
         const typeProductData = {
             ...formData,
         };

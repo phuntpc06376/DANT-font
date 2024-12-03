@@ -177,7 +177,7 @@ const ProductGallery = () => {
             title={product.name}
             price={product.price}
             location={`${product.shop.city}, ${product.shop.province}`}
-            imageUrl={`http://localhost:8080/images/${product.prodImages[0]?.name}`}
+            imageUrl={`http://localhost:8080/image/${product.prodImages[0]?.name}`}
           />
         ))}
       </Row>
@@ -191,7 +191,7 @@ const ProductGallery = () => {
             title={product.name}
             price={product.price}
             location={`${product.shop.city}, ${product.shop.province}`}
-            imageUrl={`http://localhost:8080/images/${product.prodImages[0]?.name}`}
+            imageUrl={`http://localhost:8080/image/${product.prodImages[0]?.name}`}
           />
         ))}
       </Row>
