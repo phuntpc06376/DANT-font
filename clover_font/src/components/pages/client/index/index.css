@@ -1,28 +1,33 @@
-/* styles.css */
+/* Sidebar Styling */
 .sidebar {
-    position: sticky; /* Keep the sidebar sticky */
-    top: 20px; /* Space from the top */
-    height: calc(100vh - 20px); /* Full height minus padding */
-    overflow-y: auto; /* Allow scrolling if content exceeds the height */
-    border-radius: 0; /* Remove rounded corners */
-    box-shadow: none; /* Remove shadow to avoid the card effect */
-  }
-  
-  .nav-link {
-    color: #495057; /* Darker color for sidebar links */
-    padding: 12px; /* Consistent padding for links */
-    border-radius: 0; /* Remove rounded corners */
-  }
-  
-  .nav-link:hover {
-    background-color: #e9ecef; /* Background change on hover */
-  }
-  
-  .text-dark {
-    color: #343a40; /* Darker text color for links */
-  }
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 20px);
+  overflow-y: auto;
+  border-radius: 15px; /* Thêm góc bo tròn nhẹ */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Tạo hiệu ứng đổ bóng mềm */
+  padding: 15px; /* Khoảng cách bên trong */
+}
 
-  .comment-box {
+.nav-link {
+  color: #495057;
+  padding: 12px;
+  border-radius: 4px; /* Bo góc nhẹ cho liên kết */
+  font-weight: 500; /* Đậm hơn để dễ đọc */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover {
+  background-color: #007bff;
+  color: white; /* Chữ trắng khi hover */
+}
+
+.text-dark {
+  color: #343a40;
+}
+
+/* Comment Box Styling */
+.comment-box {
   max-height: 0;
   overflow: hidden;
   transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
@@ -30,8 +35,137 @@
 }
 
 .comment-box.show {
-  max-height: 500px; /* Hoặc giá trị phù hợp */
+  max-height: 500px; /* Chiều cao phù hợp */
   opacity: 1;
+  background-color: #f1f3f5; /* Nền nhẹ để nổi bật */
+  border-radius: 6px; /* Bo góc nhẹ */
+  padding: 10px; /* Khoảng cách bên trong */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng */
 }
 
-  
+/* Card Post Styling */
+.card-post {
+  background-color: #ffffff; /* Nền trắng */
+  border-radius: 12px; /* Bo góc rõ hơn */
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Đổ bóng đẹp */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #e9ecef; /* Viền nhẹ để phân biệt */
+}
+
+.card-post:hover {
+  transform: scale(1.02); /* Hiệu ứng phóng to */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Đổ bóng rõ hơn */
+}
+
+.card-post img {
+  max-width: 50px;
+  max-height: 50px;
+  object-fit: cover;
+  border-radius: 50%; /* Bo tròn cho ảnh đại diện */
+  border: 2px solid #e9ecef; /* Viền ảnh */
+}
+
+.card-post .card-body {
+  padding: 15px;
+  font-family: 'Roboto', sans-serif; /* Font hiện đại hơn */
+}
+
+.card-post h5 {
+  font-size: 18px; /* Tăng kích thước chữ */
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.card-post p {
+  font-size: 15px; /* Tăng nhẹ kích thước chữ */
+  color: #666;
+  line-height: 1.5; /* Giãn dòng dễ đọc */
+}
+
+.card-post .fa-thumbs-up,
+.card-post .fa-trash {
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.card-post .fa-thumbs-up:hover {
+  color: #007bff; /* Màu xanh khi hover */
+}
+
+.card-post .fa-trash:hover {
+  color: red; /* Đỏ khi hover */
+}
+
+/* Footer Styling */
+.card-post .card-footer {
+  padding: 10px 0;
+  text-align: center;
+  border-top: 1px solid #eee;
+  font-size: 14px;
+  color: #666;
+}
+
+.card-post .btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 6px; /* Bo góc nhẹ */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.card-post .btn-primary:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px); /* Hiệu ứng nổi lên */
+}
+
+/* List Group Styling */
+.card-post .list-group-item {
+  border: none;
+  padding: 10px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  border-radius: 6px; /* Bo góc nhẹ */
+  margin-bottom: 5px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card-post .list-group-item:hover {
+  background-color: #007bff;
+  color: white; /* Chữ trắng khi hover */
+}
+/* Nút đồng nhất về kích thước */
+.btn-custom {
+  background-color: white; /* Xanh lá nhạt */
+  border: 2px solid white; /* Viền xanh đậm */
+  color: #0d0e0d; /* Màu chữ */
+  padding: 12px 24px; /* Đệm đồng nhất */
+  text-align: center;
+  font-size: 16px; /* Kích thước chữ đồng đều */
+  font-weight: 600; /* Chữ đậm */
+  border-radius: 8px; /* Bo góc nhẹ */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px; /* Khoảng cách giữa icon và chữ */
+  width: 220px; /* Chiều rộng cố định */
+  height: 50px; /* Chiều cao cố định */
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-custom:hover {
+  background-color: #dadbda; /* Màu xanh lá đậm hơn khi hover */
+  border-color: #f4f5f4; /* Viền đậm hơn khi hover */
+  transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+}
+
+/* Bố cục nút */
+.btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px; /* Khoảng cách giữa các nút */
+}

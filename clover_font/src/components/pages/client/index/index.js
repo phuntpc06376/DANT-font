@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Nav, Form, FormControl, Button, Card, ListGroup, Image } from 'react-bootstrap';
 import { FaUserFriends, FaSave, FaStore, FaThumbsUp, FaComment, FaShare, FaTrash, FaEdit } from 'react-icons/fa';
+import { FaCartShopping } from "react-icons/fa6";
+import { RiBillLine } from "react-icons/ri";
 import { Link, useNavigate } from 'react-router-dom';
 import CryptoJS from 'crypto-js';
 import Swal from "sweetalert2";
@@ -8,21 +10,45 @@ import './index.css';
 
 // Sidebar Navigation
 // Sidebar Component
+  
 const Sidebar = () => (
   <Nav
     defaultActiveKey="home"
-    className="flex-column mt-3 p-3shadow-sm sidebar"
-    style={{ width: '350px' }} // Set a fixed width for the sidebar
+    className="flex-column mt-3 p-3shadow-sm sidebar bg-white border-5"
+    style={{ width: "250px"}}
   >
-    <Nav.Link href="profile" className="text-dark mb-2 p-2">
+    {/* <Nav.Link href="profile" className="text-dark mb-2 p-2">
       <FaUserFriends className="me-2" /> Bạn bè
-    </Nav.Link>
-    <Nav.Link href="profile" className="text-dark mb-2 p-2">
-      <FaUserFriends className="me-2" />
-    </Nav.Link>
-    <Nav.Link href="ProductGallery" className="text-dark mb-2 p-2">
-      <FaStore className="me-2" /> Mua hàng
-    </Nav.Link>
+    </Nav.Link> */}
+    <h2 className="text-dark mb-4 p-2 text-center text-success">Colver</h2>
+
+    <div className="btn-wrapper ">
+      <button
+        className="btn-custom"
+        onClick={() => (window.location.href = "ProductGallery")}
+      >
+        <FaStore className="me-2" /> Mua hàng
+      </button>
+    </div>
+    <div className="btn-wrapper  mt-3">
+      <button
+        className="btn-custom"
+        onClick={() => (window.location.href = "orderSummary")}
+      >
+        <RiBillLine className="me-2" /> Hóa đơn
+      </button>
+    </div>
+    <div className="btn-wrapper mt-3">
+      <button
+        className="btn-custom"
+        onClick={() => (window.location.href = "cart")}
+      >
+        <FaCartShopping className="me-2" /> Giỏ hàng
+      </button>
+    </div>
+
+
+
   </Nav>
 );
 
@@ -40,6 +66,8 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
   const user = localStorage.getItem('user');
   const currentUserAccountId = user ? JSON.parse(user).accountId : null; // Kiểm tra và parse thông tin người dùng
 
+
+  
 
   const handleLikePost = () => {
     const token = localStorage.getItem('token');
@@ -113,7 +141,7 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       });
       return;
     }
-  
+
     Swal.fire({
       title: 'Bạn có chắc chắn muốn xóa bài đăng này?',
       text: 'Hành động này không thể hoàn tác!',
@@ -164,75 +192,75 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       }
     });
   };
-  
 
-const handleDeleteComment = async (commentID) => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    console.error("No token found. Redirecting to login...");
+
+  const handleDeleteComment = async (commentID) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("No token found. Redirecting to login...");
+      Swal.fire({
+        icon: 'error',
+        title: 'Xóa bình luận thất bại!',
+        text: 'Không tìm thấy token xác thực.',
+      });
+      return;
+    }
+
     Swal.fire({
-      icon: 'error',
-      title: 'Xóa bình luận thất bại!',
-      text: 'Không tìm thấy token xác thực.',
-    });
-    return;
-  }
+      title: 'Bạn có chắc chắn muốn xóa bình luận này?',
+      text: 'Hành động này không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const url = `http://localhost:8080/api/social/comment/delete?id=${commentID}`;
 
-  Swal.fire({
-    title: 'Bạn có chắc chắn muốn xóa bình luận này?',
-    text: 'Hành động này không thể hoàn tác!',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Xóa',
-    cancelButtonText: 'Hủy',
-  }).then(async (result) => {
-    if (result.isConfirmed) {
-      const url = `http://localhost:8080/api/social/comment/delete?id=${commentID}`;
+        try {
+          const response = await fetch(url, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
 
-      try {
-        const response = await fetch(url, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error deleting comment:", errorData);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Error deleting comment:", errorData);
+            Swal.fire({
+              icon: 'error',
+              title: 'Xóa bình luận thất bại!',
+              text: errorData.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
+            });
+            return;
+          }
+
+          // Thông báo xóa thành công
+          Swal.fire({
+            icon: 'success',
+            title: 'Xóa bình luận thành công!',
+            text: 'Bình luận của bạn đã được xóa.',
+          });
+
+          // Cập nhật danh sách bình luận hoặc trạng thái
+          fetchPosts(); // Nếu cần cập nhật lại danh sách bài đăng và bình luận
+        } catch (error) {
+          console.error("Error deleting comment:", error);
 
           Swal.fire({
             icon: 'error',
             title: 'Xóa bình luận thất bại!',
-            text: errorData.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
+            text: 'Bình luận này không thuộc của tài khoản này !',
           });
-          return;
         }
-
-        // Thông báo xóa thành công
-        Swal.fire({
-          icon: 'success',
-          title: 'Xóa bình luận thành công!',
-          text: 'Bình luận của bạn đã được xóa.',
-        });
-
-        // Cập nhật danh sách bình luận hoặc trạng thái
-        fetchPosts(); // Nếu cần cập nhật lại danh sách bài đăng và bình luận
-      } catch (error) {
-        console.error("Error deleting comment:", error);
-
-        Swal.fire({
-          icon: 'error',
-          title: 'Xóa bình luận thất bại!',
-          text: 'Bình luận này không thuộc của tài khoản này !',
-        });
       }
-    }
-  });
-};
+    });
+  };
 
 
   const [isEditing, setIsEditing] = useState(null);
@@ -254,15 +282,15 @@ const handleDeleteComment = async (commentID) => {
       });
       return;
     }
-  
+
     // Lấy bình luận gốc để reset nếu cần
     const originalComment = comments.find((comment) => comment.id === commentId)?.content;
-  
+
     // Tạo đối tượng FormData
     const formData = new FormData();
     formData.append('id', commentId);
     formData.append('content', editedComment); // Dữ liệu chỉnh sửa bình luận
-  
+
     fetch(`http://localhost:8080/api/social/comment/update`, {
       method: 'PUT',
       headers: {
@@ -289,7 +317,7 @@ const handleDeleteComment = async (commentID) => {
         setIsEditing(null);
         setEditedComment('');
         fetchPosts();
-  
+
         Swal.fire({
           icon: 'success',
           title: 'Thành công!',
@@ -298,7 +326,7 @@ const handleDeleteComment = async (commentID) => {
       })
       .catch((error) => {
         console.error('Error updating comment:', error);
-  
+
         // Reset lại nội dung bình luận về trạng thái ban đầu
         setComments((prevComments) =>
           prevComments.map((comment) =>
@@ -307,7 +335,7 @@ const handleDeleteComment = async (commentID) => {
               : comment
           )
         );
-  
+
         Swal.fire({
           icon: 'error',
           title: 'Cập nhật thất bại!',
@@ -315,8 +343,8 @@ const handleDeleteComment = async (commentID) => {
         });
       });
   };
-  
-  
+
+
 
   const navigate = useNavigate();
   const handleClick = (e) => {
@@ -325,12 +353,12 @@ const handleDeleteComment = async (commentID) => {
       navigate('/user/profile'); // Điều hướng đến trang cá nhân
     }
   };
-
+  
 
   //mã hóa userName
   const encodedUserName = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(userName));
   return (
-    <Card className="mb-3 mt-3 p-3 border shadow-sm">
+    <Card className="mb-3 mt-3 p-3 border shadow-sm card-post">
       <Card.Body>
         <Row>
           <Col xs={2}>
@@ -341,9 +369,6 @@ const handleDeleteComment = async (commentID) => {
             />
           </Col>
           <Col xs={10}>
-            {/* <Link  key={userName} to={`/profiles/${userName}`} className="text-decoration-none text-dark" onClick={handleClick}>
-              <h5>{userFullname}</h5>
-            </Link> */}
             <Link
               key={userName}
               to={`/profiles/${encodedUserName}`}
@@ -352,15 +377,10 @@ const handleDeleteComment = async (commentID) => {
             >
               <h5>{userFullname}</h5>
             </Link>
-
-
             <p>{timeStamp}</p>
-
-
-            <div variant="link" className="text-danger float-end" onClick={handleDeletePost}>
-              <FaTrash />
-            </div>
-
+            {/* <div variant="link" className="text-danger float-end" onClick={handleDeletePost}>
+          <FaTrash />
+        </div> */}
           </Col>
         </Row>
         <Row className="mt-2">
@@ -368,16 +388,16 @@ const handleDeleteComment = async (commentID) => {
             <p>{content}</p>
           </Col>
         </Row>
-        <hr></hr>
+        <hr />
         <Row className="text-center mt-3">
           <Col>
             <div
               variant="link"
               className="text-dark"
-              style={{ color: liked ? 'hotpink' : 'inherit' }}
               onClick={handleLikePost}
+              style={{ color: liked ? 'hotpink' : 'inherit' }} // Thêm style để thay đổi màu khi liked
             >
-              <FaThumbsUp /> {liked ? 'Thích' : 'Bỏ thích'} ({likes.length})
+              <FaThumbsUp /> {liked ? 'Bỏ thích' : 'Thích'} ({likes.length})
             </div>
           </Col>
           <Col>
@@ -386,19 +406,18 @@ const handleDeleteComment = async (commentID) => {
             </div>
           </Col>
           <Col>
-            <div variant="link" className="text-dark">
-              <FaShare /> Chia sẻ
-            </div>
+            {/* <div variant="link" className="text-dark">
+          <FaShare /> Chia sẻ
+        </div> */}
           </Col>
         </Row>
-
         {showCommentBox && (
           <div className="mt-3">
             <Form onSubmit={handleCommentSubmit}>
               <Form.Group>
                 <Form.Control
-                  as="textarea"  // Thay đổi thành textarea
-                  rows={3}       // Số hàng cho textarea
+                  as="textarea"
+                  rows={3}
                   placeholder="Viết bình luận..."
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -411,15 +430,14 @@ const handleDeleteComment = async (commentID) => {
             <ListGroup className="mt-3">
               {initialComments.length > 0 ? (
                 initialComments.map((commentItem, index) => {
-                  // console.log(commentItem);  // Debugging: Xem dữ liệu của mỗi bình luận
                   return (
                     <ListGroup.Item
                       key={index}
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'flex-start', // Đặt căn chỉnh tại đầu
-                        padding: '10px', // Thêm padding để tạo không gian
+                        alignItems: 'flex-start',
+                        padding: '10px',
                       }}
                     >
                       <div style={{ flex: 1 }}>
@@ -428,15 +446,15 @@ const handleDeleteComment = async (commentID) => {
                           <textarea
                             value={editedComment}
                             onChange={(e) => setEditedComment(e.target.value)}
-                            rows={3} // Số hàng của ô nhập
+                            rows={3}
                             style={{
                               width: '100%',
                               marginLeft: '10px',
-                              resize: 'none', // Ngăn người dùng thay đổi kích thước ô nhập
-                              padding: '5px', // Thêm padding cho nội dung bên trong
-                              borderRadius: '4px', // Thêm bo tròn cho viền
-                              border: '1px solid #ccc', // Đường viền
-                              marginBottom: '5px', // Thêm khoảng cách dưới ô nhập
+                              resize: 'none',
+                              padding: '5px',
+                              borderRadius: '4px',
+                              border: '1px solid #ccc',
+                              marginBottom: '5px',
                             }}
                           />
                         ) : (
@@ -446,18 +464,18 @@ const handleDeleteComment = async (commentID) => {
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         {isEditing === commentItem.id ? (
                           <div
-                            className='text-success'
+                            className="text-success"
                             onClick={() => handleUpdateComment(commentItem.id)}
                             style={{
                               cursor: 'pointer',
-                              marginLeft: '10px', // Đặt khoảng cách bên trái cho nút lưu
+                              marginLeft: '10px',
                             }}
                           >
                             <FaSave />
                           </div>
                         ) : (
                           <div
-                            className='text-warning'
+                            className="text-warning"
                             onClick={() => handleEditComment(commentItem.id, commentItem.content)}
                             style={{
                               cursor: 'pointer',
@@ -468,7 +486,7 @@ const handleDeleteComment = async (commentID) => {
                           </div>
                         )}
                         <div
-                          className='text-danger'
+                          className="text-danger"
                           onClick={() => handleDeleteComment(commentItem.id)}
                           style={{
                             cursor: 'pointer',
@@ -485,10 +503,10 @@ const handleDeleteComment = async (commentID) => {
               )}
             </ListGroup>
           </div>
-
         )}
       </Card.Body>
     </Card>
+
   );
 };
 
@@ -529,9 +547,9 @@ const MainContent = () => {
     setSelectedFiles(e.target.files);
   };
 
- 
 
-const handlePostSubmit = async (e) => {
+
+  const handlePostSubmit = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
@@ -592,7 +610,7 @@ const handlePostSubmit = async (e) => {
         text: 'Không thể kết nối đến máy chủ, vui lòng thử lại.',
       });
     }
-};
+  };
 
 
   const handlePostDeleted = (postId) => {
@@ -650,7 +668,23 @@ const handlePostSubmit = async (e) => {
 // Contacts Component
 const Contacts = () => (
   <Card className="mt-3 p-3 bg-white shadow-sm contacts">
-    <Card.Title>Bạn bè trực tuyến</Card.Title>
+    <Card.Title>Danh sách bạn bè</Card.Title>
+    <ListGroup variant="flush">
+      <ListGroup.Item className="d-flex align-items-center">
+        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
+        Danh Piy Truong
+      </ListGroup.Item>
+      <ListGroup.Item className="d-flex align-items-center">
+        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
+        Trí Tài
+      </ListGroup.Item>
+    </ListGroup>
+  </Card>
+);
+
+const ContactsMessge = () => (
+  <Card className="mt-3 p-3 bg-white shadow-sm contacts">
+    <Card.Title>Nhắn tin </Card.Title>
     <ListGroup variant="flush">
       <ListGroup.Item className="d-flex align-items-center">
         <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
@@ -666,19 +700,24 @@ const Contacts = () => (
 
 // HomePage Component
 const HomePage = () => (
-  <Container fluid>
+  <Container fluid style={{ backgroundColor: "#eee" }}>
     <Row>
-      <Col md={3}>
+      <Col md={2}>
         <Sidebar />
+      </Col>
+      <Col md={1}>
+
       </Col>
       <Col md={6} className="main-content">
         <MainContent />
       </Col>
       <Col md={3}>
         <Contacts />
+        <ContactsMessge/>
       </Col>
     </Row>
   </Container>
+
 );
 
 export default HomePage;

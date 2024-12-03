@@ -96,7 +96,7 @@ export default function Bills() {
                     <table className="table table-striped table-bordered">
                         <thead className="table-dark">
                             <tr>
-                                <th scope="col">ID</th>
+                                
                                 <th scope="col">Tên khách hàng</th>
                                 <th scope="col">Ngày mua</th>
                                 <th scope="col">Email</th>
@@ -112,7 +112,7 @@ export default function Bills() {
                                 filteredBills.map((bill) => (
                                     <React.Fragment key={bill.id}>
                                         <tr>
-                                            <td>{bill.id}</td>
+                                            
                                             <td>{bill.fullname}</td>
                                             <td>{bill.buyDay}</td>
                                             <td>{bill.email}</td>

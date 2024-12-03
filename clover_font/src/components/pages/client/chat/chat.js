@@ -1,113 +1,103 @@
 import React, { useState, useEffect } from "react";
-import { Client as TwilioChatClient } from "twilio-chat";
+import { Client as TwilioChatClient } from "@twilio/conversations";
 import axios from "axios";
 
-const ChatApp = ({ username }) => {
-  const [messages, setMessages] = useState([]);
-  const [message, setMessage] = useState("");
+const ChatApp = ({ userIdentity }) => {
   const [chatClient, setChatClient] = useState(null);
-  const [channel, setChannel] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [messageText, setMessageText] = useState("");
+  const [currentChannel, setCurrentChannel] = useState(null);
 
   useEffect(() => {
-    // Kiểm tra nếu token đã được lưu trong localStorage
-    let token = localStorage.getItem("twilio_token");
-
-    if (!token) {
-      // Nếu chưa có token trong localStorage, gọi backend để lấy token
-      axios
-        .get(`http://localhost:8080/api/chat/token?identity=${username}`)
-        .then((response) => {
+    const initializeChatClient = async () => {
+      try {
+        // Lấy token từ localStorage
+        let token = localStorage.getItem("twilioToken");
+  
+        if (!token) {
+          // Nếu token không tồn tại, gọi API để lấy token mới
+          const response = await axios.post(`http://localhost:8080/api/chat/token?identity=${userIdentity}`);
           token = response.data;
-
-          // Lưu token vào localStorage
-          localStorage.setItem("twilio_token", token);
-
-          // Thêm token vào header của các yêu cầu API
-          axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-          // Kết nối Twilio Chat Client
-          initializeChatClient(token);
-        })
-        .catch((error) => {
-          console.error("Error fetching token:", error);
-        });
-    } else {
-      // Nếu có token trong localStorage, sử dụng ngay
-      // Thêm token vào header của các yêu cầu API
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      initializeChatClient(token);
-    }
-  }, [username]);
-
-  const initializeChatClient = (token) => {
-    // Khởi tạo Twilio Chat Client
-    TwilioChatClient.create(token)
-      .then((client) => {
-        if (!client) {
-          throw new Error("Twilio Chat Client initialization failed");
+          localStorage.setItem("twilioToken", token);
         }
+  
+        // Khởi tạo Twilio Chat Client
+        const client = new TwilioChatClient(token);
+  
+        // Lắng nghe các sự kiện từ client nếu cần
+        client.on("stateChanged", (state) => console.log("Client state changed:", state));
+  
+        // Lưu trữ client vào state
         setChatClient(client);
+      } catch (error) {
+        console.error("Error initializing Twilio Chat Client:", error);
+      }
+    };
   
-        // Lấy channel "general" hoặc tạo channel mới
-        return client.getChannelByUniqueName("1");
-      })
-      .then((existingChannel) => {
-        if (existingChannel) {
-          // Nếu channel đã tồn tại, tham gia vào channel đó
-          setChannel(existingChannel);
-          return existingChannel.join();
-        } else {
-          // Nếu không có channel, tạo mới một channel
-          return chatClient.createChannel({
-            uniqueName: "1",
-            friendlyName: "1 Chat",
-          });
-        }
-      })
-      .then((joinedChannel) => {
-        // Sau khi tham gia hoặc tạo channel mới, thiết lập channel
-        setChannel(joinedChannel);
-        console.log("Joined channel successfully");
-      })
-      .catch((error) => {
-        console.error("Error joining or creating channel:", error);
-      });
-  };
-  
+    initializeChatClient();
+  }, [userIdentity]);
 
-  const sendMessage = () => {
-    if (channel && message.trim() !== "") {
-      // Gửi tin nhắn nếu có message và channel hợp lệ
-      channel.sendMessage(message);
-      setMessage(""); // Làm sạch trường nhập tin nhắn
-    }
-  };
+
 
   useEffect(() => {
-    if (channel) {
-      // Lắng nghe các tin nhắn mới được thêm vào channel
-      channel.on("messageAdded", (msg) => {
-        setMessages((prevMessages) => [...prevMessages, msg]);
+    if (chatClient) {
+      // Lấy danh sách các cuộc trò chuyện đã đăng ký
+      chatClient.getSubscribedConversations().then((conversationsPaginator) => {
+        const conversations = conversationsPaginator.items;
+        if (conversations.length > 0) {
+          joinChannel(conversations[0]); // Vào kênh đầu tiên
+        } else {
+          console.log("No subscribed conversations.");
+        }
       });
     }
-  }, [channel]);
+  }, [chatClient]);
+
+  const joinChannel = async (conversation) => {
+    try {
+      // Gia nhập kênh
+      const joinedConversation = await conversation.join();
+      setCurrentChannel(joinedConversation);
+
+      // Lấy tin nhắn cũ
+      const messagesPaginator = await joinedConversation.getMessages();
+      setMessages(messagesPaginator.items);
+
+      // Lắng nghe tin nhắn mới
+      joinedConversation.on("messageAdded", (message) => {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      });
+    } catch (error) {
+      console.error("Error joining conversation:", error);
+    }
+  };
+
+
+  const sendMessage = async () => {
+    if (currentChannel && messageText.trim()) {
+      await currentChannel.sendMessage(messageText);
+      setMessageText("");
+    }
+  };
 
   return (
-    <div>
-      <h1>Chat Room</h1>
-      <div>
-        {messages.map((msg, index) => (
-          <div key={index}>
-            <b>{msg.author}:</b> {msg.body}
+    <div className="chat-container">
+      <div className="messages">
+        {messages.map((msg) => (
+          <div key={msg.index} className="message">
+            <strong>{msg.author}:</strong> {msg.body}
           </div>
         ))}
       </div>
-      <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-      />
-      <button onClick={sendMessage}>Send</button>
+      <div className="message-input">
+        <input
+          type="text"
+          value={messageText}
+          onChange={(e) => setMessageText(e.target.value)}
+          placeholder="Type your message..."
+        />
+        <button onClick={sendMessage}>Send</button>
+      </div>
     </div>
   );
 };

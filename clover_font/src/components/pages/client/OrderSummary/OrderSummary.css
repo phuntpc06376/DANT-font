@@ -1,71 +1,184 @@
-.order-summary {
-  font-family: 'Arial', sans-serif; /* Set a consistent font for the whole summary */
-  color: #333;
+/* OrderSummary.css */
+
+/* Tổng quan container */
+.order-summary-container {
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 8px;
 }
 
-.shop-title {
-  font-size: 1.5rem;
+/* Tiêu đề */
+.order-summary-title {
+  font-size: 1.8rem;
   font-weight: bold;
+  color: #333;
   margin-bottom: 1.5rem;
 }
 
-.product-info {
-  font-size: 1rem;
-  color: #555;
+/* Bill Card */
+.bill-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform 0.2s ease;
 }
 
-.product-card {
-  background-color: #f9f9f9;
+.bill-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Header đơn hàng */
+.bill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.bill-header h5 {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.bill-header .bill-date {
+  font-size: 0.9rem;
+  color: #95a5a6;
+}
+
+/* Sản phẩm */
+/* Container cuộn ngang */
+.productOrder-row {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.productOrder-row::-webkit-scrollbar {
+  height: 8px;
+}
+
+.productOrder-row::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.productOrder-row::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+/* Sản phẩm */
+.productOrder-card {
+  min-width: 200px; /* Đảm bảo mỗi sản phẩm có độ rộng tối thiểu */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fafafa;
   border-radius: 8px;
   padding: 1rem;
-  margin-bottom: 1rem;
+  border: 1px solid #eaeaea;
+  text-align: center;
 }
 
-.product-image {
-  border-radius: 5px;
-}
-
-.voucher-section, .shipping-section {
-  background-color: #f5f5f5;
+.productOrder-card img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
   border-radius: 8px;
-}
-
-.voucher-section h5, .shipping-section h5 {
-  font-size: 1rem;
-  font-weight: 600;
   margin-bottom: 0.5rem;
 }
 
-.shipping-section p {
+.productOrder-card h6 {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.productOrder-card .text-muted {
+  color: #7f8c8d;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+
+.productOrder-card .font-weight-bold {
+  color: #e67e22;
   font-size: 0.9rem;
 }
 
-.payment-method h5 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
 
-.payment-method .form-check {
+/* Tổng chi phí */
+.total-info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
   font-size: 1rem;
 }
 
-.card-body h6 {
-  font-size: 1rem;
-  color: #777;
-  margin-bottom: 0.5rem;
+.total-info-row .text-muted {
+  color: #7f8c8d;
 }
 
-.card-body h5 {
+.total-info-row .font-weight-bold {
+  color: #2c3e50;
+}
+
+/* Tổng thanh toán */
+.payment-total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid #eaeaea;
+  font-size: 1.2rem;
+}
+
+.payment-total-row .font-weight-bold {
+  color: #27ae60;
+}
+
+/* Nút */
+.order-summary-btn {
+  background-color: #ff5722;
+  color: #ffffff;
+  border: none;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 10px 30px;
+  border-radius: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.order-summary-btn:hover {
+  background-color: #e64a19;
+  color: #ffffff;
+}
+
+/* Voucher và Shipping Info */
+.voucher-section,
+.shipping-section {
+  background-color: #fefefe;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+.voucher-section h5,
+.shipping-section h5 {
   font-size: 1.2rem;
   font-weight: bold;
+  color: #34495e;
 }
 
-.card-body .text-primary {
-  font-size: 1.3rem;
-  color: #ff5722 !important; /* Primary color for the total */
-}
-
-button {
-  font-size: 1.1rem;
+.voucher-section span,
+.shipping-section p {
+  color: #7f8c8d;
+  font-size: 0.95rem;
 }

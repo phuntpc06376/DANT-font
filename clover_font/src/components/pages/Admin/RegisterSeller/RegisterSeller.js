@@ -25,13 +25,21 @@ export default function RegisterSeller() {
 
     const handleConfirm = async (id) => {
         try {
-            const updated = await censorRegisterSeller(id);
-            Swal.fire('Xác nhận thành công', 'Đã xác nhận thành người bán!', 'success');
-            setAccountRegister(accountRegisters.filter((account) => account.id !== id));
+            const response = await censorRegisterSeller(id);
+            console.log(response);
+            
+            if (response) {
+                Swal.fire('Xác nhận thành công', 'Đã xác nhận thành người bán!', 'success');
+                setAccountRegister((prev) => prev.filter((account) => account.id !== id));
+            } else {
+                throw new Error(response.message || 'Không thể xác nhận');
+            }
         } catch (error) {
-            Swal.fire('Lỗi', 'Không thể xác nhận đăng ký người bán', 'error');
+            console.error('Lỗi khi xác nhận:', error);
+            Swal.fire('Lỗi', error.message, 'error');
         }
     };
+    
 
     const filteredAccountRegister = accountRegisters.filter((account) =>
         account.fullname.toLowerCase().includes(searchTerm.toLowerCase())
@@ -59,6 +67,7 @@ export default function RegisterSeller() {
                     <table className="table table-striped table-bordered">
                         <thead className="table-dark">
                             <tr>
+                            <th scope="col">id</th>
                                 <th scope="col">Họ tên</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Tên cửa hàng</th>
@@ -71,6 +80,7 @@ export default function RegisterSeller() {
                             {filteredAccountRegister.length > 0 ? (
                                 filteredAccountRegister.map((account) => (
                                     <tr key={account.id}>
+                                        <td>{account.id}</td>
                                         <td>{account.fullname}</td>
                                         <td>{account.email}</td>
                                         <td>{account?.shop?.name}</td>

@@ -30,7 +30,7 @@ axiosInstance.interceptors.request.use(
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }else{
-            window.location = "/error";
+           
         }
         return config;
     },
@@ -41,21 +41,21 @@ axiosInstance.interceptors.request.use(
 // LẤY LIST CART TỪ LOCAL STORE ĐỂ THÊM TẠO BILL
 export const getOrderFromCart = async (ids) => {
     const response = await axiosInstance.get(`${API_CART_ORDER_URL}?ids=${encodeURIComponent(ids)}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
 //PAYMENT
 export const payment = async (amount, billID) => {
      const response = await axiosInstance.get(`${API_PAYMENT_URL}?amount=${amount}&orderId=${billID}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 }
 //SET BILL AS PAID
 export const setBillAsPaid = async (id) => {
     const response = await axiosInstance.put(`${API_SET_ORDER_PAID_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
    return response.data;
 }
@@ -63,7 +63,6 @@ export const setBillAsPaid = async (id) => {
 export const addCartToBill = async (carts) => {
     const response = await axiosInstance.post(`${API_ADD_CART_TO_ORDER_URL}`, carts).catch(function (error) {
         console.log(error);
-        window.location = "/error";
     });
     console.log("Response from addCartToBill:", response.data); // In ra để kiểm tra
     return response.data; // Đảm bảo trả về dữ liệu từ response
@@ -72,7 +71,7 @@ export const addCartToBill = async (carts) => {
 //SHOW BILL
 export const showBill = async (username) => {
     const response = await axiosInstance.get(`${API_BILL_URL}/${username}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
@@ -91,7 +90,7 @@ export const updateBillOrderId = async (formdata) => {
 //SHOW DETAIL BILL
 export const showDetailBill = async ( id) => {
     const response = await axiosInstance.get(`${API_SHOW_DETAILBILL_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
@@ -99,33 +98,33 @@ export const showDetailBill = async ( id) => {
 //CANCEL BILL
 export const cancelBill = async (id) => {
     const response = await axiosInstance.put(`${API_CANCEL_BILL_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
 export const getOderById = async (id) => {
     const response = await axiosInstance.get(`${API_ORDER_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
 
 export const createOder = async (student) => {
     const response = await axiosInstance.post(API_ORDER_URL, student).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
 
 export const updateOder = async (id, student) => {
     const response = await axiosInstance.put(`${API_ORDER_URL}/${id}`, student).catch(function (error) {
-        window.location = "/error";
+       
       });;
     return response.data;
 };
 
 export const deleteOder = async (id) => {
     await axiosInstance.delete(`${API_ORDER_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
+       
       });;
 };

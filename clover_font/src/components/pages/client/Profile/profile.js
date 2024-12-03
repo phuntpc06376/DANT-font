@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
+import { Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; // Lưu ý cú pháp import
 // Thư viện giải mã token
 import "./ProfilePage.css";
 import Swal from "sweetalert2";
 import { useNavigate } from 'react-router-dom';
-
+import { FaTrash } from 'react-icons/fa';
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -250,6 +251,73 @@ const ProfilePage = () => {
   const handleCardClick = (id) => {
     navigate(`/user/product/${id}`);
   };
+  const handleDeletePost = (postId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Xóa bài thất bại!',
+        text: 'Không tìm thấy token xác thực.',
+      });
+      return;
+    }
+
+    if (!postId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Không xác định được bài đăng.',
+      });
+      return;
+    }
+
+    Swal.fire({
+      title: 'Bạn có chắc chắn muốn xóa bài đăng này?',
+      text: 'Hành động này không thể hoàn tác!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Xóa',
+      cancelButtonText: 'Hủy',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`http://localhost:8080/api/post/deletePost?id=${postId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then((response) => {
+            if (response.ok) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Xóa bài thành công!',
+                text: 'Bài đăng đã được xóa.',
+              });
+              setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId)); // Xóa bài đăng khỏi giao diện
+            } else {
+              return response.json().then((error) => {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Xóa bài thất bại!',
+                  text: error.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
+                });
+              });
+            }
+          })
+          .catch((error) => {
+            Swal.fire({
+              icon: 'error',
+              title: 'Xóa bài thất bại!',
+              text: 'Bài đăng này không thuộc tài khoản này hoặc không thể xóa.',
+            });
+          });
+      }
+    });
+  };
+
+
 
   //phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -388,9 +456,9 @@ const ProfilePage = () => {
             <hr></hr>
             <p className="profile-bio"><strong>Email: </strong>{profileData.email || "Chưa có thông tin email."}</p>
             <p className="profile-bio"><strong>Số điện thoại: </strong>{profileData.phone || "Chưa có thông tin số điện thoại."}</p>
-            <p className="profile-bio"><strong>Giới tính: </strong>
+            {/* <p className="profile-bio"><strong>Giới tính: </strong>
               {profileData.gender === true ? "Nữ" : profileData.gender === false ? "Nam" : "Chưa cập nhật"}
-            </p>
+            </p> */}
 
 
           </>
@@ -399,6 +467,7 @@ const ProfilePage = () => {
       </div>
       {/* Profile Actions */}
       <div className="profile-actions">
+
         {isEditing ? (
           <>
             <button className="btn btn-primary px-4 save-btn" onClick={handleUpdate}>
@@ -407,11 +476,17 @@ const ProfilePage = () => {
             <button className="btn btn-danger px-4 cancel-btn" onClick={() => setIsEditing(false)}>
               Hủy
             </button>
+            <ul className="">
+                <Link className="nav-link" to="/user/addAddressForm">
+                    <span className="">Cập nhật địa chỉ</span>
+                </Link>
+            </ul>
           </>
         ) : (
           <button className="btn edit-btn" onClick={() => setIsEditing(true)}>
             Chỉnh sửa trang cá nhân
           </button>
+
         )}
       </div>
       <Tabs
@@ -419,19 +494,19 @@ const ProfilePage = () => {
         id="uncontrolled-tab-example"
         className="mb-3 text-center"
       >
-        <Tab eventKey="home" title="Bài đăng" className="text-center">
+        <Tab eventKey="profile" title="Bài đăng" className="mt-3">
           {loading ? (
-            <p>Đang tải bài đăng...</p>
+            <p className="text-center">Đang tải bài đăng...</p>
           ) : posts.length === 0 ? (
-            <p>Không có bài đăng nào để hiển thị.</p>
+            <p className="text-center">Không có bài đăng nào để hiển thị.</p>
           ) : (
             <div className="post-list">
               {posts.map((post) => (
-                <div className="post-card" key={post.id}>
+                <div className="card-post mb-3" key={post.id}>
                   {/* Header */}
-                  <div className="post-header">
+                  <div className="d-flex align-items-center">
                     <img
-                      className="post-avatar"
+                      className="rounded-circle me-3"
                       src={
                         post.account?.avatar
                           ? `http://localhost:8080/uploads/avatars/${post.account.avatar}`
@@ -439,14 +514,16 @@ const ProfilePage = () => {
                       }
                       alt="Avatar"
                     />
-                    <div className="post-info">
-                      <h4>{post.account?.fullname || "Người dùng"}</h4>
-                      <p>{new Date(post.postDay).toLocaleDateString()}</p>
+                    <div>
+                      <h5 className="mb-0">{post.account?.fullname || "Người dùng"}</h5>
+                      <small className="text-muted">
+                        {new Date(post.postDay).toLocaleTimeString()}{" "}
+                        {new Date(post.postDay).toLocaleDateString()}
+                      </small>
                     </div>
                   </div>
-
                   {/* Content */}
-                  <div className="post-content">
+                  <div className="mt-3">
                     <p>{post.content}</p>
                     {post.postImages?.length > 0 && (
                       <div className="post-images">
@@ -458,20 +535,36 @@ const ProfilePage = () => {
                             className="post-image"
                           />
                         ))}
+
                       </div>
                     )}
                   </div>
-
                   {/* Footer */}
-                  <div className="post-footer">
-                    <button className="like-button">Số lượt thích:{post.numberLikes}</button>
+                  <div className="card-footer mt-3 d-flex justify-content-between">
+                    <div className="text-dark">
+                      <i
+                        className={`fa-thumbs-up ${post.likedByUser ? "liked" : "not-liked"
+                          }`}
+                      // onClick={() => handleLikePost(post.id)}
+                      ></i>{" "}
+                      Thích ({post.numberLikes})
+                    </div>
+                    <div className="text-dark">
+                      <i className="fa-comment"></i> Bình luận
+                    </div>
+                    <div
+                      className="mb-4 delete-post-button text-danger"
+                      onClick={() => handleDeletePost(post.id)}
+                    >
+                      <FaTrash />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           )}
         </Tab>
-        <Tab eventKey="profile" title="Cửa hàng" className="text-center">
+        <Tab eventKey="store" title="Cửa hàng" className="text-center">
           <h3>Cửa hàng</h3>
           {loading ? (
             <p>Đang tải...</p>
@@ -496,8 +589,6 @@ const ProfilePage = () => {
                   </div>
                 ))}
               </div>
-
-              {/* Pagination Controls */}
               {/* Pagination Controls */}
               <div className="pagination-controls">
                 <button
@@ -526,8 +617,6 @@ const ProfilePage = () => {
             </div>
           )}
         </Tab>
-
-
       </Tabs>
     </div>
   );

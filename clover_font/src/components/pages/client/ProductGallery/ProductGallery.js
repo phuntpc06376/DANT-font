@@ -27,7 +27,7 @@ const ProductCard = ({ id, title, price, location, imageUrl }) => {
         </div>
         <Card.Body className="text-dark border-5 product-content">
           <Card.Text className="fw-bold product-title">{title}</Card.Text>
-          <Card.Title className="product-price text-danger">{price} đ</Card.Title>
+          <Card.Title className="product-price text-danger">{price} Đ</Card.Title>
         </Card.Body>
       </Card>
     </Col>

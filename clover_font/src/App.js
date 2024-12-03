@@ -1,6 +1,7 @@
 import './App.css';
 import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState } from 'react';
 
 // Layout và Navbar
 import FacebookNavbar from './components/navbar/client/navbar';
@@ -17,6 +18,10 @@ import OrderSummary from './components/pages/client/OrderSummary/OrderSummary';
 import Order from './components/pages/client/OderCilent/oder_client';
 import UserProfile from './components/pages/client/UserProfile/UserProfile';
 import ResultPayment from './components/pages/client/OderCilent/ResultPayment';
+import ShopRegister from './components/pages/client/ShopRegister/ShopRegister';
+import AddAddressForm from './components/pages/client/AddAddress/AddAddressForm';
+
+
 
 // Trang account
 import Login from './components/pages/client/Login/Login';
@@ -27,17 +32,19 @@ import ResetPassword from './components/pages/client/ForgotPassword/ResetPasswor
 
 // Các trang của admin
 import AccountManagement from './components/pages/Admin/AccountManagement/AccountManagement';
+import SupplierList from './components/pages/Admin/Supplier/Supplier';
 import PostList from './components/pages/Admin/Post/Post';
 import StaticalAd from './components/pages/Admin/StaticalAd/StaticalAd';
 import PropertyManager from './components/pages/Admin/Property/Property';
 import PropertyValueManager from './components/pages/Admin/PropertiesValues/PropertiesValue';
-import TypeProduct from './components/pages/Admin/TypeProduct/TypeProduct';
-import RegisterSeller from './components/pages/Admin/RegisterSeller/RegisterSeller';
-
+import ShopRegistration from './components/pages/Admin/RegisterSeller/RegisterSeller';
+import StaticalSeller from './components/pages/seller/StaticalSeller/StaticalSeller';
 //các trang của seller
 import Product from './components/pages/seller/Product/Product'
 import Promotion from './components/pages/seller/Promotions/Promotions';
+import Supplier from './components/pages/seller/Supplier/Supplier';
 import Bill from './components/pages/seller/Bill/Bill';
+import VoucherManagement from './components/pages/seller/Vouchers/vouchers';
 
 
 
@@ -56,10 +63,12 @@ function UserLayout() {
         <Routes>
           <Route path="index" element={<Index />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="addAddressForm" element={<AddAddressForm />} />
           <Route path="productGallery" element={<ProductGallery />} />
           <Route path="product/:id" element={<ProductDetail />} />
           <Route path="cart" element={<Cart />} />
           <Route path="order" element={<Order />} />
+          <Route path="shopRegister" element={<ShopRegister />} />
           <Route path="orderSummary" element={<OrderSummary />} />
           <Route path="chat" element={<ChatApp />} />
           <Route path="resultpayment" element={<ResultPayment />} />
@@ -77,20 +86,23 @@ function UserLayout() {
 
 // Layout component cho admin
 function AdminLayout() {
+  const [isCollapsed, setIsCollapsed] = useState(false); // State để điều khiển navbar thu gọn
+
   return (
-    <div >
-      <NavAdmin />
-      <div className="content">
-        <div style={{ padding: '20px', marginLeft: '250px', width: 'calc(100% - 250px)' }}>
+    <div className="admin-layout">
+      <NavAdmin isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} /> {/* Truyền trạng thái navbar vào */}
+      <div className={`content-container ${isCollapsed ? 'collapsed' : ''}`}>
+        <div style={{ padding: '20px', marginLeft: isCollapsed ? '50px' : '80px', width: isCollapsed ? 'calc(100% - 50px)' : 'calc(100% - 80px)' }}>
           <Routes>
             <Route path="account-management" element={<AccountManagement />} />
+            <Route path="supplier-management" element={<SupplierList />} />
             <Route path="post-management" element={<PostList />} />
             <Route path="stactial-management" element={<StaticalAd />} />
             <Route path="property-management" element={<PropertyManager />} />
             <Route path="properties-values-management" element={<PropertyValueManager />} />
-            <Route path="type-product-management" element={<TypeProduct />} />
-            <Route path="register-seller-management" element={<RegisterSeller />} />
-            <Route path="*" element={<Navigate to="/admin/account-management" />} />
+            <Route path="shopRegistration" element={<ShopRegistration />} />
+            
+            <Route path="*" element={<Navigate to="/admin/stactial-management" />} />
           </Routes>
         </div>
       </div>
@@ -110,7 +122,10 @@ function SellerLayout() {
             <Route path="products" element={<Product />} />
             <Route path="promotions" element={<Promotion />} />
             <Route path="*" element={<Navigate to="/seller/products" />} />
+            <Route path="supplier" element={<Supplier />} />
             <Route path="bill" element={<Bill />} />
+            <Route path="voucherManagement" element={<VoucherManagement />} />
+            <Route path="staticalseller" element={<StaticalSeller />} />
             {/* <Route path="/oders" element={<Oder />} />
             <Route path="/products" element={<Product />} />
            

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Địa chỉ API
-const API_URL = 'http://localhost:8080/api/staticalAd';
+const API_URL = 'http://localhost:8080/api/staticalSeller';
 
 // Tạo instance Axios với cấu hình cơ bản
 const axiosInstance = axios.create({
@@ -23,13 +23,13 @@ axiosInstance.interceptors.request.use(
     }
 );
 
-// Hàm gọi API để lấy danh sách Statical Ads
-export const getAllStaticalAds = async (startDate, endDate, nameShop, ) => {
+// Hàm gọi API để lấy danh sách Statical Sellers
+export const getAllStaticalSellers = async (startDate, endDate, shopId) => {
     try {
         const response = await axiosInstance.post('', {
             startDate,
             endDate,
-            nameShop
+            shopId,
         });
         return response.data; // Trả về dữ liệu nhận được
     } catch (error) {

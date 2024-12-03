@@ -48,6 +48,8 @@ export const getAllAccountsRegisterSeller = async () => {
     return response.data;
 };
 
+
+
 export const censorRegisterSeller = async (id) => {
     const response = await axiosInstance.put(`/listRegisterSell/${id}`)
     return response.data;

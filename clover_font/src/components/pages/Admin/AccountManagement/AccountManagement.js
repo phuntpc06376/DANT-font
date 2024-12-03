@@ -3,6 +3,7 @@ import { getAllAccounts, createAccount, deleteAccount, updateAccount } from '../
 import { getAllRoles } from '../api/roleApi';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Swal from 'sweetalert2';
+import './AccountManagement.css';
 
 const AccountManagement = () => {
     const [activeTab, setActiveTab] = useState('form');
@@ -214,9 +215,9 @@ const AccountManagement = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     return (
-        <div className="container mt-1">
-            <h2>Quản lý người dùng</h2>
-            <ul className="nav nav-tabs mt-4">
+        <div className="account-management-container">
+            <h2 className="text-center mb-4">Quản lý người dùng</h2>
+            <ul className="nav nav-tabs account-management-tabs">
                 <li className="nav-item">
                     <button
                         className={`nav-link ${activeTab === 'form' ? 'active' : ''}`}
@@ -236,7 +237,7 @@ const AccountManagement = () => {
             </ul>
 
             {activeTab === 'form' && (
-                <div className="mb-4 mt-3 p-4 border rounded shadow-sm" style={{ maxWidth: '800px', margin: '0 auto' }}>
+                <div className="account-form-container" style={{ maxWidth: '800px', margin: '0 auto' }}>
                     <h2 className="mb-3">{isEditing ? "Cập nhật Tài khoản" : "Tạo Tài khoản Mới"}</h2>
 
                     <div className="mb-3">
@@ -337,11 +338,12 @@ const AccountManagement = () => {
                     </div>
 
                     <div className="mb-3">
-                        <label className="form-check-label me-2">Giới tính:</label>
+                        <label className="form-check-label">Giới tính:</label>
+                        
                         <label>
                             <input
                                 type="radio"
-                                className="form-check-input me-1"
+                                className="form-check-input"
                                 value="true"
                                 checked={newAccount.gender === 'true'}
                                 onChange={(e) => setNewAccount({ ...newAccount, gender: e.target.value })}
@@ -352,7 +354,7 @@ const AccountManagement = () => {
                         <label>
                             <input
                                 type="radio"
-                                className="form-check-input me-1"
+                                className="form-check-input"
                                 value="false"
                                 checked={newAccount.gender === 'false'}
                                 onChange={(e) => setNewAccount({ ...newAccount, gender: e.target.value })}
@@ -371,7 +373,7 @@ const AccountManagement = () => {
             )}
 
             {activeTab === 'list' && (
-                <div className="table-responsive mt-3">
+                <div className="account-list-container">
                     <input
                         type="text"
                         className="form-control mb-3"
@@ -381,7 +383,7 @@ const AccountManagement = () => {
                     />
 
                     <table className="table table-striped table-hover mt-3">
-                        <thead className="table-dark">
+                        <thead className="table-primary">
                             <tr>
                                 <th>Tên đăng nhập</th>
                                 <th>Họ và tên</th>
@@ -409,7 +411,7 @@ const AccountManagement = () => {
                     </table>
 
                     {/* Pagination */}
-                    <div className="d-flex justify-content-between mt-3">
+                    <div className="account-pagination">
                         <button
                             className="btn btn-secondary"
                             onClick={() => paginate(currentPage - 1)}
