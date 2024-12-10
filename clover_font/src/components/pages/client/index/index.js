@@ -8,14 +8,11 @@ import CryptoJS from 'crypto-js';
 import Swal from "sweetalert2";
 import './index.css';
 
-// Sidebar Navigation
-// Sidebar Component
-  
 const Sidebar = () => (
   <Nav
     defaultActiveKey="home"
     className="flex-column mt-3 p-3shadow-sm sidebar bg-white border-5"
-    style={{ width: "250px"}}
+    style={{ width: "250px" }}
   >
     {/* <Nav.Link href="profile" className="text-dark mb-2 p-2">
       <FaUserFriends className="me-2" /> Bạn bè
@@ -46,15 +43,173 @@ const Sidebar = () => (
         <FaCartShopping className="me-2" /> Giỏ hàng
       </button>
     </div>
-
-
-
   </Nav>
 );
 
 
+
+const MainContent = () => {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newPostContent, setNewPostContent] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+
+  const fetchPosts = async () => {
+    const token = localStorage.getItem("token");
+    // if (!token) return console.error("No token found. Redirecting to login...");
+    try {
+      const response = await fetch("http://localhost:8080/api/post", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
+      setPosts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+    }
+    
+  };
+
+
+
+  const handleFileSelect = (e) => {
+    setSelectedFiles(e.target.files);
+  };
+
+
+
+  const handlePostSubmit = async (e) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem('user');
+    const currentUserAccountId = user ? JSON.parse(user).accountId : null; // Lấy accountId từ localStorage
+    if (!token) {
+      console.error("No token found. Cannot create post.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('content', newPostContent);
+    formData.append('postDay', new Date().toISOString());
+    formData.append('accountId', currentUserAccountId); // Sử dụng ID người dùng thực tế
+
+    for (let file of selectedFiles) {
+      formData.append('files', file);
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/api/post/create", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        setNewPostContent("");
+        setSelectedFiles([]);
+        fetchPosts();
+
+        // Thông báo thành công
+        Swal.fire({
+          icon: 'success',
+          title: 'Bài đăng thành công!',
+          text: 'Bài viết của bạn đã được đăng.',
+        });
+      } else {
+        const errorData = await response.json();
+        console.error("Error creating post:", errorData);
+
+        // Thông báo lỗi
+        Swal.fire({
+          icon: 'error',
+          title: 'Đăng bài thất bại!',
+          text: errorData.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
+        });
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+
+      // Thông báo lỗi khi không kết nối được server
+      Swal.fire({
+        icon: 'error',
+        title: 'Đăng bài thất bại!',
+        text: 'Không thể kết nối đến máy chủ, vui lòng thử lại.',
+      });
+    }
+  };
+
+
+  const handlePostDeleted = (postId) => {
+    setPosts(posts.filter(post => post.id !== postId)); // Remove the deleted post from the list
+  };
+
+  return (
+    <div>
+      <Card className="mb-3 mt-3 p-3 shadow-sm">
+        <Form onSubmit={handlePostSubmit} encType="multipart/form-data">
+          <Form.Group controlId="newPostContent">
+            <FormControl
+              type="text"
+              placeholder="Bạn muốn đăng gì?"
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+              className="border-0"
+              required
+            />
+          </Form.Group>
+          <Form.Group controlId="fileInput" className="mt-2">
+            <FormControl type="file" multiple onChange={handleFileSelect} />
+          </Form.Group>
+          <Button type="submit" className="mt-2 text-dark bg-white hover-shadow border-0">
+            Đăng bài
+          </Button>
+        </Form>
+      </Card>
+      {loading ? (
+        <p>Loading...</p>
+      ) : posts.length > 0 ? (
+        posts.map((post) => (
+          <Post
+            key={post.id}
+            postId={post.id}
+            userImage={post?.account?.avatar ? `http://localhost:8080/images/${post.account.avatar}` : "default-avatar.png"}
+            userName={post?.account?.username || "Unknown User"}
+            userFullname={post?.account?.fullname}
+            timeStamp={new Date(post.postDay).toLocaleString()}
+            content={post.content}
+            likes={post.likes || []}
+            initialComments={post.comments || []}
+            accountId={post.account.id} // Make sure this is correct
+            onPostDeleted={handlePostDeleted} // Truyền hàm xóa bài đăng
+            fetchPosts={fetchPosts}
+          />
+        ))
+      ) : (
+        <p>Không có bài viết nào.</p>
+      )}
+
+    </div>
+  );
+
+};
+
 // Post Component
-const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes, initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
+const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes,
+   initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
   // const [likesCount, setLikesCount] = useState(likes.length);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(likes.length);
@@ -66,8 +221,6 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
   const user = localStorage.getItem('user');
   const currentUserAccountId = user ? JSON.parse(user).accountId : null; // Kiểm tra và parse thông tin người dùng
 
-
-  
 
   const handleLikePost = () => {
     const token = localStorage.getItem('token');
@@ -122,77 +275,12 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
           return response.text().then(text => text ? JSON.parse(text) : {});
         })
         .then((data) => {
-          // setComments([...comments, data]);
           fetchPosts();
           setComment('');
         })
         .catch((error) => console.error('Error submitting comment:', error));
     }
   };
-
-  const handleDeletePost = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found. Cannot delete post.');
-      Swal.fire({
-        icon: 'error',
-        title: 'Xóa bài thất bại!',
-        text: 'Không tìm thấy token xác thực.',
-      });
-      return;
-    }
-
-    Swal.fire({
-      title: 'Bạn có chắc chắn muốn xóa bài đăng này?',
-      text: 'Hành động này không thể hoàn tác!',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Xóa',
-      cancelButtonText: 'Hủy',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        fetch(`http://localhost:8080/api/post/deletePost?id=${postId}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
-          .then((response) => {
-            if (!response.ok) {
-              return response.json().then((error) => {
-                console.error('Error deleting post:', error);
-                Swal.fire({
-                  icon: 'error',
-                  title: 'Xóa bài thất bại!',
-                  text: error.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
-                });
-                throw new Error('Failed to delete post');
-              });
-            } else {
-              // Thông báo xóa thành công
-              Swal.fire({
-                icon: 'success',
-                title: 'Xóa bài thành công!',
-                text: 'Bài đăng đã được xóa.',
-              });
-              onPostDeleted(postId); // Gọi hàm để cập nhật danh sách bài đăng
-            }
-          })
-          .catch((error) => {
-            console.error('Error deleting post:', error);
-            Swal.fire({
-              icon: 'error',
-              title: 'Xóa bài thất bại!',
-              text: 'Bài đăng này không thuộc của tài khoản này !.',
-            });
-          });
-      }
-    });
-  };
-
 
   const handleDeleteComment = async (commentID) => {
     const token = localStorage.getItem("token");
@@ -353,7 +441,7 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       navigate('/user/profile'); // Điều hướng đến trang cá nhân
     }
   };
-  
+
 
   //mã hóa userName
   const encodedUserName = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(userName));
@@ -397,7 +485,7 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
               onClick={handleLikePost}
               style={{ color: liked ? 'hotpink' : 'inherit' }} // Thêm style để thay đổi màu khi liked
             >
-              <FaThumbsUp /> {liked ? 'Bỏ thích' : 'Thích'} ({likes.length})
+              <FaThumbsUp /> {liked ? 'Thích' : 'Thích'} ({likes.length})
             </div>
           </Col>
           <Col>
@@ -510,181 +598,10 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
   );
 };
 
-// Main Content Component
-const MainContent = () => {
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [newPostContent, setNewPostContent] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState([]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return console.error("No token found. Redirecting to login...");
-
-    try {
-      const response = await fetch("http://localhost:8080/api/post", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      const data = await response.json();
-      setPosts(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    setSelectedFiles(e.target.files);
-  };
-
-
-
-  const handlePostSubmit = async (e) => {
-    e.preventDefault();
-
-    const token = localStorage.getItem("token");
-    const user = localStorage.getItem('user');
-    const currentUserAccountId = user ? JSON.parse(user).accountId : null; // Lấy accountId từ localStorage
-    if (!token) {
-      console.error("No token found. Cannot create post.");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('content', newPostContent);
-    formData.append('postDay', new Date().toISOString());
-    formData.append('accountId', currentUserAccountId); // Sử dụng ID người dùng thực tế
-
-    for (let file of selectedFiles) {
-      formData.append('files', file);
-    }
-
-    try {
-      const response = await fetch("http://localhost:8080/api/post/create", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (response.ok) {
-        setNewPostContent("");
-        setSelectedFiles([]);
-        fetchPosts();
-
-        // Thông báo thành công
-        Swal.fire({
-          icon: 'success',
-          title: 'Bài đăng thành công!',
-          text: 'Bài viết của bạn đã được đăng.',
-        });
-      } else {
-        const errorData = await response.json();
-        console.error("Error creating post:", errorData);
-
-        // Thông báo lỗi
-        Swal.fire({
-          icon: 'error',
-          title: 'Đăng bài thất bại!',
-          text: errorData.message || 'Đã có lỗi xảy ra, vui lòng thử lại.',
-        });
-      }
-    } catch (error) {
-      console.error("Error creating post:", error);
-
-      // Thông báo lỗi khi không kết nối được server
-      Swal.fire({
-        icon: 'error',
-        title: 'Đăng bài thất bại!',
-        text: 'Không thể kết nối đến máy chủ, vui lòng thử lại.',
-      });
-    }
-  };
-
-
-  const handlePostDeleted = (postId) => {
-    setPosts(posts.filter(post => post.id !== postId)); // Remove the deleted post from the list
-  };
-
-  return (
-    <div>
-      <Card className="mb-3 mt-3 p-3 shadow-sm">
-        <Form onSubmit={handlePostSubmit} encType="multipart/form-data">
-          <Form.Group controlId="newPostContent">
-            <FormControl
-              type="text"
-              placeholder="Bạn muốn đăng gì?"
-              value={newPostContent}
-              onChange={(e) => setNewPostContent(e.target.value)}
-              className="border-0"
-              required
-            />
-          </Form.Group>
-          <Form.Group controlId="fileInput" className="mt-2">
-            <FormControl type="file" multiple onChange={handleFileSelect} />
-          </Form.Group>
-          <Button type="submit" className="mt-2 text-dark bg-white hover-shadow border-0">
-            Đăng bài
-          </Button>
-        </Form>
-      </Card>
-
-      {posts.length > 0 ? (
-        posts.map((post) => (
-          <Post
-            key={post.id}
-            postId={post.id}
-            userImage={post?.account?.avatar ? `http://localhost:8080/images/${post.account.avatar}` : "default-avatar.png"}
-            userName={post?.account?.username || "Unknown User"}
-            userFullname={post?.account?.fullname}
-            timeStamp={new Date(post.postDay).toLocaleString()}
-            content={post.content}
-            likes={post.likes || []}
-            initialComments={post.comments || []}
-            accountId={post.account.id} // Make sure this is correct
-            onPostDeleted={handlePostDeleted} // Truyền hàm xóa bài đăng
-            fetchPosts={fetchPosts}
-          />
-        ))
-      ) : (
-        <p>Không có bài viết nào.</p>
-      )}
-    </div>
-  );
-
-};
-
 // Contacts Component
 const Contacts = () => (
   <Card className="mt-3 p-3 bg-white shadow-sm contacts">
     <Card.Title>Danh sách bạn bè</Card.Title>
-    <ListGroup variant="flush">
-      <ListGroup.Item className="d-flex align-items-center">
-        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
-        Danh Piy Truong
-      </ListGroup.Item>
-      <ListGroup.Item className="d-flex align-items-center">
-        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
-        Trí Tài
-      </ListGroup.Item>
-    </ListGroup>
-  </Card>
-);
-
-const ContactsMessge = () => (
-  <Card className="mt-3 p-3 bg-white shadow-sm contacts">
-    <Card.Title>Nhắn tin </Card.Title>
     <ListGroup variant="flush">
       <ListGroup.Item className="d-flex align-items-center">
         <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
@@ -713,7 +630,6 @@ const HomePage = () => (
       </Col>
       <Col md={3}>
         <Contacts />
-        <ContactsMessge/>
       </Col>
     </Row>
   </Container>

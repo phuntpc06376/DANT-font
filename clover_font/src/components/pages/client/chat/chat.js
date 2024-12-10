@@ -1,84 +1,134 @@
 import React, { useState, useEffect } from "react";
-import { Client as TwilioChatClient } from "@twilio/conversations";
+import { Client as TwilioChatClient } from "twilio-chat";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-const ChatApp = ({ userIdentity }) => {
+const ChatApp = () => {
   const [chatClient, setChatClient] = useState(null);
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState("");
   const [currentChannel, setCurrentChannel] = useState(null);
 
-  useEffect(() => {
-    const initializeChatClient = async () => {
-      try {
-        // Lấy token từ localStorage
-        let token = localStorage.getItem("twilioToken");
-  
-        if (!token) {
-          // Nếu token không tồn tại, gọi API để lấy token mới
-          const response = await axios.post(`http://localhost:8080/api/chat/token?identity=${userIdentity}`);
-          token = response.data;
-          localStorage.setItem("twilioToken", token);
+  // Function to fetch Twilio token
+  const getToken = async () => {
+    try {
+      // getProfile
+      const token = localStorage.getItem("token");
+      const decodedToken = token ? jwtDecode(token) : null; // Giải mã token
+      const username = decodedToken?.sub;
+
+      const responseProfile = await axios.get(
+        "http://localhost:8080/api/account/getByUsername",
+        {
+          params: { username },
+          headers: {
+            Authorization: `Bearer ${token || ""}`,
+          },
         }
-  
-        // Khởi tạo Twilio Chat Client
-        const client = new TwilioChatClient(token);
-  
-        // Lắng nghe các sự kiện từ client nếu cần
-        client.on("stateChanged", (state) => console.log("Client state changed:", state));
-  
-        // Lưu trữ client vào state
-        setChatClient(client);
-      } catch (error) {
-        console.error("Error initializing Twilio Chat Client:", error);
+      );
+
+
+      const response = await axios.post("http://localhost:8080/twilio/register", {
+        userId: "1234m5",//responseProfile.data.id,
+        name: "test chat"//responseProfile.data.fullname,
+      });
+      console.log(response.data);
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error fetching Twilio token:", error);
+      throw error;
+    }
+  };
+
+  // Initialize Chat Client
+  useEffect(() => {
+    // getToken();
+    initializeChatClient();
+  }, []);
+
+  const initializeChatClient = async () => {
+    try {
+      const token = await getToken();
+
+      const client = new TwilioChatClient(token);
+
+      client.on('connectionError', (err)=>{
+        console.log(err);
+      })
+
+      client.on('stateChanged', async (state) => {
+        console.log(state)
+        if (state === 'initialized') {
+          console.log(client)
+          client.on("tokenAboutToExpire", async () => {
+            try {
+              const newToken = await getToken();
+              client.updateToken(newToken);
+              localStorage.setItem("twilioToken", newToken);
+            } catch (error) {
+              console.error("Error refreshing token:", error);
+            }
+          });
+          client.on("tokenExpired", async () => {
+            try {
+              const newToken = await getToken();
+              client.updateToken(newToken);
+              localStorage.setItem("twilioToken", newToken);
+            } catch (error) {
+              console.error("Error refreshing token after expiration:", error);
+            }
+          });
+
+          const channels = await client.getSubscribedChannels();
+          console.log(channels);
+        }
+      })
+
+
+      // const defaultChannel = channels.items; // Select the first channel or customize logic
+      // setCurrentChannel(defaultChannel);
+
+      // setChatClient(client);
+    } catch (error) {
+      console.error("Error initializing Twilio Chat Client:", error);
+    }
+  };
+
+  // Fetch initial messages and set up message listener
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (currentChannel) {
+        const messageFetch = await currentChannel.getMessages();
+        setMessages(messageFetch.items);
+        currentChannel.on("messageAdded", (newMessage) => {
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
+        });
       }
     };
-  
-    initializeChatClient();
-  }, [userIdentity]);
 
+    fetchMessages();
 
+    return () => {
+      currentChannel?.removeAllListeners();
+    };
+  }, [currentChannel]);
 
-  useEffect(() => {
-    if (chatClient) {
-      // Lấy danh sách các cuộc trò chuyện đã đăng ký
-      chatClient.getSubscribedConversations().then((conversationsPaginator) => {
-        const conversations = conversationsPaginator.items;
-        if (conversations.length > 0) {
-          joinChannel(conversations[0]); // Vào kênh đầu tiên
-        } else {
-          console.log("No subscribed conversations.");
-        }
-      });
-    }
-  }, [chatClient]);
-
-  const joinChannel = async (conversation) => {
-    try {
-      // Gia nhập kênh
-      const joinedConversation = await conversation.join();
-      setCurrentChannel(joinedConversation);
-
-      // Lấy tin nhắn cũ
-      const messagesPaginator = await joinedConversation.getMessages();
-      setMessages(messagesPaginator.items);
-
-      // Lắng nghe tin nhắn mới
-      joinedConversation.on("messageAdded", (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      });
-    } catch (error) {
-      console.error("Error joining conversation:", error);
-    }
-  };
-
-
-  const sendMessage = async () => {
-    if (currentChannel && messageText.trim()) {
-      await currentChannel.sendMessage(messageText);
-      setMessageText("");
-    }
-  };
+  // Send message
+  // const sendMessage = async () => {
+  //   if (messageText.trim() && currentChannel) {
+  //     try {
+  //       await currentChannel.sendMessage(messageText, {
+  //         id: profile?.username,
+  //         uid: profile?.id,
+  //         name: profile?.name,
+  //       });
+  //       setMessageText("");
+  //     } catch (error) {
+  //       console.error("Error sending message:", error);
+  //     }
+  //   }
+  // };
 
   return (
     <div className="chat-container">
@@ -96,7 +146,7 @@ const ChatApp = ({ userIdentity }) => {
           onChange={(e) => setMessageText(e.target.value)}
           placeholder="Type your message..."
         />
-        <button onClick={sendMessage}>Send</button>
+        {/* <button onClick={sendMessage}>Send</button> */}
       </div>
     </div>
   );

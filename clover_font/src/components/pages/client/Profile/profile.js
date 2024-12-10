@@ -363,15 +363,15 @@ const ProfilePage = () => {
           <img
             src={
               profileData.avatar
-                ? `http://localhost:8080/uploads/avatars/${profileData.avatar}`
+                ? `http://localhost:8080/image/${profileData.avatar}`
                 : "https://via.placeholder.com/150"
             }
             alt="User Avatar"
             className="avatar-img"
           />
-          {/* {isEditing && (
+          {isEditing && (
             <input type="file" onChange={handleFileChange} className="file-input" />
-          )} */}
+          )}
         </div>
       </div>
 
@@ -530,7 +530,7 @@ const ProfilePage = () => {
                         {post.postImages.map((image) => (
                           <img
                             key={image.id}
-                            src={`http://localhost:8080/uploads/posts/${image.nameImage}`}
+                            src={`http://localhost:8080/image/${image.nameImage.name}`}
                             alt="Post"
                             className="post-image"
                           />

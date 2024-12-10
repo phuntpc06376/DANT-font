@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import BillService from '../api/billApi'; // Đảm bảo đúng đường dẫn
+import ReactPaginate from 'react-paginate';
 
 export default function Bills() {
     const [bills, setBills] = useState([]);
@@ -9,12 +10,14 @@ export default function Bills() {
     const [expandedBillId, setExpandedBillId] = useState(null); // Lưu ID hóa đơn đang mở rộng
     const [detailBills, setDetailBill] = useState([]); // Lưu sản phẩm của hóa đơn được mở rộng
 
+    const [currentPage, setCurrentPage] = useState(0); // Trang hiện tại
+    const itemsPerPage = 5; // Số lượng hóa đơn mỗi trang
+
     useEffect(() => {
         const fetchBills = async () => {
             setLoading(true);
             try {
                 const data = await BillService.getBillsByShop(); // Lấy hóa đơn theo shop
-                console.log(data);
                 setBills(data);
             } catch (error) {
                 Swal.fire('Lỗi', 'Không thể lấy danh sách hóa đơn', 'error');
@@ -52,14 +55,12 @@ export default function Bills() {
 
     const handleToggleProducts = (billId) => {
         if (expandedBillId === billId) {
-            // Nếu đã mở thì đóng lại
             setExpandedBillId(null);
             setDetailBill([]);
         } else {
-            // Lấy detailBills từ bill được chọn
             const selectedBill = bills.find((bill) => bill.id === billId);
             if (selectedBill && selectedBill.detailBills) {
-                setDetailBill(selectedBill.detailBills); // Gán detailBills vào products
+                setDetailBill(selectedBill.detailBills);
             } else {
                 Swal.fire('Thông báo', 'Không tìm thấy sản phẩm trong hóa đơn', 'info');
                 setDetailBill([]);
@@ -67,12 +68,20 @@ export default function Bills() {
             setExpandedBillId(billId);
         }
     };
-    
 
     const filteredBills = bills.filter((bill) => {
-        const fullname = bill.fullname || ''; // Đảm bảo không bị lỗi khi fullname là null
+        const fullname = bill.fullname || '';
         return fullname.toLowerCase().includes(searchTerm.toLowerCase());
     });
+
+    // Tính toán trang hiện tại và hóa đơn hiển thị
+    const offset = currentPage * itemsPerPage;
+    const currentBills = filteredBills.slice(offset, offset + itemsPerPage);
+
+    // Hàm thay đổi trang
+    const handlePageChange = (selectedPage) => {
+        setCurrentPage(selectedPage.selected);
+    };
 
     return (
         <div className="container">
@@ -96,7 +105,6 @@ export default function Bills() {
                     <table className="table table-striped table-bordered">
                         <thead className="table-dark">
                             <tr>
-                                
                                 <th scope="col">Tên khách hàng</th>
                                 <th scope="col">Ngày mua</th>
                                 <th scope="col">Email</th>
@@ -108,11 +116,10 @@ export default function Bills() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredBills.length > 0 ? (
-                                filteredBills.map((bill) => (
+                            {currentBills.length > 0 ? (
+                                currentBills.map((bill) => (
                                     <React.Fragment key={bill.id}>
                                         <tr>
-                                            
                                             <td>{bill.fullname}</td>
                                             <td>{bill.buyDay}</td>
                                             <td>{bill.email}</td>
@@ -129,7 +136,6 @@ export default function Bills() {
                                                         >
                                                             <i className="bi bi-check-circle"></i> Xác nhận
                                                         </button>
-                                                        
                                                         <button
                                                             onClick={() => handleCancelBill(bill.id)}
                                                             className="btn btn-sm btn-danger"
@@ -195,6 +201,23 @@ export default function Bills() {
                             )}
                         </tbody>
                     </table>
+
+                    {/* Pagination */}
+                    <ReactPaginate
+                        pageCount={Math.ceil(filteredBills.length / itemsPerPage)}
+                        previousLabel={"Trang trước"}
+                        nextLabel={"Tiếp theo"}
+                        breakLabel={"..."} // Thêm dấu ba chấm
+                        onPageChange={handlePageChange}
+                        containerClassName={"pagination"}
+                            pageClassName={"page-item"}
+                            pageLinkClassName={"page-link"}
+                            previousClassName={"page-item"}
+                            previousLinkClassName={"page-link"}
+                            nextClassName={"page-item"}
+                            nextLinkClassName={"page-link"}
+                            activeClassName={"active"}
+                    />
                 </div>
             )}
         </div>
