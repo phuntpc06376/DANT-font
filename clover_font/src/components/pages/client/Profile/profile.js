@@ -182,6 +182,7 @@ const ProfilePage = () => {
           email: updatedData.email,
           phone: updatedData.phone,
           gender: updatedData.gender,
+          avatar: updatedData.avatar
         },
         {
           headers: {
@@ -190,7 +191,7 @@ const ProfilePage = () => {
           },
         }
       );
-
+      console.log(response)
       if (response.status === 200 && response.data) {
         setProfileData(response.data);
         setIsEditing(false);
