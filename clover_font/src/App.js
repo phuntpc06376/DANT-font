@@ -42,9 +42,9 @@ import StaticalSeller from './components/pages/seller/StaticalSeller/StaticalSel
 //các trang của seller
 import Product from './components/pages/seller/Product/Product'
 import Promotion from './components/pages/seller/Promotions/Promotions';
-import Supplier from './components/pages/seller/Supplier/Supplier';
+
 import Bill from './components/pages/seller/Bill/Bill';
-import VoucherManagement from './components/pages/seller/Vouchers/vouchers';
+
 
 
 
@@ -112,20 +112,22 @@ function AdminLayout() {
 
 //layout component seller
 function SellerLayout() {
+  const [isCollapsed, setIsCollapsed] = useState(false); // State để điều khiển navbar thu gọn
   return (
-    <div >
-      <NavSeller />
-      <div className="content">
-      <div style={{ padding: '20px', marginLeft: '250px', width: 'calc(100% - 250px)' }}>
+    <div className="admin-layout">
+      <NavSeller isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <div className={`content-container ${isCollapsed ? 'collapsed' : ''}`}>
+        <div style={{ padding: '20px', marginLeft: isCollapsed ? '50px' : '80px', width: isCollapsed ? 'calc(100% - 50px)' : 'calc(100% - 80px)' }}>
           <Routes>
             {/* Các route khác */}
             <Route path="products" element={<Product />} />
             <Route path="promotions" element={<Promotion />} />
-            <Route path="*" element={<Navigate to="/seller/products" />} />
-            <Route path="supplier" element={<Supplier />} />
+            
+            
             <Route path="bill" element={<Bill />} />
-            <Route path="voucherManagement" element={<VoucherManagement />} />
+            {/* <Route path="feedback" element={<Feedback />} /> */}
             <Route path="staticalseller" element={<StaticalSeller />} />
+            <Route path="*" element={<Navigate to="/seller/products" />} />
             {/* <Route path="/oders" element={<Oder />} />
             <Route path="/products" element={<Product />} />
            

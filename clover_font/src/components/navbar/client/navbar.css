@@ -1,9 +1,26 @@
 /* General Navbar styling */
+
+
+/* Tạo khoảng trống phía trên để không bị navbar che mất nội dung */
+body {
+  padding-top: 80px; /* Điều chỉnh tùy chiều cao navbar */
+}
+
 .navbar {
+  position: sticky; /* Giữ navbar luôn ở trên cùng */
+  top: 0; /* Cố định vị trí trên cùng */
+  z-index: 1000; /* Đảm bảo luôn trên các phần tử khác */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Hiệu ứng mượt khi thay đổi */
+
   background: linear-gradient(90deg, #007bff, #0056b3); /* Gradient hiện đại */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
   border-radius: 8px; /* Bo góc */
   padding: 10px 20px; /* Khoảng cách hợp lý */
+}
+
+.navbar.sticky {
+  background: linear-gradient(90deg, #0056b3, #004080); /* Đổi màu khi dính */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); /* Tăng bóng để nổi bật */
 }
 
 .navbar .navbar-brand img {

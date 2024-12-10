@@ -221,7 +221,7 @@ export default function ProductCards() {
                     </Col>
                     <Col md="6" className="d-flex justify-content-end">
                       <Button variant="warning" size="lg" onClick={handlePayment} disabled={selectedItems.length === 0}>
-                        Tạo hóa đơn
+                        Mua ngay
                       </Button>
                     </Col>
                   </Row>

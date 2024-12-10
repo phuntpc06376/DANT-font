@@ -7,7 +7,8 @@ import {
     deletePromotion,
 } from "../api/promotionsApi"; // Import API bạn đã tạo
 import Swal from "sweetalert2"; // Import SweetAlert2
-
+import ReactPaginate from 'react-paginate'; // Import thư viện phân trang
+import './Promotions.css';
 export default function Promotions() {
     const [promotions, setPromotions] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -15,6 +16,8 @@ export default function Promotions() {
     const [showForm, setShowForm] = useState(false);
     const [formType, setFormType] = useState(""); // "add" hoặc "edit"
     const [selectedPromotion, setSelectedPromotion] = useState(null);
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 5; // Số lượng mục hiển thị trên mỗi trang
 
     // Lấy danh sách khuyến mãi từ API
     useEffect(() => {
@@ -74,6 +77,18 @@ export default function Promotions() {
         promotion.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Tính toán phần tử hiển thị cho trang hiện tại
+    const pageCount = Math.ceil(filteredPromotions.length / itemsPerPage);
+    const currentPromotions = filteredPromotions.slice(
+        currentPage * itemsPerPage,
+        (currentPage + 1) * itemsPerPage
+    );
+
+    // Hàm xử lý phân trang
+    const handlePageClick = (event) => {
+        setCurrentPage(event.selected);
+    };
+
     return (
         <div className="container">
             <h2 className="mb-4 text-center">Danh sách Khuyến mãi</h2>
@@ -93,7 +108,7 @@ export default function Promotions() {
                     </button>
                 </div>
             </div>
-    
+
             {showForm ? (
                 <PromotionForm
                     formType={formType}
@@ -114,8 +129,8 @@ export default function Promotions() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredPromotions.length > 0 ? (
-                                filteredPromotions.map((promotion) => (
+                            {currentPromotions.length > 0 ? (
+                                currentPromotions.map((promotion) => (
                                     <tr key={promotion.id}>
                                         <td>{promotion.name}</td>
                                         <td>{promotion.percentDiscount}%</td>
@@ -125,9 +140,7 @@ export default function Promotions() {
                                                     year: 'numeric',
                                                     month: '2-digit',
                                                     day: '2-digit',
-                                                }).format(new Date(promotion.startDay)) :
-                                                "Ngày không hợp lệ"
-                                            }
+                                                }).format(new Date(promotion.startDay)) : "Ngày không hợp lệ"}
                                         </td>
                                         <td>
                                             {promotion.endDay ?
@@ -135,9 +148,7 @@ export default function Promotions() {
                                                     year: 'numeric',
                                                     month: '2-digit',
                                                     day: '2-digit',
-                                                }).format(new Date(promotion.endDay)) :
-                                                "Ngày không hợp lệ"
-                                            }
+                                                }).format(new Date(promotion.endDay)) : "Ngày không hợp lệ"}
                                         </td>
                                         <td className="text-center">
                                             <button
@@ -164,11 +175,29 @@ export default function Promotions() {
                             )}
                         </tbody>
                     </table>
+                    {/* Phân trang */}
+                    <div className="d-flex justify-content-center mt-3">
+                        <ReactPaginate
+                            previousLabel={"Trang trước"}
+                            nextLabel={"Tiếp theo"}
+                            breakLabel={"..."} // Thêm dấu ba chấm
+                            pageCount={pageCount}
+                            onPageChange={handlePageClick}
+                            containerClassName={"pagination"}
+                            pageClassName={"page-item"}
+                            pageLinkClassName={"page-link"}
+                            previousClassName={"page-item"}
+                            previousLinkClassName={"page-link"}
+                            nextClassName={"page-item"}
+                            nextLinkClassName={"page-link"}
+                            activeClassName={"active"}
+                        />
+
+                    </div>
                 </div>
             )}
         </div>
     );
-    
 }
 
 function PromotionForm({ formType, promotion, onClose, onRefresh }) {
@@ -179,13 +208,11 @@ function PromotionForm({ formType, promotion, onClose, onRefresh }) {
         endDay: promotion?.endDay || "",
     });
 
-    // Hàm xử lý thay đổi giá trị trong form
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    // Hàm chuyển đổi giá trị datetime-local thành ISO string
     const getInstant = (datetimeLocal) => {
         if (!datetimeLocal) {
             throw new Error("Không có giá trị datetimeLocal để xử lý.");
@@ -194,18 +221,18 @@ function PromotionForm({ formType, promotion, onClose, onRefresh }) {
         return date.toISOString();
     };
 
-    // Hàm xử lý submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Kiểm tra các trường trống hoặc không hợp lệ
         if (!formData.name) {
             Swal.fire("Lỗi", "Tên khuyến mãi không được trống!", "error");
             return;
         }
 
-        if (!formData.percentDiscount || isNaN(formData.percentDiscount) || formData.percentDiscount < 0 || formData.percentDiscount == 50) {
-            Swal.fire("Lỗi", "Phần trăm giảm giá phải là một số hợp lệ và lớn hơn 0 và bé hơn 50!", "error");
+        const percentDiscount = parseFloat(formData.percentDiscount);
+
+        if (isNaN(percentDiscount) || percentDiscount <= 0 || percentDiscount >= 50) {
+            Swal.fire("Lỗi", "Phần trăm giảm giá phải là một số hợp lệ, lớn hơn 0 và nhỏ hơn 50!", "error");
             return;
         }
 
@@ -219,118 +246,95 @@ function PromotionForm({ formType, promotion, onClose, onRefresh }) {
             return;
         }
 
-        const startInstant = getInstant(formData.startDay);
-        const endInstant = getInstant(formData.endDay);
-
-        // Kiểm tra ngày bắt đầu phải là hôm nay hoặc muộn hơn
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Đặt lại giờ, phút, giây để so sánh chỉ ngày
-        if (new Date(startInstant) < today) {
-            Swal.fire("Lỗi", "Ngày bắt đầu phải là hôm nay hoặc muộn hơn!", "error");
-            return;
-        }
-
-        // Kiểm tra ngày kết thúc phải sau ngày bắt đầu
-        if (new Date(startInstant) >= new Date(endInstant)) {
-            Swal.fire("Lỗi", "Ngày kết thúc phải sau ngày bắt đầu!", "error");
-            return;
-        }
-
-        const promotionData = {
-            ...formData,
-            startDay: startInstant,
-            endDay: endInstant,
-        };
-
         try {
-            let promotionResponse;
-            if (formType === "add") {
-                promotionResponse = await createPromotion(promotionData);
-                Swal.fire("Thành công", "Khuyến mãi đã được thêm!", "success");
-                // Cập nhật danh sách khuyến mãi sau khi thêm thành công
-                onRefresh((prev) => [promotionResponse, ...prev]); // Thêm khuyến mãi mới vào đầu danh sách
-            } else {
-                promotionResponse = await updatePromotion(promotion.id, promotionData);
-                Swal.fire("Thành công", "Khuyến mãi đã được cập nhật!", "success");
-                // Cập nhật danh sách sau khi sửa
-                onRefresh((prev) =>
-                    prev.map((promo) => (promo.id === promotion.id ? promotionResponse : promo))
-                );
-            }
+            const promotionData = {
+                name: formData.name,
+                percentDiscount,
+                startDay: getInstant(formData.startDay),
+                endDay: getInstant(formData.endDay),
+            };
 
-            onClose(); // Đóng form
+            if (formType === "edit") {
+                // Gọi API sửa khuyến mãi
+                await updatePromotion(promotion.id, promotionData);
+                Swal.fire("Thành công", "Khuyến mãi đã được cập nhật.", "success");
+            } else {
+                // Gọi API thêm khuyến mãi mới
+                await createPromotion(promotionData);
+                Swal.fire("Thành công", "Khuyến mãi đã được thêm.", "success");
+            }
+            onRefresh();
+            onClose();
         } catch (error) {
-            console.error("Lỗi:", error);
-            Swal.fire("Lỗi", "Có lỗi xảy ra khi lưu khuyến mãi.", "error");
+            console.error("Error submitting promotion:", error);
+            Swal.fire("Lỗi", "Có lỗi xảy ra khi lưu dữ liệu!", "error");
         }
     };
 
-
-
     return (
-        <div className="modal d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+        <div className="modal show d-block" tabindex="-1">
             <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
-                        <h5 className="modal-title">{formType === "add" ? "Thêm Khuyến Mãi" : "Cập Nhật Khuyến Mãi"}</h5>
+                        <h5 className="modal-title">{formType === "add" ? "Thêm khuyến mãi" : "Cập nhật khuyến mãi"}</h5>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
-                    <form onSubmit={handleSubmit}>
-                        <div className="modal-body">
-                            <div className="form-group">
-                                <label>Tên khuyến mãi</label>
+                    <div className="modal-body">
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-3">
+                                <label htmlFor="name" className="form-label">Tên khuyến mãi</label>
                                 <input
                                     type="text"
                                     className="form-control"
+                                    id="name"
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Giảm giá (%)</label>
+                            <div className="mb-3">
+                                <label htmlFor="percentDiscount" className="form-label">Giảm giá (%)</label>
                                 <input
                                     type="number"
                                     className="form-control"
+                                    id="percentDiscount"
                                     name="percentDiscount"
                                     value={formData.percentDiscount}
                                     onChange={handleChange}
-                                    required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Ngày bắt đầu</label>
+                            <div className="mb-3">
+                                <label htmlFor="startDay" className="form-label">Ngày bắt đầu</label>
                                 <input
                                     type="datetime-local"
                                     className="form-control"
+                                    id="startDay"
                                     name="startDay"
                                     value={formData.startDay}
                                     onChange={handleChange}
-                                    required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Ngày kết thúc</label>
+                            <div className="mb-3">
+                                <label htmlFor="endDay" className="form-label">Ngày kết thúc</label>
                                 <input
                                     type="datetime-local"
                                     className="form-control"
+                                    id="endDay"
                                     name="endDay"
                                     value={formData.endDay}
                                     onChange={handleChange}
-                                    required
                                 />
                             </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" onClick={onClose}>
-                                Hủy
-                            </button>
-                            <button type="submit" className="btn btn-primary">
-                                {formType === "add" ? "Thêm khuyến mãi" : "Cập nhật khuyến mãi"}
-                            </button>
-                        </div>
-                    </form>
+                            <div className="modal-footer">
+                                <button type="button" className="btn btn-secondary" onClick={onClose}>
+                                    Đóng
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    {formType === "add" ? "Thêm" : "Cập nhật"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

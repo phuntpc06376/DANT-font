@@ -5,13 +5,15 @@ import productService from "../api/productApi";
 import { getAllPromotionsByShop } from "../api/promotionsApi";
 import { getAllTypeProducts } from "../api/prodTypeApi";
 import { getAllPropertiesValues } from "../api/propertiesValueApi";
+import './Product.css';
+import ReactPaginate from 'react-paginate';
 
 export default function Products() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [formType, setFormType] = useState(""); // "add" hoặc "edit"
+  const [formType, setFormType] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -25,6 +27,7 @@ export default function Products() {
     propertiesValues: [],
     images: [],
   });
+
   const [promotions, setPromotions] = useState([]);
   const [prodTypes, setProdTypes] = useState([]);
   const [propertiesValues, setPropertiesValues] = useState([]);
@@ -60,6 +63,23 @@ export default function Products() {
     fetchDropdownData();
   }, []);
 
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 10;
+
+  const handlePageClick = ({ selected }) => {
+    setCurrentPage(selected);
+  };
+
+  // Calculate filteredProducts after products or searchTerm changes
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    product.status === true
+  );
+
+  // Paginate filteredProducts
+  const offset = currentPage * itemsPerPage;
+  const currentProducts = filteredProducts.slice(offset, offset + itemsPerPage);
+
   const handleAddProduct = () => {
     setSelectedProduct(null);
     setFormType("add");
@@ -88,7 +108,6 @@ export default function Products() {
     if (result.isConfirmed) {
       try {
         await productService.deleteProduct(id);
-        // Tải lại danh sách từ server
         const updatedProducts = await productService.getProductsBySeller();
         setProducts(updatedProducts);
         Swal.fire("Đã xóa!", "Sản phẩm đã được xóa.", "success");
@@ -99,6 +118,7 @@ export default function Products() {
       }
     }
   };
+
   const handleEditProduct = (product) => {
     setSelectedProduct(product);
     setFormType("edit");
@@ -156,13 +176,12 @@ export default function Products() {
     const { name, value, checked } = e.target;
 
     if (name === "propertiesValues") {
-      // Kiểm tra nếu propertiesValues là mảng
       setFormData((prev) => {
         const updatedValues = Array.isArray(value)
-          ? value.map((v) => v.value)  // Lấy giá trị từ các đối tượng trong mảng
+          ? value.map((v) => v.value)
           : checked
-            ? [value]  // Nếu chưa là mảng, khởi tạo mảng với giá trị đầu tiên
-            : [];  // Nếu bỏ chọn, trả về mảng rỗng
+            ? [value]
+            : [];
 
         return {
           ...prev,
@@ -174,45 +193,30 @@ export default function Products() {
     }
   };
 
-
-
-
-
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({ ...prev, images: files }));
   };
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    product.status === true,
-    console.log(products.propertiesValues)
-  );
-
   return (
-    <div className="container">
-      <h2 className="mb-4 text-center">Danh sách sản phẩm</h2>
+    <div className="products-container">
+      <h2 className="products-header">Danh sách sản phẩm</h2>
       {error && <div className="alert alert-danger">{error}</div>}
 
-      <div className="row mb-3">
-        <div className="col-md-8">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Nhập tên sản phẩm để tìm..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="col-md-4 text-end">
-          <button className="btn btn-primary" onClick={handleAddProduct}>
-            <i className="bi bi-plus-circle me-2"></i>Thêm sản phẩm
-          </button>
-        </div>
+      <div className="products-search">
+        <input
+          type="text"
+          placeholder="Nhập tên sản phẩm để tìm..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <button onClick={handleAddProduct}>
+          <i className="bi bi-plus-circle"></i> Thêm sản phẩm
+        </button>
       </div>
 
       {showForm ? (
-        <div className="modal d-block" style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
+        <div className="products-modal modal">
           <div className="modal-dialog">
             <div className="modal-content">
               <form onSubmit={handleSubmit}>
@@ -228,58 +232,47 @@ export default function Products() {
                 </div>
                 <div className="modal-body">
                   {error && <div className="alert alert-danger">{error}</div>}
-                  {/* Các trường khác */}
-                  {/* Tên sản phẩm */}
                   <div className="form-group">
                     <label>Tên sản phẩm</label>
                     <input
                       type="text"
-                      className="form-control"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                  {/* Giá */}
                   <div className="form-group">
                     <label>Giá</label>
                     <input
                       type="number"
-                      className="form-control"
                       name="price"
                       value={formData.price}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                  {/* Số lượng */}
                   <div className="form-group">
                     <label>Số lượng</label>
                     <input
                       type="number"
-                      className="form-control"
                       name="quantity"
                       value={formData.quantity}
                       onChange={handleChange}
                       required
                     />
                   </div>
-                  {/* Mô tả */}
                   <div className="form-group">
                     <label>Mô tả</label>
                     <textarea
-                      className="form-control"
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
                     ></textarea>
                   </div>
-                  {/* Khuyến mãi */}
                   <div className="form-group">
                     <label>Khuyến mãi</label>
                     <select
-                      className="form-control"
                       name="promotionId"
                       value={formData.promotionId}
                       onChange={handleChange}
@@ -293,11 +286,9 @@ export default function Products() {
                       ))}
                     </select>
                   </div>
-                  {/* Loại sản phẩm */}
                   <div className="form-group">
                     <label>Loại sản phẩm</label>
                     <select
-                      className="form-control"
                       name="prodTypeId"
                       value={formData.prodTypeId}
                       onChange={handleChange}
@@ -311,36 +302,32 @@ export default function Products() {
                       ))}
                     </select>
                   </div>
-                  {/* Loại thuộc tính */}
                   <div className="form-group">
                     <label>Loại thuộc tính</label>
                     <Select
                       isMulti
                       options={propertiesValues.map((propVa) => ({
                         label: propVa.name,
-                        value: propVa.id
+                        value: propVa.id,
                       }))}
                       value={formData.propertiesValues.map((value) => ({
-                        label: propertiesValues.find(pv => pv.id === value)?.name,
-                        value: value
+                        label: propertiesValues.find((pv) => pv.id === value)?.name,
+                        value: value,
                       }))}
                       onChange={(selectedOptions) => {
                         setFormData((prev) => ({
                           ...prev,
-                          propertiesValues: selectedOptions ? selectedOptions.map((option) => option.value) : []
+                          propertiesValues: selectedOptions
+                            ? selectedOptions.map((option) => option.value)
+                            : [],
                         }));
                       }}
                     />
-
                   </div>
-
-                  {/* Các trường khác */}
-                  {/* Hình ảnh */}
                   <div className="form-group">
                     <label>Hình ảnh</label>
                     <input
                       type="file"
-                      className="form-control"
                       multiple
                       onChange={handleImageChange}
                     />
@@ -363,22 +350,22 @@ export default function Products() {
           </div>
         </div>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-striped table-bordered">
-            <thead className="table-dark">
+        <div className="products-table-container">
+          <table className="products-table">
+            <thead>
               <tr>
                 <th>Tên sản phẩm</th>
                 <th>Giá</th>
                 <th>Số lượng</th>
                 <th>Khuyến mãi</th>
                 <th>Loại sản phẩm</th>
-                <th>Thuộc tính</th> {/* Cột thuộc tính */}
+                <th>Thuộc tính</th>
                 <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              {currentProducts.length > 0 ? (
+                currentProducts.map((product) => (
                   <tr key={product.id}>
                     <td>{product.name}</td>
                     <td>{product.price}</td>
@@ -386,20 +373,14 @@ export default function Products() {
                     <td>{product.promotion?.name || "Không"}</td>
                     <td>{product.prodType?.name || "Không"}</td>
                     <td>
-                      {product.propertiesValues && product.propertiesValues.length > 0 ? (
+                      {product.propertiesValues &&
                         product.propertiesValues.map((pv, index) => (
-                          <div key={index}>
-                            {pv.name} {/* Hiển thị tên thuộc tính */}
-                          </div>
-                        ))
-                      ) : (
-                        "Không có thuộc tính"
-                      )}
+                          <div key={index}>{pv.name}</div>
+                        ))}
                     </td>
-
-                    <td>
+                    <td className="products-table-actions">
                       <button
-                        className="btn btn-sm btn-warning me-2"
+                        className="btn btn-sm btn-warning"
                         onClick={() => handleEditProduct(product)}
                       >
                         Chỉnh sửa
@@ -415,14 +396,31 @@ export default function Products() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="text-center">
-                    Không có sản phẩm nào.
-                  </td>
+                  <td colSpan="7">Không có sản phẩm nào để hiển thị.</td>
                 </tr>
               )}
             </tbody>
           </table>
 
+          <div className="d-flex justify-content-center mt-3">
+            <ReactPaginate
+              previousLabel={"Trang trước"}
+              nextLabel={"Tiếp theo"}
+              breakLabel={"..."} // Thêm dấu ba chấm
+              pageCount={Math.ceil(filteredProducts.length / itemsPerPage)}
+              
+              onPageChange={handlePageClick}
+              containerClassName={"pagination"}
+              pageClassName={"page-item"}
+              pageLinkClassName={"page-link"}
+              previousClassName={"page-item"}
+              previousLinkClassName={"page-link"}
+              nextClassName={"page-item"}
+              nextLinkClassName={"page-link"}
+              activeClassName={"active"}
+            />
+
+          </div>
         </div>
       )}
     </div>

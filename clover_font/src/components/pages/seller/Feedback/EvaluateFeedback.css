@@ -1,0 +1,85 @@
+/* EvaluateFeedback.css */
+
+.evaluate-feedback-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .evaluate-feedback-header {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .evaluate-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .evaluate-item {
+    margin-bottom: 20px;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .evaluate-product-name {
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .evaluate-comment, .evaluate-rating, .evaluate-date {
+    margin: 5px 0;
+    font-size: 16px;
+  }
+  
+  .evaluate-rating-container {
+    display: inline-block;
+  }
+  
+  .star-rating {
+    font-size: 18px;
+    color: gold;
+  }
+  
+  .star {
+    margin-right: 3px;
+  }
+  
+  .star.filled {
+    color: gold;
+  }
+  
+  .star {
+    color: #ccc;
+  }
+  
+  .evaluate-feedbacks-header {
+    font-size: 18px;
+    margin-top: 15px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  .feedback-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .feedback-item {
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  
+  .no-feedback {
+    font-style: italic;
+    color: #888;
+  }
+  
+  .loading-message, .error-message {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
