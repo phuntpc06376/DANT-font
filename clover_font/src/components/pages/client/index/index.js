@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Nav, Form, FormControl, Button, Card, ListGroup, Image } from 'react-bootstrap';
+import { Container, Row, Col, Nav, Form, FormControl, Button, Card, ListGroup, Image, Dropdown, Modal } from 'react-bootstrap';
 import { FaUserFriends, FaSave, FaStore, FaThumbsUp, FaComment, FaShare, FaTrash, FaEdit } from 'react-icons/fa';
 import { FaCartShopping } from "react-icons/fa6";
 import { RiBillLine } from "react-icons/ri";
@@ -57,6 +57,7 @@ const MainContent = () => {
 
   useEffect(() => {
     fetchPosts();
+    // fetchDenounceContent();
   }, []);
 
 
@@ -78,7 +79,7 @@ const MainContent = () => {
     } finally {
       setLoading(false);
     }
-    
+
   };
 
 
@@ -86,8 +87,6 @@ const MainContent = () => {
   const handleFileSelect = (e) => {
     setSelectedFiles(e.target.files);
   };
-
-
 
   const handlePostSubmit = async (e) => {
     e.preventDefault();
@@ -209,7 +208,7 @@ const MainContent = () => {
 
 // Post Component
 const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes,
-   initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
+  initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
   // const [likesCount, setLikesCount] = useState(likes.length);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(likes.length);
@@ -432,8 +431,6 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       });
   };
 
-
-
   const navigate = useNavigate();
   const handleClick = (e) => {
     if (userName === currentUserName) {
@@ -442,9 +439,89 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
     }
   };
 
-
   //mã hóa userName
   const encodedUserName = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(userName));
+
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [denunciationId, setdenunciationId] = useState("");
+  const [denounceContent, setDenounceContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false); // Kiểm tra xem việc tố cáo có đang được gửi hay không
+
+  const fetchDenounceContent = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return console.error("No token found. Redirecting to login...");
+    try {
+      const response = await fetch("http://localhost:8080/api/denounceContents", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      const data = await response.json();
+      setDenounceContent(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error fetching denounce content:", error);
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
+  useEffect(() => {
+    fetchDenounceContent();  // Fetch data when the component mounts
+  }, []);
+
+  // Hàm mở modal khi nhấn vào nút "Tố cáo"
+  const handleReportClick = () => {
+    setShowReportModal(true);
+  };
+
+  // Hàm đóng modal
+  const handleCloseModal = () => {
+    setShowReportModal(false);
+  };
+
+  // Hàm khi chọn lý do tố cáo
+  const handleReportSubmit = async () => {
+    if (!denunciationId) {
+      alert("Vui lòng chọn lý do tố cáo");
+      return;
+    }
+
+    if (!postId) {
+      alert("Không có ID bài viết");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch("http://localhost:8080/api/reportPost", {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          postId: postId,
+          denunciationId: denunciationId,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      alert("Tố cáo thành công!");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("Có lỗi xảy ra, vui lòng thử lại!");
+    } finally {
+      setIsSubmitting(false);
+      handleCloseModal();
+    }
+  };
+
   return (
     <Card className="mb-3 mt-3 p-3 border shadow-sm card-post">
       <Card.Body>
@@ -457,15 +534,47 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
             />
           </Col>
           <Col xs={10}>
-            <Link
-              key={userName}
-              to={`/profiles/${encodedUserName}`}
-              className="text-decoration-none text-dark"
-              onClick={handleClick}
+            <div>
+              <Link
+                key={userName}
+                to={`/profiles/${encodedUserName}`}
+                className="text-decoration-none text-dark"
+                onClick={handleClick}
+              >
+                <h5>{userFullname}</h5>
+              </Link>
+              <p>{timeStamp}</p>
+            </div>
+
+            {/* Dropdown menu "⋮" */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                right: "10px",
+              }}
             >
-              <h5>{userFullname}</h5>
-            </Link>
-            <p>{timeStamp}</p>
+              <Dropdown>
+                <Dropdown.Toggle
+                  variant="light"
+                  className="custom-dropdown-toggle border-0 p-0"
+                  style={{
+                    backgroundColor: "white", // Màu nền trắng
+                    color: "black", // Màu của dấu "..."
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  ⋮
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  <Dropdown.Item onClick={handleReportClick}>
+                    Tố cáo
+                  </Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+
             {/* <div variant="link" className="text-danger float-end" onClick={handleDeletePost}>
           <FaTrash />
         </div> */}
@@ -592,6 +701,45 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
             </ListGroup>
           </div>
         )}
+
+        {/* Modal hiển thị lý do tố cáo */}
+        <Modal show={showReportModal} onHide={handleCloseModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Chọn lý do tố cáo</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group controlId="reportReason">
+                <Form.Label>Lý do tố cáo</Form.Label>
+                <Form.Control
+                  as="select"
+                  value={denunciationId}
+                  onChange={(e) => setdenunciationId(e.target.value)}
+                >
+                  <option value="">Chọn lý do</option>
+                  {denounceContent.map((reason) => (
+                    <option key={reason.id} value={reason.id}>
+                      {reason.content}
+                    </option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Đóng
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => handleReportSubmit()}
+              disabled={isSubmitting || !denunciationId}
+            >
+              {isSubmitting ? "Đang gửi..." : "Tố cáo"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
       </Card.Body>
     </Card>
 

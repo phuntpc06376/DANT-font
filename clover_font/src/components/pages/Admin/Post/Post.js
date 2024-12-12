@@ -1,166 +1,99 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { getAllPosts, getBrowsePosts, getDenouncePosts, browsePost, denouncePost, getPostById } from '../api/postApi';
+import { getDenouncePosts, countDenounce, getPostById, denouncePost} from '../api/postApi';
+import { getAllDenounceByPostId } from '../api/denounceApi';
 import './Post.css';
-import { Modal, Button } from 'react-bootstrap';
+import { Modal, Button, Card, Table, Spinner } from 'react-bootstrap';
+
 const PostList = () => {
-    const [activeTab, setActiveTab] = useState('all');
-    const [allPosts, setAllPosts] = useState([]);
-    const [browsePosts, setBrowsePosts] = useState([]);
-    const [denouncePosts, setDenouncePosts] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage] = useState(5); // Số bài đăng hiển thị trên mỗi trang
-    const [selectedPost, setSelectedPost] = useState(null); // Lưu bài đăng được chọn
-    const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
-    useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                const all = await getAllPosts();
-                setAllPosts(all);
-            } catch (error) {
-                console.error('Lỗi khi lấy tất cả bài đăng:', error);
-            }
-        };
-
-        fetchPosts();
-    }, []);
+    const [posts, setPosts] = useState([]);
+    const [denounceCount, setDenounceCount] = useState({});
+    const [selectedPost, setSelectedPost] = useState(null); // Bài viết được chọn
+    const [denounceDetails, setDenounceDetails] = useState([]); // Danh sách nội dung tố cáo
+    const [showModal, setShowModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchBrowsePosts = async () => {
-            try {
-                const browse = await getBrowsePosts();
-                setBrowsePosts(browse);
-            } catch (error) {
-                console.error('Lỗi khi lấy bài đăng chờ duyệt:', error);
-            }
-        };
-
-        fetchBrowsePosts();
+       fetchPostDenounce();
     }, []);
 
-    useEffect(() => {
-        const fetchDenouncePosts = async () => {
-            try {
-                const denounce = await getDenouncePosts();
-                setDenouncePosts(denounce);
-            } catch (error) {
-                console.error('Lỗi khi lấy bài đăng bị tố cáo:', error);
+    const fetchPostDenounce = async () => {
+        try{
+            const data = await getDenouncePosts();
+            setPosts(data);
+
+             // Sau khi lấy danh sách bài viết, lấy số lượng tố cáo cho từng bài
+            const counts = {};
+            for (const post of data) {
+                counts[post.id] = await fetchCountDenounce(post.id); // Lấy số lượng tố cáo
             }
-        };
+            setDenounceCount(counts); 
 
-        fetchDenouncePosts();
-    }, []);
-
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedPost(null); // Xóa dữ liệu bài đăng được chọn khi đóng modal
-    };
-    const handleViewDetails = async (postId) => {
-        try {
-            const post = await getPostById(postId);
-            setSelectedPost(post);
-            setShowModal(true); // Hiển thị modal
         } catch (error) {
-            console.error('Lỗi khi lấy chi tiết bài đăng:', error);
-        }
-    };
-    const handleBrowse = async (postId) => {
-        const result = await Swal.fire({
-            title: 'Bạn có chắc chắn muốn duyệt bài viết này?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Có, duyệt!',
-            cancelButtonText: 'Không, hủy!'
-        });
-
-        if (result.isConfirmed) {
-            try {
-                const updatedPost = await browsePost(postId);
-                setAllPosts(allPosts.map(post =>
-                    post.id === postId ? updatedPost : post
-                ));
-                Swal.fire('Đã duyệt!', 'Bài viết đã được duyệt.', 'success');
-            } catch (error) {
-                console.error('Lỗi khi duyệt bài viết:', error);
-            }
+            console.error('Lỗi khi lấy danh sách bài viết bị tố cáo', error);
         }
     };
 
-    const handleDenounce = async (postId) => {
-        const result = await Swal.fire({
-            title: 'Bạn có chắc chắn muốn cảnh cáo bài viết này?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Có, cảnh cáo!',
-            cancelButtonText: 'Không, hủy!'
-        });
+    const fetchCountDenounce = async (id) => {
+        try {
+            const count = await countDenounce(id);
+            return count;
+        } catch (error) {
+            console.error('Lỗi khi lấy số lượng tố cáo của bài viết', error);
+            return 0; // Trả về 0 nếu có lỗi
+        }
+    }
 
-        if (result.isConfirmed) {
-            try {
-                await denouncePost(postId);
-                const data = await getAllPosts();
-                setAllPosts(data);
-                Swal.fire('Đã cảnh cáo!', 'Bài viết đã được cảnh cáo.', 'success');
-            } catch (error) {
-                console.error('Lỗi khi cảnh cáo bài viết:', error);
-                Swal.fire('Lỗi!', 'Không thể cảnh cáo bài viết.', 'error');
-            }
+    const fetchDenounceDetails = async (postId) => {
+        try {
+            // Lấy thông tin chi tiết bài viết
+            const post = await getPostById(postId); // Lấy bài viết theo ID
+            setSelectedPost(post);
+
+            // Lấy danh sách tố cáo của bài viết
+            const details = await getAllDenounceByPostId(postId);
+            setDenounceDetails(details);
+
+            // Mở modal khi lấy được chi tiết bài viết và tố cáo
+            setShowModal(true);
+        } catch (error) {
+            console.error('Lỗi khi lấy danh sách tố cáo:', error);
         }
     };
 
-    // Tính toán các bài đăng hiện tại dựa trên trang và số bài đăng mỗi trang
-    const indexOfLastPost = currentPage * postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    const currentPosts = (activeTab === 'all' ? allPosts :
-        activeTab === 'browse' ? browsePosts :
-            denouncePosts).slice(indexOfFirstPost, indexOfLastPost);
-
-    // Tổng số trang
-    const totalPosts = (activeTab === 'all' ? allPosts.length :
-        activeTab === 'browse' ? browsePosts.length :
-            denouncePosts.length);
-    const totalPages = Math.ceil(totalPosts / postsPerPage);
-
-    // Chuyển trang
-    const nextPage = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedPost(null);
     };
 
-    const prevPage = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
+    const handleDenouncePost = async (postId) => {
+        setLoading(true);
+        try {
+            // Gọi API denouncePost
+            const message = await denouncePost(postId);
+
+            // Xử lý kết quả trả về từ backend
+            Swal.fire({
+                icon: 'success',
+                title: 'Cảnh cáo thành công!',
+                text: message === 'Success!' ? 'Bài viết đã bị cảnh cáo thành công.' : 'Có lỗi xảy ra khi cảnh cáo bài viết.',
+            });
+
+            // Cập nhật lại danh sách bài viết nếu cần
+            fetchPostDenounce(); // Hoặc một phương thức tương tự để tải lại danh sách bài viết
+        } catch (error) {
+            console.error('Error when denouncing post:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi!',
+                text: 'Không thể gửi yêu cầu tới server.',
+            });
         }
     };
 
     return (
-        <div>
-            
-            <div className="post-container">
-            <h2 className="text-center mb-4">Bài Đăng</h2>
-                <div className="post-tabs">
-                    <button className={`post-tab ${activeTab === 'all' ? 'active' : ''}`} onClick={() => {
-                        setActiveTab('all');
-                        setCurrentPage(1); // Reset trang về 1 khi chuyển tab
-                    }}>
-                        Tất cả
-                    </button>
-                    <button className={`post-tab ${activeTab === 'browse' ? 'active' : ''}`} onClick={() => {
-                        setActiveTab('browse');
-                        setCurrentPage(1); // Reset trang về 1 khi chuyển tab
-                    }}>
-                        Bài Đăng Chờ Duyệt
-                    </button>
-                    <button className={`post-tab ${activeTab === 'denounce' ? 'active' : ''}`} onClick={() => {
-                        setActiveTab('denounce');
-                        setCurrentPage(1); // Reset trang về 1 khi chuyển tab
-                    }}>
-                        Bài Đăng Bị Tố Cáo
-                    </button>
-                </div>
-            </div>
-
+        <div className='post-container'>
+            <h2 className='text-center' >Danh sách bài đăng bị tố cáo</h2>
             <table className="post-table">
                 <thead className="table-primary">
                     <tr>
@@ -168,87 +101,94 @@ const PostList = () => {
                         <th>Ngày đăng</th>
                         <th>Nội dung</th>
                         <th>Người đăng</th>
-                        <th>Trạng thái bài đăng</th>
+                        <th>Số lượng tố cáo</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {currentPosts.map(post => (
+                    {posts.map(post => (
                         <tr key={post.id}>
                             <td>{post.title}</td>
                             <td>{new Date(post.postDay).toLocaleDateString()}</td>
                             <td>{post.content}</td>
                             <td>{post.account ? post.account.fullname : 'N/A'}</td>
-                            <td>{post.status ? post.status.name : 'N/A'}</td>
+                            <td>{denounceCount[post.id] || "Đang tải..."}</td>
                             <td>
-                                {post.status && post.status.id === 4 && (
-                                    <button className="btn btn-success btn-sm me-2" onClick={() => handleBrowse(post.id)}>Duyệt</button>
-                                )}
-                                {post.status && post.status.id === 2 && (
-                                    <button className="btn btn-danger btn-sm">Xóa</button>
-                                )}
-                                {post.status && (post.status.id === 1 || post.status.id === 3) && (
-                                    <button className="btn btn-warning btn-sm me-2" onClick={() => handleDenounce(post.id)}>Cảnh cáo</button>
-                                )}
-                                <button
-                                    className="btn btn-primary btn-sm me-2"
-                                    onClick={() => handleViewDetails(post.id)}
-                                >
-                                    Xem chi tiết
+                                <button className="btn btn-success me-1" onClick={() => fetchDenounceDetails(post.id)} >Chi tiết</button>
+                                <button className="btn btn-warning me-1" onClick={() => handleDenouncePost(post.id)} disabled={loading}>
+                                    {loading ? <Spinner animation="border" size="sm" /> : 'Cảnh cáo'}
                                 </button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
-            </table>
+            </table>  
 
-            {/* Phân trang */}
-            <div className="post-pagination">
-                <button
-                    className="btn btn-secondary"
-                    onClick={prevPage}
-                    disabled={currentPage === 1} // Vô hiệu hóa nút nếu đang ở trang đầu
-                >
-                    Trang trước
-                </button>
-                <span>Trang {currentPage} / {totalPages}</span>
-                <button
-                    className="btn btn-secondary"
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages} // Vô hiệu hóa nút nếu đang ở trang cuối
-                >
-                    Tiếp theo
-                </button>
-            </div>
-            {/* Modal chi tiết bài đăng */}
-            {selectedPost && (
-                <Modal className="post-modal" show={showModal} onHide={closeModal}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Chi tiết bài đăng</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        <p><strong>Tên bài viết:</strong> {selectedPost.title}</p>
-                        <p><strong>Ngày đăng:</strong> {new Date(selectedPost.postDay).toLocaleDateString()}</p>
-                        <p><strong>Nội dung:</strong> {selectedPost.content}</p>
-                        <p><strong>Người đăng:</strong> {selectedPost.account ? selectedPost.account.fullname : 'N/A'}</p>
-                        <p><strong>Hình ảnh:</strong></p>
-                        {selectedPost.imageUrl ? (
-                            <img
-                                src={selectedPost.imageUrl}
-                                alt="Hình ảnh bài đăng"
-                                style={{ width: '100%', height: 'auto' }}
-                            />
-                        ) : (
-                            <p>Không có hình ảnh</p>
-                        )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={closeModal}>
-                            Đóng
-                        </Button>
-                    </Modal.Footer>
-                </Modal>
-            )}
+             {/* Modal hiển thị chi tiết bài viết và danh sách tố cáo */}
+             <Modal show={showModal} onHide={handleCloseModal} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Chi tiết bài viết</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="row">
+                        {/* Thông tin bài viết */}
+                        <div className="col-md-6">
+                            <Card>
+                                <Card.Body>
+                                    <Card.Title className='text-center mb-3'>Thông tin bài viết</Card.Title>
+                                    <Card.Text><strong>Tiêu đề:</strong> {selectedPost?.title}</Card.Text>
+                                    <Card.Text><strong>Ngày đăng:</strong> {new Date(selectedPost?.postDay).toLocaleDateString()}</Card.Text>
+                                    <Card.Text><strong>Nội dung:</strong> {selectedPost?.content}</Card.Text>
+                                    <Card.Text><strong>Người đăng:</strong> {selectedPost?.account?.fullname || 'N/A'}</Card.Text>
+                                     {/* Hiển thị hình ảnh (nếu có) */}
+                                     {selectedPost?.postImages && selectedPost.postImages.length > 0 && (
+                                        <div>
+                                            <strong>Hình ảnh:</strong>
+                                            <div className="image-gallery">
+                                                {selectedPost.postImages.map((image, index) => (
+                                                    <img key={index} src={`http://localhost:8080/image/${image.nameImage}`} alt={`Post Image ${index}`} className="post-image" />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </Card.Body>
+                            </Card>
+                        </div>
+
+                        {/* Danh sách tố cáo */}
+                        <div className="col-md-6">
+                            <Card>
+                                <Card.Body>
+                                    <Card.Title className='text-center mb-3'>Danh sách tố cáo</Card.Title>
+                                    <Table striped bordered hover>
+                                        <thead>
+                                            <tr>
+                                                <th>Nội dung tố cáo</th>
+                                                <th>Ngày tố cáo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {denounceDetails.map((denounce) => (
+                                                <tr key={denounce.id}>
+                                                    <td>{denounce.denunciation.content}</td>
+                                                    <td>{new Date(denounce.accusationDate).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </Card.Body>
+                            </Card>
+                        </div>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        Đóng
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
         </div>
     );
 };

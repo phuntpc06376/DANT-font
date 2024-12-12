@@ -7,6 +7,8 @@ import { getAllTypeProducts } from "../api/prodTypeApi";
 import { getAllPropertiesValues } from "../api/propertiesValueApi";
 import './Product.css';
 import ReactPaginate from 'react-paginate';
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -15,6 +17,7 @@ export default function Products() {
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -32,36 +35,76 @@ export default function Products() {
   const [prodTypes, setProdTypes] = useState([]);
   const [propertiesValues, setPropertiesValues] = useState([]);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await productService.getProductsBySeller();
-        setProducts(data);
-      } catch (error) {
-        setError("Không thể tải danh sách sản phẩm.");
-        console.error("Error fetching products:", error);
-      }
-    };
-    fetchProducts();
-  }, []);
+  const fetchProducts = async () => {
+    try {
+      const data = await productService.getProductsBySeller();
+      setProducts(data);
+    } catch (error) {
+      setError("Không thể tải danh sách sản phẩm.");
+      console.error("Lỗi khi lấy danh sách sản phẩm:", error);
+    }
+  };
+
+  const fetchDropdownData = async () => {
+    try {
+      const [promoData, typeData, propertiesvalueData] = await Promise.all([
+        getAllPromotionsByShop(),
+        getAllTypeProducts(),
+        getAllPropertiesValues()
+      ]);
+      setPromotions(promoData);
+      setProdTypes(typeData);
+      setPropertiesValues(propertiesvalueData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchDropdownData = async () => {
-      try {
-        const [promoData, typeData, propertiesvalueData] = await Promise.all([
-          getAllPromotionsByShop(),
-          getAllTypeProducts(),
-          getAllPropertiesValues()
-        ]);
-        setPromotions(promoData);
-        setProdTypes(typeData);
-        setPropertiesValues(propertiesvalueData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+    fetchProducts();
+    fetchDropdownData();
+
+    // Tạo kết nối SockJS
+    const socket = new SockJS("http://localhost:8080/ws"); // URL của WebSocket server
+
+    // Tạo đối tượng StompClient để sử dụng với SockJS
+    const stompClient = Stomp.over(socket);
+    stompClient.connect({}, () => {
+      // Lắng nghe các sự kiện từ server qua SockJS
+      setStompClient(stompClient);
+      stompClient.subscribe("/topic/productAdded", handleProductAdded);
+      stompClient.subscribe("/topic/productUpdated", handleProductUpdated);
+      stompClient.subscribe("/topic/productDeleted", handleProductDeleted);
+    });
+
+    // Cleanup WebSocket khi component unmount
+    return () => {
+      if (stompClient) {
+        stompClient.disconnect();
       }
     };
-    fetchDropdownData();
   }, []);
+
+  const handleProductAdded = (message) => {
+    const newProduct = JSON.parse(message.body);
+    setProducts((prevProducts) => [...prevProducts, newProduct]);
+  };
+
+  const handleProductUpdated = (message) => {
+    const updatedProduct = JSON.parse(message.body);
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
+  };
+
+  const handleProductDeleted = (message) => {
+    const deletedProductId = JSON.parse(message.body);
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== deletedProductId)
+    );
+  };
 
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -70,13 +113,13 @@ export default function Products() {
     setCurrentPage(selected);
   };
 
-  // Calculate filteredProducts after products or searchTerm changes
+  // Lọc sản phẩm khi có sự thay đổi về từ khoá tìm kiếm
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     product.status === true
   );
 
-  // Paginate filteredProducts
+  // Phân trang sản phẩm
   const offset = currentPage * itemsPerPage;
   const currentProducts = filteredProducts.slice(offset, offset + itemsPerPage);
 
@@ -111,6 +154,9 @@ export default function Products() {
         const updatedProducts = await productService.getProductsBySeller();
         setProducts(updatedProducts);
         Swal.fire("Đã xóa!", "Sản phẩm đã được xóa.", "success");
+
+        // Emit WebSocket event to notify deletion
+        stompClient.send("/app/productDeleted", {}, JSON.stringify(id));
       } catch (error) {
         setError("Không thể xóa sản phẩm.");
         console.error("Error deleting product:", error);
@@ -155,12 +201,26 @@ export default function Products() {
 
     try {
       if (formType === "add") {
-        await productService.createProduct(formToSubmit);
+        // await productService.createProduct(formToSubmit);
+        const newProduct = await productService.createProduct(formToSubmit);
+        setProducts((prevProducts) => [...prevProducts, newProduct]);
         Swal.fire("Thành công!", "Sản phẩm đã được thêm.", "success");
+
+         // Emit WebSocket event to notify addition
+        stompClient.send("/app/productAdded", {}, JSON.stringify(newProduct));
+
       } else if (formType === "edit" && selectedProduct) {
         formToSubmit.append("id", formData.id);
         await productService.updateProduct(formToSubmit);
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === formData.id ? { ...product, ...formData } : product
+          )
+        );
         Swal.fire("Thành công!", "Sản phẩm đã được cập nhật.", "success");
+        
+        // Emit WebSocket event to notify update
+        stompClient.send("/app/productUpdated", {}, JSON.stringify(formData));
       }
 
       const updatedProducts = await productService.getProductsBySeller();
@@ -408,7 +468,7 @@ export default function Products() {
               nextLabel={"Tiếp theo"}
               breakLabel={"..."} // Thêm dấu ba chấm
               pageCount={Math.ceil(filteredProducts.length / itemsPerPage)}
-              
+
               onPageChange={handlePageClick}
               containerClassName={"pagination"}
               pageClassName={"page-item"}

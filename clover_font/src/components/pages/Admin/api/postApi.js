@@ -25,11 +25,6 @@ export const getAllPosts = async () => {
     return response.data;
 };
 
-export const getBrowsePosts = async () => {
-    const response = await axiosInstance.get('/browse');
-    return response.data;
-};
-
 export const getDenouncePosts = async () => {
     const response = await axiosInstance.get('/denounce');
     return response.data;
@@ -40,27 +35,19 @@ export const getPostById = async (id) => {
     return response.data;
 };
 
-export const createPost = async (postBean) => {
-    const response = await axiosInstance.post('', postBean);
-    return response.data;
-};
-
-export const updatePost = async (id, postBean) => {
-    const response = await axiosInstance.put(`/${id}`, postBean);
-    return response.data;
-};
-
-export const browsePost = async (id) => {
-    const response = await axiosInstance.put(`/browse/${id}`);
-    return response.data;
-};
-
 export const denouncePost = async (id) => {
-    const response = await axiosInstance.delete(`/denounce/${id}`);
+    try {
+        const response = await axiosInstance.put(`/denounce/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error when denouncing post:", error);
+        throw new Error(error.response ? error.response.data : "Không có phản hồi từ server");
+    }
+};
+
+export const countDenounce = async (id) => {
+    const response = await axiosInstance.get(`/count-denounce/${id}`);
     return response.data;
 };
 
-// export const deletePost = async (id) => {
-//     const response = await axiosInstance.delete(`/${id}`);
-//     return response.data;
-// };
+

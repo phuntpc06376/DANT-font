@@ -9,7 +9,7 @@
 }
 
 .post-container h2 {
-    font-size: 24px;
+    font-size: 35px;
     font-weight: bold;
     text-align: center;
     color: #333;
@@ -138,3 +138,18 @@
 .post-modal .modal-footer {
     border-top: none;
 }
+
+.image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.image-gallery img {
+    max-width: 100%; /* Hình ảnh không vượt quá chiều rộng của thẻ */
+    height: auto;    /* Giữ tỷ lệ khung hình của ảnh */
+    object-fit: cover; /* Cắt ảnh nếu cần để giữ tỷ lệ đúng */
+    max-height: 200px;  /* Giới hạn chiều cao nếu cần */
+    border-radius: 5px; /* Tùy chọn, làm cho góc ảnh tròn */
+}
+

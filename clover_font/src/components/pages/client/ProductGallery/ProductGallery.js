@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import './ProductGallery.css';
-
+import WebSocketService from '../../webSocket/WebSocketService';
 // Component ProductCard to display each product
 const ProductCard = ({ id, title, price, location, imageUrl }) => {
   const navigate = useNavigate();
@@ -45,35 +45,53 @@ const ProductGallery = () => {
   const [currentPage, setCurrentPage] = useState(1); // Current page state
   const [productsPerPage] = useState(8); // Number of products per page
   const token = localStorage.getItem('token');
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/user/shopping/product', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/user/shopping/product', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          throw new Error(errorMessage || 'Cannot load data from server');
-        }
-
-        const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data); // Set initial filtered products
-        setLoading(false);
-        console.log(data);
-        
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setLoading(false);
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || 'Cannot load data from server');
       }
-    };
+
+      const data = await response.json();
+      setProducts(data);
+      setFilteredProducts(data); // Set initial filtered products
+      setLoading(false);
+      console.log(data);
+
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+
 
     fetchProducts();
+
+  }, [token])
+
+  // Tích hợp WebSocket để nhận cập nhật theo thời gian thực
+  useEffect(() => {
+    WebSocketService.connect(token);
+
+    WebSocketService.onProductUpdate((message) => {
+      // Xử lý cập nhật sản phẩm (ví dụ: thêm, cập nhật, xóa sản phẩm)
+      console.log('Cập nhật sản phẩm nhận được:', message);
+      // Lấy lại sản phẩm mới sau khi có cập nhật
+      fetchProducts();
+    });
+
+    // Dọn dẹp kết nối WebSocket khi component unmount
+    return () => {
+      WebSocketService.disconnect();
+    };
   }, [token]);
 
   const handleSearch = () => {

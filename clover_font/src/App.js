@@ -92,7 +92,7 @@ function AdminLayout() {
     <div className="admin-layout">
       <NavAdmin isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} /> {/* Truyền trạng thái navbar vào */}
       <div className={`content-container ${isCollapsed ? 'collapsed' : ''}`}>
-        <div style={{ padding: '20px', marginLeft: isCollapsed ? '50px' : '80px', width: isCollapsed ? 'calc(100% - 50px)' : 'calc(100% - 80px)' }}>
+        <div style={{ padding: '20px', marginLeft: isCollapsed ? '30px' : '60px', width: isCollapsed ? 'calc(100% - 30px)' : 'calc(100% - 60px)' }}>
           <Routes>
             <Route path="account-management" element={<AccountManagement />} />
             <Route path="supplier-management" element={<SupplierList />} />
