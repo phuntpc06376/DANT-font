@@ -203,6 +203,7 @@ const UserProfile = () => {
                           : "https://via.placeholder.com/50"
                       }
                       alt="User Avatar"
+                      
                     />
                     <div className="mb-0">
                       <h4>{post.account?.fullname || "Người dùng"}</h4>
