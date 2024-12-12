@@ -7,7 +7,7 @@ import { jwtDecode } from "jwt-decode"; // Lưu ý cú pháp import
 // Thư viện giải mã token
 import "./ProfilePage.css";
 import Swal from "sweetalert2";
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { FaTrash } from 'react-icons/fa';
 const ProfilePage = () => {
   const [profileData, setProfileData] = useState(null);
@@ -16,9 +16,7 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [formData, setFormData] = useState({ email: "", phoneNumber: "", fullname: "" });
-
   const [updatedData, setUpdatedData] = useState({
     fullname: "",
     gender: ""
@@ -56,7 +54,8 @@ const ProfilePage = () => {
             fullname: response.data.fullname || "",
             email: response.data.email || "",
             phone: response.data.phone || "",
-            gender: response.data.gender
+            gender: response.data.gender,
+            avatar: response.data.avatar || ""
           });
         } else {
           throw new Error("Không tìm thấy dữ liệu tài khoản.");
@@ -99,6 +98,7 @@ const ProfilePage = () => {
 
       const data = await response.json();
       setPosts(Array.isArray(data) ? data : []);
+      console.log(data)
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
@@ -126,12 +126,13 @@ const ProfilePage = () => {
       return;
     }
 
-    // Kiểm tra xem trường nào bị bỏ trống
+    // Kiểm tra các trường cần thiết
     const fields = [
       { key: 'fullname', message: 'Tên đầy đủ không được bỏ trống.' },
       { key: 'email', message: 'Email không được bỏ trống.' },
       { key: 'phone', message: 'Số điện thoại không được bỏ trống.' },
     ];
+
     for (const field of fields) {
       if (!updatedData[field.key]) {
         Swal.fire({
@@ -168,30 +169,38 @@ const ProfilePage = () => {
     if (!isValidPhone(updatedData.phone)) {
       Swal.fire({
         icon: 'warning',
-        title: 'Số điện thoại phải đúng định dạng +84 và từ 9-10 chữ số.',
+        title: 'Số điện thoại không hợp lệ.',
       });
       return;
     }
 
+    // Tạo FormData để gửi dữ liệu (bao gồm avatar)
+    const formData = new FormData();
+    formData.append("id", username);
+    formData.append("fullname", updatedData.fullname);
+    formData.append("email", updatedData.email);
+    formData.append("phone", updatedData.phone);
+    formData.append("gender", updatedData.gender);
+    // Kiểm tra nếu có avatar thì thêm vào FormData
+    if (updatedData.avatar) {
+      formData.append("avatar", updatedData.avatar); // `updatedData.avatar` là File
+    }
+
     try {
+      // Gửi yêu cầu PUT với FormData
       const response = await axios.put(
-        `http://localhost:8080/api/home/account/updateInfor/${username}`,
-        {
-          id: username,
-          fullname: updatedData.fullname,
-          email: updatedData.email,
-          phone: updatedData.phone,
-          gender: updatedData.gender,
-          avatar: updatedData.avatar
-        },
+        `http://localhost:8080/api/account/updateInfor`,
+        formData,
         {
           headers: {
-            Authorization: `Bearer ${token || ""}`,
-            "Content-Type": "application/json",
+            Authorization: `Bearer ${token || ""}`, // Gửi token xác thực
+            'Content-Type': 'multipart/form-data',
+            // Không cần thiết lập Content-Type vì axios sẽ tự động thiết lập multipart/form-data
           },
         }
       );
-      console.log(response)
+
+      // Xử lý kết quả trả về
       if (response.status === 200 && response.data) {
         setProfileData(response.data);
         setIsEditing(false);
@@ -215,15 +224,20 @@ const ProfilePage = () => {
         text: err.response?.data || err.message,
       });
     }
+
   };
 
 
-
-
-  // Xử lý thay đổi ảnh đại diện
-  const handleFileChange = (e) => {
-    setAvatar(e.target.files[0]);
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setUpdatedData((prevData) => ({
+        ...prevData,
+        avatar: file, // Cập nhật file ảnh trực tiếp vào state
+      }));
+    }
   };
+
 
 
   //load sản phẩm của người dùng đó
@@ -252,6 +266,7 @@ const ProfilePage = () => {
   const handleCardClick = (id) => {
     navigate(`/user/product/${id}`);
   };
+
   const handleDeletePost = (postId) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -362,18 +377,32 @@ const ProfilePage = () => {
       <div className="cover-section">
         <div className="avatar">
           <img
-            src={
-              profileData.avatar
-                ? `http://localhost:8080/image/${profileData.avatar}`
-                : "https://via.placeholder.com/150"
-            }
+            src={profileData.avatar ? `http://localhost:8080/image/${profileData.avatar}` : "https://via.placeholder.com/150"}
             alt="User Avatar"
             className="avatar-img"
           />
-          {isEditing && (
-            <input type="file" onChange={handleFileChange} className="file-input" />
-          )}
+
         </div>
+        {isEditing && (
+          <>
+            {/* Nút chọn ảnh */}
+            <button
+              onClick={() => document.getElementById("file-input").click()}
+              className="change-avatar-button"
+            >
+              Chọn ảnh mới
+            </button>
+
+            {/* Input file ẩn đi để chọn ảnh */}
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="file-input"
+              id="file-input"
+              style={{ display: "none" }} // Ẩn input đi
+            />
+          </>
+        )}
       </div>
 
       {/* Profile Info */}
@@ -382,6 +411,7 @@ const ProfilePage = () => {
           <div className="container mt-5">
             <h2 className="text-center mb-4">Chỉnh sửa thông tin</h2>
             <form>
+              {/* Các input form */}
               <div className="form-floating mb-3">
                 <input
                   type="text"
@@ -420,35 +450,8 @@ const ProfilePage = () => {
                 />
                 <label htmlFor="phone">Số điện thoại</label>
               </div>
-              <div className="form-group mb-3">
-                <label className="mb-2">Giới tính</label>
-                <div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={false}
-                      checked={updatedData.gender === false}
-                      onChange={handleInputChange}
-                      className="form-check-input"
-                    />
-                    <label className="form-check-label">Nam</label>
-                  </div>
-                  <div className="form-check form-check-inline">
-                    <input
-                      type="radio"
-                      name="gender"
-                      value={true}
-                      checked={updatedData.gender === true}
-                      onChange={handleInputChange}
-                      className="form-check-input"
-                    />
-                    <label className="form-check-label">Nữ</label>
-                  </div>
-                </div>
-              </div>
 
-
+              {/* Các mục khác */}
             </form>
           </div>
         ) : (
@@ -457,18 +460,12 @@ const ProfilePage = () => {
             <hr></hr>
             <p className="profile-bio"><strong>Email: </strong>{profileData.email || "Chưa có thông tin email."}</p>
             <p className="profile-bio"><strong>Số điện thoại: </strong>{profileData.phone || "Chưa có thông tin số điện thoại."}</p>
-            {/* <p className="profile-bio"><strong>Giới tính: </strong>
-              {profileData.gender === true ? "Nữ" : profileData.gender === false ? "Nam" : "Chưa cập nhật"}
-            </p> */}
-
-
           </>
         )}
-
       </div>
+
       {/* Profile Actions */}
       <div className="profile-actions">
-
         {isEditing ? (
           <>
             <button className="btn btn-primary px-4 save-btn" onClick={handleUpdate}>
@@ -477,19 +474,20 @@ const ProfilePage = () => {
             <button className="btn btn-danger px-4 cancel-btn" onClick={() => setIsEditing(false)}>
               Hủy
             </button>
-            <ul className="">
-                <Link className="nav-link" to="/user/addAddressForm">
-                    <span className="">Cập nhật địa chỉ</span>
-                </Link>
-            </ul>
+        
+              <NavLink className="navbar-link" to="/user/addAddressForm" activeClassName="active">
+                <p>Đổi địa chỉ</p>
+              </NavLink>
+         
           </>
         ) : (
           <button className="btn edit-btn" onClick={() => setIsEditing(true)}>
             Chỉnh sửa trang cá nhân
           </button>
-
         )}
+
       </div>
+
       <Tabs
         defaultActiveKey="profile"
         id="uncontrolled-tab-example"
@@ -507,10 +505,10 @@ const ProfilePage = () => {
                   {/* Header */}
                   <div className="d-flex align-items-center">
                     <img
-                      className="rounded-circle me-3"
+                      className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px" }}
                       src={
                         post.account?.avatar
-                          ? `http://localhost:8080/uploads/avatars/${post.account.avatar}`
+                          ? `http://localhost:8080/image/${post.account.avatar}`
                           : "https://via.placeholder.com/50"
                       }
                       alt="Avatar"
@@ -526,26 +524,29 @@ const ProfilePage = () => {
                   {/* Content */}
                   <div className="mt-3">
                     <p>{post.content}</p>
-                    {post.postImages?.length > 0 && (
-                      <div className="post-images">
-                        {post.postImages.map((image) => (
-                          <img
-                            key={image.id}
-                            src={`http://localhost:8080/image/${image.nameImage.name}`}
-                            alt="Post"
-                            className="post-image"
-                          />
+                    {post.postImages && post.postImages.length > 0 && (
+                      <div className={`fb-post-images fb-images-${post.postImages.length}`}>
+                        {post?.postImages.map((image, index) => (
+                          <div key={index} className="fb-post-image-wrapper">
+                            <img
+                              src={`http://localhost:8080/image/${image?.nameImage}`}
+                              alt={`Image ${index + 1}`}
+                              className="fb-post-image"
+                            />
+                          </div>
                         ))}
 
                       </div>
+
                     )}
+
                   </div>
+
                   {/* Footer */}
                   <div className="card-footer mt-3 d-flex justify-content-between">
                     <div className="text-dark">
                       <i
-                        className={`fa-thumbs-up ${post.likedByUser ? "liked" : "not-liked"
-                          }`}
+                        className={`fa-thumbs-up ${post.likedByUser ? "liked" : "not-liked"}`}
                       // onClick={() => handleLikePost(post.id)}
                       ></i>{" "}
                       Thích ({post.numberLikes})
@@ -554,7 +555,7 @@ const ProfilePage = () => {
                       <i className="fa-comment"></i> Bình luận
                     </div>
                     <div
-                      className="mb-4 delete-post-button text-danger"
+                      className="delete-post-button text-danger"
                       onClick={() => handleDeletePost(post.id)}
                     >
                       <FaTrash />

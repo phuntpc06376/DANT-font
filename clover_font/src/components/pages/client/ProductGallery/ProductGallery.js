@@ -109,7 +109,7 @@ const ProductGallery = () => {
 
   return (
     <Container className="mt-4 product-gallery">
-      <h4 className="text-dark mb-4">Tìm kiếm sản phẩm</h4>
+     
       <Row className="mb-4">
         <Col md={4}>
           <Form.Group controlId="searchKeyword">

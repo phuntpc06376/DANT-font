@@ -1,55 +1,72 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 import axios from "axios";
 import {
   getProvince,
   getDistrict,
   getWard,
-} from "../services/ghnApiService"; // Cần đảm bảo các API đúng định dạng và URL
-
+} from "../services/ghnApiService"; // Đảm bảo các API đúng định dạng và URL
+import "./AddAddressForm.css";
 const AddressManagement = () => {
-  const [addresses, setAddresses] = useState({});
-  const [province, setProvince] = useState([]);
-  const [district, setDistrict] = useState([]);
-  const [ward, setWard] = useState([]);
-  const [selectedDistrictName, setSelectedDistrictName] = useState(""); // Lưu tên quận
+  const [addresses, setAddresses] = useState([]);
+  const [provinceOptions, setProvinceOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
+  const [wardOptions, setWardOptions] = useState([]);
 
-  const [selectedWardName, setSelectedWardName] = useState(""); // Lưu tên quận
-  const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedWard, setSelectedWard] = useState("");
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedWard, setSelectedWard] = useState(null);
 
   const [address, setAddress] = useState("");
   const [selectedAddress, setSelectedAddress] = useState(null);
-
+  const [idUpdate, setIdUpdate] = useState(null)
   const token = localStorage.getItem("token"); // Lấy token từ localStorage
 
-  // Hàm lấy danh sách tỉnh
+  // Lấy danh sách tỉnh
   const fetchProvinces = async () => {
     try {
       const response = await getProvince();
-      setProvince(response.data);
+      console.log("Provinces:", response.data); // Kiểm tra dữ liệu trả về
+      setProvinceOptions(
+        response.data.map((p) => ({
+          value: p.ProvinceID,
+          label: p.ProvinceName,
+        }))
+      );
     } catch (err) {
       console.error("Error fetching provinces:", err.response || err);
     }
   };
 
-  // Lấy danh sách quận/huyện theo tỉnh
+  // Lấy danh sách quận/huyện
   const fetchDistricts = async (provinceId) => {
-    if (!provinceId) return; // Không gọi API nếu không có tỉnh được chọn
+    if (!provinceId) return;
     try {
       const response = await getDistrict(provinceId);
-      setDistrict(response.data);
+      console.log("Districts:", response.data); // Kiểm tra dữ liệu trả về
+      setDistrictOptions(
+        response.data.map((d) => ({
+          value: d.DistrictID,
+          label: d.DistrictName,
+        }))
+      );
     } catch (err) {
       console.error("Error fetching districts:", err.response || err);
     }
   };
 
-  // Lấy danh sách phường/xã theo quận/huyện
+  // Lấy danh sách phường/xã
   const fetchWards = async (districtId) => {
-    if (!districtId) return; // Không gọi API nếu không có quận được chọn
+    if (!districtId) return;
     try {
       const response = await getWard(districtId);
-      setWard(response.data);
+      console.log("Wards:", response.data); // Kiểm tra dữ liệu trả về
+      setWardOptions(
+        response.data.map((w) => ({
+          value: w.WardCode,
+          label: w.WardName,
+        }))
+      );
     } catch (err) {
       console.error("Error fetching wards:", err.response || err);
     }
@@ -61,193 +78,220 @@ const AddressManagement = () => {
       const response = await axios.get("http://localhost:8080/api/seller/address/", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(response.data);
+      console.log("API response:", response.data); // Kiểm tra dữ liệu trả về
 
-      setAddresses(response.data || []);
+      const addressList = Array.isArray(response.data) ? response.data : [response.data];
+      setAddresses(addressList); // Cập nhật state
     } catch (err) {
       console.error("Error fetching addresses:", err.response || err);
+      setAddresses([]); // Đảm bảo state là mảng rỗng nếu lỗi
     }
   };
 
-  // Xử lý khi thay đổi tỉnh
-  const handleProvinceChange = (e) => {
-    const selected = e.target.value;
-
-    setSelectedProvince(selected);
-    setSelectedDistrict(""); // Xóa quận đã chọn khi tỉnh thay đổi
-    setSelectedWard(""); // Xóa xã đã chọn khi tỉnh thay đổi
-    setDistrict([]); // Xóa danh sách quận
-    setWard([]); // Xóa danh sách xã
-    fetchDistricts(selected); // Gọi API lấy quận
+  // Xử lý khi chọn tỉnh
+  const handleProvinceChange = (selectedOption) => {
+    setSelectedProvince(selectedOption);
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    setDistrictOptions([]);
+    setWardOptions([]);
+    if (selectedOption) fetchDistricts(selectedOption.value);
   };
 
-  // Xử lý khi thay đổi quận
-  const handleDistrictChange = (e) => {
-    const selectedDistrictId = e.target.value;
-    const selectedDistrictName = e.target.selectedOptions[0].text; // Lấy tên quận
-
-    setSelectedDistrict(selectedDistrictId);
-    setSelectedDistrictName(selectedDistrictName); // Lưu tên quận
-
-    setSelectedWard(""); // Xóa xã đã chọn khi quận thay đổi
-    setWard([]); // Xóa danh sách xã
-
-    fetchWards(selectedDistrictId); // Gọi API lấy xã
+  // Xử lý khi chọn quận/huyện
+  const handleDistrictChange = (selectedOption) => {
+    setSelectedDistrict(selectedOption);
+    setSelectedWard(null);
+    setWardOptions([]);
+    if (selectedOption) fetchWards(selectedOption.value);
   };
 
-  const handleWardChange = (e) => {
-    const selectedWardCode = e.target.value;
-    const selectedWardName = e.target.selectedOptions[0].text; // Lấy tên xã
-
-    setSelectedWard(selectedWardCode);
-    setSelectedWardName(selectedWardName); // Lưu tên xã
+  // Xử lý khi chọn phường/xã
+  const handleWardChange = (selectedOption) => {
+    setSelectedWard(selectedOption);
   };
 
-  // Xử lý khi gửi form (thêm hoặc cập nhật)
-  // Xử lý khi gửi form (thêm hoặc cập nhật)
+  // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(address);
-    console.log(selectedDistrict);
-    console.log(selectedWard);
-    console.log(selectedDistrictName);
-    console.log(selectedWardName);
 
-    // Tạo FormData để gửi dữ liệu dưới dạng form-data
-    const formData = new FormData();
-    formData.append("address", address);
-    formData.append("districtId", selectedDistrict);
-    formData.append("wardCode", selectedWard);
-    formData.append("districtName", selectedDistrictName);
-    formData.append("wardName", selectedWardName);
-    // Nếu cập nhật, thêm ID vào FormData
-    if (selectedAddress) {
-      formData.append("id", selectedAddress.id);
+    // Kiểm tra các trường bắt buộc không được bỏ trống
+    if (!address || !selectedDistrict || !selectedWard || !selectedProvince) {
+      alert("Vui lòng nhập đầy đủ thông tin địa chỉ!");
+      return;
     }
 
-    // Đường dẫn và phương thức HTTP
+    // Lấy giá trị districtId, wardCode, wardName và districtName
+    const id = idUpdate;
+    const districtId = selectedDistrict ? parseInt(selectedDistrict.value, 10) : null;
+    const wardCode = selectedWard ? selectedWard.value : null;
+    const wardName = selectedWard ? selectedWard.label : null;
+    const districtName = selectedDistrict ? selectedDistrict.label : null;
+
+    // Kiểm tra nếu có bất kỳ trường nào thiếu dữ liệu
+    if (!districtId || !wardCode || !wardName || !districtName || !address) {
+      alert("Vui lòng cung cấp đầy đủ thông tin.");
+      return;
+    }
+
+    // Xử lý dữ liệu
+    const data = {
+      id,
+      address, // Địa chỉ không được để trống
+      districtId, // districtId phải là Integer
+      wardCode, // wardCode phải là String
+      districtName, // districtName là tên của quận
+      wardName, // wardName là tên của phường
+    };
+
+    // Thêm id nếu có
+    if (selectedAddress) {
+      data.id = selectedAddress.id;
+    }
+    const formData = new FormData();
+    if (data.id) {
+      formData.append("id", data.id);
+    }
+
+
+    formData.append("address", data.address);
+    formData.append("districtName", data.districtName);
+    formData.append("districtId", data.districtId);
+    formData.append("wardCode", data.wardCode);
+    formData.append("wardName", data.wardName);
+
+    // Đặt URL và phương thức API
     const url = selectedAddress
       ? "http://localhost:8080/api/seller/address/updateAddress"
       : "http://localhost:8080/api/seller/address/addAddress";
     const method = selectedAddress ? "put" : "post";
 
     try {
+      console.log(data);
+
       const response = await axios({
         url,
         method,
+        data: formData,
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data", // Định dạng gửi là form-data
-        },
-        data: formData, // Gửi FormData
+        }
+
       });
 
+      console.log("API response after submit:", response.data);
       if (response.data.status) {
-        fetchAddresses(); // Reload danh sách địa chỉ
+        fetchAddresses();
         clearForm();
       } else {
         alert("Thao tác thất bại!");
       }
     } catch (err) {
       console.error("Lỗi khi gửi form:", err.response || err);
-      alert("Đã xảy ra lỗi!");
+      if (err.response && err.response.data) {
+        alert("Lỗi: " + err.response.data.message); // In ra thông báo lỗi từ server
+      } else {
+        alert("Đã xảy ra lỗi!");
+      }
     }
   };
+  const handleSelectAddress = (addr) => {
+    console.log(addr);
 
-
-  // Xử lý xóa địa chỉ
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete("http://localhost:8080/api/seller/address/deleteAddress", {
-        params: { id },
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      fetchAddresses();
-    } catch (err) {
-      console.error("Error deleting address:", err.response || err);
-      alert("Error occurred!");
-    }
+    setSelectedAddress(addr); // Cập nhật selectedAddress
+    // Cập nhật các trường trong form với giá trị từ selectedAddress
+    setAddress(addr.address);
+    setSelectedDistrict({
+      value: addr.districtId,
+      label: addr.districtName,
+    });
+    setSelectedWard({
+      value: addr.wardCode,
+      label: addr.wardName,
+    });
+    // Cập nhật các trường khác nếu có
   };
 
-  // Xóa form sau khi thêm hoặc cập nhật
   const clearForm = () => {
     setAddress("");
-    setSelectedProvince("");
-    setSelectedDistrict("");
-    setSelectedWard("");
+    setSelectedProvince(null);
+    setSelectedDistrict(null);
+    setSelectedWard(null);
     setSelectedAddress(null);
-    setDistrict([]);
-    setWard([]);
   };
 
-  // Lấy danh sách tỉnh khi load trang
   useEffect(() => {
     fetchProvinces();
     fetchAddresses();
   }, []);
 
   return (
-    <div className="container">
-      <h2>Địa chỉ của bạn</h2>
-      <form onSubmit={handleSubmit}>
-        <input  className="form-control"
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="Nhập địa chỉ"
-          required
-        />
-        <div className="mb-3">
-          <h3>Chọn Tỉnh</h3>
-          <select className="form-select" value={selectedProvince} onChange={handleProvinceChange}>
-            <option value="">Chọn tỉnh</option>
-            {province.map((p) => (
-              <option  key={p.ProvinceID} value={p.ProvinceID}>
-                {p.ProvinceName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <h3>Chọn Quận/Huyện</h3>
-          <select className="form-select" value={selectedDistrict} onChange={handleDistrictChange} disabled={!district.length}>
-            <option value="">Chọn quận/huyện</option>
-            {district.map((d) => (
-              <option key={d.DistrictID} value={d.DistrictID}>
-                {d.DistrictName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="mb-3">
-          <h3>Chọn Phường/Xã</h3>
-          <select className="form-select" value={selectedWard} onChange={handleWardChange} disabled={!ward.length}>
-            <option value="">Chọn phường/xã</option>
-            {ward.map((w) => (
-              <option key={w.WardCode} value={w.WardCode}>
-                {w.WardName}
-              </option>
-            ))}
-          </select>
-
-        </div>
-        <button className="btn mt-2" type="submit">{selectedAddress ? "Cập nhật" : "Thêm"} địa chỉ</button>
-      </form>
-      <h3>Danh sách địa chỉ</h3>
-      <ul>
-        {addresses ? (
-
-          <li key={addresses.id}>
-            {addresses.address} - {addresses.districtName} - {addresses.wardName}
-            <button className="btn mt-2" onClick={() => handleDelete(addresses.id)}>Xóa</button>
-            <button className="btn mt-2" onClick={() => setSelectedAddress(addresses)}>Sửa</button>
-          </li>
-        )
-          : (
-            <li>Chưa có địa chỉ nào</li>
-          )}
-      </ul>
+    <div className="address-management">
+  <h2>Quản lý địa chỉ</h2>
+  <form onSubmit={handleSubmit}>
+    <input
+      className="form-control"
+      type="text"
+      value={address}
+      onChange={(e) => setAddress(e.target.value)}
+      placeholder="Nhập địa chỉ"
+      required
+    />
+    <div className="select-container">
+      <h3>Chọn Tỉnh</h3>
+      <Select
+        options={provinceOptions}
+        value={selectedProvince}
+        onChange={handleProvinceChange}
+        placeholder="Chọn tỉnh"
+      />
     </div>
+    <div className="select-container">
+      <h3>Chọn Quận/Huyện</h3>
+      <Select
+        options={districtOptions}
+        value={selectedDistrict}
+        onChange={handleDistrictChange}
+        placeholder="Chọn quận/huyện"
+        isDisabled={!districtOptions.length}
+      />
+    </div>
+    <div className="select-container">
+      <h3>Chọn Phường/Xã</h3>
+      <Select
+        options={wardOptions}
+        value={selectedWard}
+        onChange={handleWardChange}
+        placeholder="Chọn phường/xã"
+        isDisabled={!wardOptions.length}
+      />
+    </div>
+    <button className="btn btn-primary" type="submit">
+      {selectedAddress ? "Cập nhật" : "Thêm"} địa chỉ
+    </button>
+  </form>
+  <h3>Danh sách địa chỉ</h3>
+  <div className="address-list">
+    <ul>
+      {Array.isArray(addresses) && addresses.length > 0 ? (
+        addresses.map((addr) => (
+          <li key={addr.id}>
+            {addr.address} - {addr.districtName} - {addr.wardName}
+            <button
+              className="btn btn-warning"
+              onClick={() => handleSelectAddress(addr)}
+            >
+              Sửa
+            </button>
+          </li>
+        ))
+      ) : (
+        <li>Chưa có địa chỉ nào</li>
+      )}
+    </ul>
+  </div>
+</div>
+
   );
 };
 

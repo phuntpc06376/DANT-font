@@ -368,7 +368,7 @@ export default function Products() {
                 currentProducts.map((product) => (
                   <tr key={product.id}>
                     <td>{product.name}</td>
-                    <td>{product.price}</td>
+                    <td>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</td>
                     <td>{product.quantity}</td>
                     <td>{product.promotion?.name || "Không"}</td>
                     <td>{product.prodType?.name || "Không"}</td>

@@ -163,14 +163,10 @@ const UserProfile = () => {
       {/* Cover Section */}
       <div className="cover-section">
         <div className="avatar">
-          <img
+        <img
+            src={profileData.avatar ? `http://localhost:8080/image/${profileData.avatar}` : "https://via.placeholder.com/150"}
+            alt="User Avatar"
             className="avatar-img"
-            src={
-              profileData.avatar
-                ? `http://localhost:8080/uploads/avatars/${profileData.avatar}`
-                : "https://via.placeholder.com/100"
-            }
-            alt="Avatar"
           />
         </div>
       </div>
@@ -200,10 +196,10 @@ const UserProfile = () => {
                 <div className="card-post mb-3" key={post.id}>
                   <div className="d-flex align-items-center">
                     <img
-                      className="rounded-circle me-3"
+                      className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px" }}
                       src={
-                        post.account?.avatar
-                          ? `http://localhost:8080/uploads/avatars/${post.account.avatar}`
+                        post.account?.avatar 
+                          ? `http://localhost:8080/image/${post.account.avatar}`
                           : "https://via.placeholder.com/50"
                       }
                       alt="User Avatar"
@@ -215,17 +211,19 @@ const UserProfile = () => {
                   </div>
                   <div className="post-content">
                     <p>{post.content}</p>
-                    {post.postImages?.length > 0 && (
-                      <div className="post-images">
-                        {post.postImages.map((image) => (
-                          <img
-                            key={image.id}
-                            src={`http://localhost:8080/uploads/posts/${image.nameImage}`}
-                            alt="Post"
-                            className="post-image"
-                          />
+                    {post.postImages && post.postImages.length > 0 && (
+                      <div className={`fb-post-images fb-images-${post.postImages.length}`}>
+                        {post?.postImages.map((image, index) => (
+                          <div key={index} className="fb-post-image-wrapper">
+                            <img
+                              src={`http://localhost:8080/image/${image?.nameImage}`}
+                              alt={`Image ${index + 1}`}
+                              className="fb-post-image"
+                            />
+                          </div>
                         ))}
                       </div>
+
                     )}
                   </div>
                   <div className="card-footer mt-3 d-flex justify-content-between">

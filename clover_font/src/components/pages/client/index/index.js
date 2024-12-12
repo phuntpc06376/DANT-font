@@ -73,12 +73,13 @@ const MainContent = () => {
       if (!response.ok) throw new Error(`Error: ${response.status}`);
       const data = await response.json();
       setPosts(Array.isArray(data) ? data : []);
+      // console.log(data)
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
       setLoading(false);
     }
-    
+
   };
 
 
@@ -104,7 +105,7 @@ const MainContent = () => {
     formData.append('content', newPostContent);
     formData.append('postDay', new Date().toISOString());
     formData.append('accountId', currentUserAccountId); // Sử dụng ID người dùng thực tế
-
+    
     for (let file of selectedFiles) {
       formData.append('files', file);
     }
@@ -186,10 +187,11 @@ const MainContent = () => {
           <Post
             key={post.id}
             postId={post.id}
-            userImage={post?.account?.avatar ? `http://localhost:8080/images/${post.account.avatar}` : "default-avatar.png"}
+            userImage={post?.account?.avatar ? `http://localhost:8080/image/${post.account.avatar}` : "default-avatar.png"}
             userName={post?.account?.username || "Unknown User"}
             userFullname={post?.account?.fullname}
             timeStamp={new Date(post.postDay).toLocaleString()}
+            Img={post?.postImages}
             content={post.content}
             likes={post.likes || []}
             initialComments={post.comments || []}
@@ -209,7 +211,7 @@ const MainContent = () => {
 
 // Post Component
 const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes,
-   initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
+  initialComments, accountId, onPostDeleted, fetchPosts, userFullname, Img }) => {
   // const [likesCount, setLikesCount] = useState(likes.length);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(likes.length);
@@ -350,6 +352,8 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
     });
   };
 
+  // console.log(Img);
+
 
   const [isEditing, setIsEditing] = useState(null);
   const [editedComment, setEditedComment] = useState('');
@@ -450,11 +454,13 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       <Card.Body>
         <Row>
           <Col xs={2}>
-            <img
+          <div className="imgAt">
+          <img 
               src={userImage || 'default-avatar.png'}
               alt="user-avatar"
-              className="img-fluid rounded-circle"
+              className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px"}}
             />
+          </div>
           </Col>
           <Col xs={10}>
             <Link
@@ -474,7 +480,20 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
         <Row className="mt-2">
           <Col>
             <p>{content}</p>
+
           </Col>
+          <div className={`fb-post-images fb-images-${Img.length}`}>
+            {Img.map((image, index) => (
+              <div key={index} className="fb-post-image-wrapper">
+                <img
+                  src={`http://localhost:8080/image/${image?.nameImage}`}
+                  alt={`Image ${index + 1}`}
+                  className="fb-post-image" 
+                />
+              </div>
+            ))}
+          </div>
+
         </Row>
         <hr />
         <Row className="text-center mt-3">

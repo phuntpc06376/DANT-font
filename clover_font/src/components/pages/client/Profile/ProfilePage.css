@@ -264,11 +264,11 @@ transform: scale(1.02);
 box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.card-post img {
+/* .card-post img {
 max-width: 50px;
 max-height: 50px;
 object-fit: cover;
-}
+} */
 
 .card-post .card-body {
 padding: 15px;
@@ -468,4 +468,46 @@ font-size: 18px;
 .pagination-controls button:disabled {
   cursor: not-allowed;
   background-color: #e9ecef;
+}
+
+
+
+.fb-post-images {
+  display: flex;
+  flex-wrap: wrap; /* Hình ảnh có thể xuống dòng */
+  gap: 8px; /* Khoảng cách giữa các hình ảnh */
+}
+
+.fb-images-1 .fb-post-image-wrapper {
+  flex: 1 1 100%; /* Một ảnh chiếm toàn bộ chiều rộng */
+}
+
+.fb-images-2 .fb-post-image-wrapper {
+  flex: 1 1 49%; /* Hai ảnh mỗi ảnh chiếm một nửa */
+}
+
+.fb-images-3 .fb-post-image-wrapper {
+  flex: 1 1 32%; /* Ba ảnh sắp xếp ngang */
+}
+
+.fb-images-4 .fb-post-image-wrapper {
+  flex: 1 1 48%; /* Hai hàng, mỗi hàng hai ảnh */
+}
+
+.fb-images-5 .fb-post-image-wrapper,
+.fb-images-6 .fb-post-image-wrapper {
+  flex: 1 1 calc(33.33% - 8px); /* Ba ảnh mỗi hàng */
+}
+
+.fb-post-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.fb-post-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover; /* Đảm bảo ảnh không bị méo */
+  display: block;
 }
