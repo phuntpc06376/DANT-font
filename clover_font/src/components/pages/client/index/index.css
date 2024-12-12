@@ -190,6 +190,7 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+<<<<<<< HEAD
 
 
 
@@ -243,3 +244,5 @@
   object-fit: cover; /* Đảm bảo ảnh vừa khung và không bị méo */
   display: block;
 }
+=======
+>>>>>>> parent of 69e1d45c (WebSocket)

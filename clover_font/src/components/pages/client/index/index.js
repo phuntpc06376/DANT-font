@@ -79,7 +79,7 @@ const MainContent = () => {
     } finally {
       setLoading(false);
     }
-
+    
   };
 
 
@@ -211,7 +211,11 @@ const MainContent = () => {
 
 // Post Component
 const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes,
+<<<<<<< HEAD
   initialComments, accountId, onPostDeleted, fetchPosts, userFullname, Img }) => {
+=======
+   initialComments, accountId, onPostDeleted, fetchPosts, userFullname }) => {
+>>>>>>> parent of 69e1d45c (WebSocket)
   // const [likesCount, setLikesCount] = useState(likes.length);
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(likes.length);
