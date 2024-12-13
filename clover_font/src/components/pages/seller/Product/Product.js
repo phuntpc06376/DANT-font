@@ -7,6 +7,8 @@ import { getAllTypeProducts } from "../api/prodTypeApi";
 import { getAllPropertiesValues } from "../api/propertiesValueApi";
 import './Product.css';
 import ReactPaginate from 'react-paginate';
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -15,6 +17,7 @@ export default function Products() {
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
 
   const [formData, setFormData] = useState({
     id: "",
@@ -36,6 +39,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         const data = await productService.getProductsBySeller();
+        console.log("Products Data: ", data); // Kiểm tra dữ liệu
         setProducts(data);
       } catch (error) {
         setError("Không thể tải danh sách sản phẩm.");
@@ -53,6 +57,7 @@ export default function Products() {
           getAllTypeProducts(),
           getAllPropertiesValues()
         ]);
+        console.log("Properties Values Data:", propertiesvalueData);
         setPromotions(promoData);
         setProdTypes(typeData);
         setPropertiesValues(propertiesvalueData);
@@ -63,6 +68,52 @@ export default function Products() {
     fetchDropdownData();
   }, []);
 
+  useEffect(() => {
+    // fetchProducts();
+    // fetchDropdownData();
+
+    // Tạo kết nối SockJS
+    const socket = new SockJS("http://localhost:8080/ws"); // URL của WebSocket server
+
+    // Tạo đối tượng StompClient để sử dụng với SockJS
+    const stompClient = Stomp.over(socket);
+    stompClient.connect({}, () => {
+      // Lắng nghe các sự kiện từ server qua SockJS
+      setStompClient(stompClient);
+      stompClient.subscribe("/topic/productAdded", handleProductAdded);
+      stompClient.subscribe("/topic/productUpdated", handleProductUpdated);
+      stompClient.subscribe("/topic/productDeleted", handleProductDeleted);
+    });
+
+    // Cleanup WebSocket khi component unmount
+    return () => {
+      if (stompClient) {
+        stompClient.disconnect();
+      }
+    };
+  }, []);
+
+  const handleProductAdded = (message) => {
+    const newProduct = JSON.parse(message.body);
+    setProducts((prevProducts) => [...prevProducts, newProduct]);
+  };
+
+  const handleProductUpdated = (message) => {
+    const updatedProduct = JSON.parse(message.body);
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
+  };
+
+  const handleProductDeleted = (message) => {
+    const deletedProductId = JSON.parse(message.body);
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== deletedProductId)
+    );
+  };
+
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
 
@@ -70,13 +121,13 @@ export default function Products() {
     setCurrentPage(selected);
   };
 
-  // Calculate filteredProducts after products or searchTerm changes
+  // Lọc sản phẩm khi có sự thay đổi về từ khoá tìm kiếm
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     product.status === true
   );
 
-  // Paginate filteredProducts
+  // Phân trang sản phẩm
   const offset = currentPage * itemsPerPage;
   const currentProducts = filteredProducts.slice(offset, offset + itemsPerPage);
 
@@ -111,6 +162,9 @@ export default function Products() {
         const updatedProducts = await productService.getProductsBySeller();
         setProducts(updatedProducts);
         Swal.fire("Đã xóa!", "Sản phẩm đã được xóa.", "success");
+
+        // Emit WebSocket event to notify deletion
+        stompClient.send("/app/productDeleted", {}, JSON.stringify(id));
       } catch (error) {
         setError("Không thể xóa sản phẩm.");
         console.error("Error deleting product:", error);
@@ -147,20 +201,33 @@ export default function Products() {
     formToSubmit.append("promotionID", formData.promotionId || "");
     formToSubmit.append("prodTypeID", formData.prodTypeId || "");
     if (Array.isArray(formData.propertiesValues)) {
-      formData.propertiesValues.forEach((value) => {
-        formToSubmit.append("propertiesValues", value);
-      });
+      const valuesString = formData.propertiesValues.join(','); // Kết nối các phần tử mảng bằng dấu phẩy
+      formToSubmit.append("propertiesValues", valuesString);
     }
     formData.images.forEach((image) => formToSubmit.append("file", image));
 
     try {
       if (formType === "add") {
-        await productService.createProduct(formToSubmit);
+        // await productService.createProduct(formToSubmit);
+        const newProduct = await productService.createProduct(formToSubmit);
+        setProducts((prevProducts) => [...prevProducts, newProduct]);
         Swal.fire("Thành công!", "Sản phẩm đã được thêm.", "success");
+
+         // Emit WebSocket event to notify addition
+        stompClient.send("/app/productAdded", {}, JSON.stringify(newProduct));
+
       } else if (formType === "edit" && selectedProduct) {
         formToSubmit.append("id", formData.id);
         await productService.updateProduct(formToSubmit);
+        setProducts((prevProducts) =>
+          prevProducts.map((product) =>
+            product.id === formData.id ? { ...product, ...formData } : product
+          )
+        );
         Swal.fire("Thành công!", "Sản phẩm đã được cập nhật.", "success");
+        
+        // Emit WebSocket event to notify update
+        stompClient.send("/app/productUpdated", {}, JSON.stringify(formData));
       }
 
       const updatedProducts = await productService.getProductsBySeller();
@@ -373,10 +440,17 @@ export default function Products() {
                     <td>{product.promotion?.name || "Không"}</td>
                     <td>{product.prodType?.name || "Không"}</td>
                     <td>
-                      {product.propertiesValues &&
-                        product.propertiesValues.map((pv, index) => (
-                          <div key={index}>{pv.name}</div>
-                        ))}
+                    <div>
+                          {product.propertiesValues && product.propertiesValues.length > 0 ? (
+                            product.propertiesValues.map((pv, index) => (
+                              <span key={pv.id}>
+                                {pv.name}{index < product.propertiesValues.length - 1 && ', '}
+                              </span>
+                            ))
+                          ) : (
+                            <span>Không có thuộc tính</span>
+                          )}
+                        </div>
                     </td>
                     <td className="products-table-actions">
                       <button
@@ -408,7 +482,7 @@ export default function Products() {
               nextLabel={"Tiếp theo"}
               breakLabel={"..."} // Thêm dấu ba chấm
               pageCount={Math.ceil(filteredProducts.length / itemsPerPage)}
-              
+
               onPageChange={handlePageClick}
               containerClassName={"pagination"}
               pageClassName={"page-item"}

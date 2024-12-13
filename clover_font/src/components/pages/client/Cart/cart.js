@@ -16,7 +16,7 @@ export default function ProductCards() {
   const navigate = useNavigate();
 
 
-  
+
 
   // Fetch cart data from API
   const fetchCart = async () => {
@@ -28,6 +28,7 @@ export default function ProductCards() {
       });
       setCartItems(response.data);
       calculateTotal(response.data);
+      console.log(response)
     } catch (err) {
       setError("Error fetching cart items.");
       console.error(err);
@@ -39,7 +40,7 @@ export default function ProductCards() {
     return items.reduce((groups, item) => {
       const shopId = item?.prod?.shop?.id || "unknown"; // Sử dụng `id` của shop làm khóa
       const shopName = item?.prod?.shop?.name || "Unknown Shop"; // Tên cửa hàng để hiển thị
-  
+
       if (!groups[shopId]) {
         groups[shopId] = { name: shopName, items: [] };
       }
@@ -47,7 +48,7 @@ export default function ProductCards() {
       return groups;
     }, {});
   };
-  
+
   const groupedCartItems = groupByShop(cartItems);
 
   useEffect(() => {
@@ -110,13 +111,13 @@ export default function ProductCards() {
 
   const handlePayment = () => {
     if (selectedItems.length === 0) {
-        toast.error("Vui lòng chọn sản phẩm để đặt hàng.");
-        return;
-    } 
+      toast.error("Vui lòng chọn sản phẩm để đặt hàng.");
+      return;
+    }
     // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
     localStorage.setItem('ids', selectedItems);
     navigate("/user/order");
-};
+  };
 
 
   const handleSelect = (itemId) => {
@@ -138,7 +139,7 @@ export default function ProductCards() {
   };
 
 
-  
+
   return (
     <section className="h-100" style={{ backgroundColor: "#eee" }}>
       <Container className="py-5 h-100">
@@ -148,7 +149,7 @@ export default function ProductCards() {
               <h3 className="fw-normal mb-0 text-black">Giỏ hàng của bạn</h3>
               <Form.Check
                 type="checkbox"
-                label="Select All"
+                label="Chọn tất cả"
                 checked={selectAll}
                 onChange={handleSelectAll}
               />
@@ -159,7 +160,7 @@ export default function ProductCards() {
             ) : error ? (
               <Alert variant="danger">{error}</Alert>
             ) : cartItems.length === 0 ? (
-              <p>No products in your cart.</p>
+              <p>Không có sản phẩm trong giỏ gàng</p>
             ) : (
               Object.entries(groupedCartItems).map(([shopId, group]) => (
                 <div key={shopId} className="mb-4">
@@ -177,8 +178,8 @@ export default function ProductCards() {
                           </Col>
                           <Col md="2">
                             <Card.Img
-                              className="rounded-3"
-                              src={item.prod?.image ? `http://localhost:8080/images/${item.prod.image}` : "https://via.placeholder.com/150"}
+                              className="rounded-3" style={{ width: "150px", height: "150px" }}
+                              src={item.prod?.prodImages[0] ? `http://localhost:8080/image/${item?.prod.prodImages[0]?.name}` : "https://via.placeholder.com/150"}
                               alt={item.prod?.name || "Product Image"}
                             />
                           </Col>
@@ -195,7 +196,9 @@ export default function ProductCards() {
                             </Button>
                           </Col>
                           <Col md="2" className="d-flex align-items-center justify-content-end">
-                            <h5 className="mb-0">{(item.prod?.price * item.quantity).toFixed(0)} VNĐ</h5>
+                            <h5 className="mb-0">
+                              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.prod?.price * item.quantity)}
+                            </h5>
                           </Col>
                           <Col md="1" className="d-flex align-items-center justify-content-end">
                             <Button variant="link" className="text-danger" onClick={() => handleRemove(item.id)}>
@@ -208,8 +211,8 @@ export default function ProductCards() {
                   ))}
                 </div>
               ))
-              
-              
+
+
             )}
 
             {cartItems.length > 0 && !loading && (
@@ -217,7 +220,10 @@ export default function ProductCards() {
                 <Card.Body>
                   <Row className="align-items-center">
                     <Col md="6" className="d-flex justify-content-start">
-                      <h5 className="mb-0">Tổng tiền: {totalPrice.toFixed(0)} VNĐ</h5>
+                      <h5 className="mb-0">
+                        Tổng tiền: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPrice)}
+                      </h5>
+
                     </Col>
                     <Col md="6" className="d-flex justify-content-end">
                       <Button variant="warning" size="lg" onClick={handlePayment} disabled={selectedItems.length === 0}>

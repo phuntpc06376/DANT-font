@@ -42,9 +42,9 @@ const OrderSummary = () => {
       {billData.map((bill) => (
         <div className="bill-card" key={bill.id}>
           <div className="bill-header">
-            <h5>Đơn hàng #{bill.id}</h5>
+            {/* <h5>Đơn hàng #{bill.id}</h5> */}
             <span className="bill-date">
-             <strong>Ngày mua:</strong> {new Date(bill.buyDay).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+             <h4><strong>Ngày mua:</strong> {new Date(bill.buyDay).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })}</h4> 
             </span>
 
           </div>

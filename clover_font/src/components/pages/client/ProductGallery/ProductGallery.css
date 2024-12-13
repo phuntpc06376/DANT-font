@@ -69,3 +69,12 @@
   padding: 10px;
   border-radius: 10px;
 }
+.search-input, .price-range-selector, .search-button {
+  margin-right: 10px;  /* Khoảng cách giữa các input và button */
+}
+
+.d-flex {
+  display: flex;
+  justify-content: space-between;  /* Đảm bảo khoảng cách giữa các thành phần */
+  align-items: center;  /* Căn chỉnh theo chiều dọc */
+}

@@ -27,7 +27,10 @@ const ProfilePage = () => {
   const decodedToken = token ? jwtDecode(token) : null; // Giải mã token
   const username = decodedToken?.sub; // Lấy `username` từ payload (thường là `sub`)
 
-
+  useEffect(() => {
+    fetchPosts();
+    
+  }, []);
   // Lấy thông tin tài khoản
   useEffect(() => {
     if (!username) {
@@ -71,9 +74,7 @@ const ProfilePage = () => {
     fetchProfileData();
   }, [token, username]);
   //
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
@@ -117,13 +118,13 @@ const ProfilePage = () => {
   };
 
   const handleUpdate = async () => {
+  
     if (!username) {
       Swal.fire({
         icon: 'error',
         title: 'Lỗi!',
         text: 'Không xác định được người dùng.',
       });
-      return;
     }
 
     // Kiểm tra các trường cần thiết
@@ -140,7 +141,6 @@ const ProfilePage = () => {
           title: 'Lỗi!',
           text: field.message,
         });
-        return;
       }
     }
 
@@ -151,7 +151,6 @@ const ProfilePage = () => {
         title: 'Lỗi!',
         text: 'Vui lòng nhập tên đầy đủ từ 5 đến 20 ký tự.',
       });
-      return;
     }
 
     // Hàm kiểm tra email và số điện thoại hợp lệ
@@ -163,7 +162,6 @@ const ProfilePage = () => {
         icon: 'warning',
         title: 'Email không hợp lệ.',
       });
-      return;
     }
 
     if (!isValidPhone(updatedData.phone)) {
@@ -171,7 +169,6 @@ const ProfilePage = () => {
         icon: 'warning',
         title: 'Số điện thoại không hợp lệ.',
       });
-      return;
     }
 
     // Tạo FormData để gửi dữ liệu (bao gồm avatar)
@@ -199,10 +196,11 @@ const ProfilePage = () => {
           },
         }
       );
-
+      console.log(response.data.data);
+      fetchPosts();
       // Xử lý kết quả trả về
       if (response.status === 200 && response.data) {
-        setProfileData(response.data);
+        setProfileData(response.data.data);
         setIsEditing(false);
         Swal.fire({
           icon: 'success',
@@ -468,7 +466,7 @@ const ProfilePage = () => {
       <div className="profile-actions">
         {isEditing ? (
           <>
-            <button className="btn btn-primary px-4 save-btn" onClick={handleUpdate}>
+            <button className="btn btn-primary px-4 save-btn" onClick={ handleUpdate}>
               Lưu thay đổi
             </button>
             <button className="btn btn-danger px-4 cancel-btn" onClick={() => setIsEditing(false)}>
@@ -586,7 +584,9 @@ const ProfilePage = () => {
                     <div className="product-content mt-3">
                       <h5 className="product-title">{prod.name}</h5>
                       <p className="product-description">{prod.description}</p>
-                      <p className="product-price">{prod.price.toLocaleString()} VND</p>
+                      <p className="product-price">  
+                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(prod.price)}</p>
+
                     </div>
                   </div>
                 ))}

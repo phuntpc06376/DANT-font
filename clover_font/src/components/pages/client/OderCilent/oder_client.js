@@ -415,8 +415,8 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
             <td>
               <img
                 className="img-fluid rounded"
-                src={`../image/${p?.prod[0]?.productImages[0]?.name}`}
-                alt={p.prod?.name || "Product"}
+                src={`http://localhost:8080/image/${p?.prod?.prodImages[0]?.name}`}
+                alt={p.prod?.prodImages[0] || "Product"}
                 style={{ width: "80px", height: "80px" }}
               />
             </td>

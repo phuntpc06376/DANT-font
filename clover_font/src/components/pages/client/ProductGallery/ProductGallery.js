@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import './ProductGallery.css';
+import PriceRangeSelector from './PriceRangeSelector'; // Đường dẫn phù hợp với file của bạn
+import WebSocketService from '../../webSocket/WebSocketService';
 
 // Component ProductCard to display each product
 const ProductCard = ({ id, title, price, location, imageUrl }) => {
@@ -27,7 +29,9 @@ const ProductCard = ({ id, title, price, location, imageUrl }) => {
         </div>
         <Card.Body className="text-dark border-5 product-content">
           <Card.Text className="fw-bold product-title">{title}</Card.Text>
-          <Card.Title className="product-price text-danger">{price} Đ</Card.Title>
+          <Card.Title className="product-price text-danger">
+            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+          </Card.Title>
         </Card.Body>
       </Card>
     </Col>
@@ -46,46 +50,60 @@ const ProductGallery = () => {
   const [productsPerPage] = useState(8); // Number of products per page
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/user/shopping/product', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (!response.ok) {
-          const errorMessage = await response.text();
-          throw new Error(errorMessage || 'Cannot load data from server');
-        }
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/user/shopping/product', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-        const data = await response.json();
-        setProducts(data);
-        setFilteredProducts(data); // Set initial filtered products
-        setLoading(false);
-        console.log(data);
-        
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setLoading(false);
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || 'Cannot load data from server');
       }
-    };
 
+      const data = await response.json();
+      setProducts(data);
+      setFilteredProducts(data); // Set initial filtered products
+      setLoading(false);
+      console.log(data);
+
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProducts();
+  }, [token]);
+
+  // Tích hợp WebSocket để nhận cập nhật theo thời gian thực
+  useEffect(() => {
+    WebSocketService.connect(token);
+
+    WebSocketService.onProductUpdate((message) => {
+      // Xử lý cập nhật sản phẩm (ví dụ: thêm, cập nhật, xóa sản phẩm)
+      console.log('Cập nhật sản phẩm nhận được:', message);
+      // Lấy lại sản phẩm mới sau khi có cập nhật
+      fetchProducts();
+    });
+
+    // Dọn dẹp kết nối WebSocket khi component unmount
+    return () => {
+      WebSocketService.disconnect();
+    };
   }, [token]);
 
   const handleSearch = () => {
     const keyword = searchKeyword.toLowerCase();
-    const min = parseFloat(minPrice) || 0;
-    const max = parseFloat(maxPrice) || Infinity;
-
     const filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(keyword) &&
-        product.price >= min &&
-        product.price <= max
+        product.price >= minPrice &&
+        product.price <= maxPrice
     );
     setFilteredProducts(filtered);
     setCurrentPage(1);
@@ -109,9 +127,8 @@ const ProductGallery = () => {
 
   return (
     <Container className="mt-4 product-gallery">
-     
-      <Row className="mb-4">
-        <Col md={4}>
+      <Row className="mb-4 align-items-center">
+        <Col md={5}>
           <Form.Group controlId="searchKeyword">
             <Form.Label>Tên sản phẩm</Form.Label>
             <Form.Control
@@ -123,78 +140,38 @@ const ProductGallery = () => {
             />
           </Form.Group>
         </Col>
-        <Col md={3}>
-          <Form.Group controlId="minPrice">
-            <Form.Label>Giá tối thiểu</Form.Label>
-            <Form.Control
-              as="select"
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              className="price-select"
-            >
-              <option value="">Chọn giá tối thiểu</option>
-              <option value="0">0</option>
-              <option value="50">50,000</option>
-              <option value="70">70,000</option>
-              <option value="100">100,000</option>
-              {/* Thêm nhiều mức giá hơn nếu cần */}
-            </Form.Control>
-          </Form.Group>
+        <Col md={5} className='mt-3'>
+          <Form.Label>Khoảng giá</Form.Label>
+          <PriceRangeSelector
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            setMinPrice={setMinPrice}
+            setMaxPrice={setMaxPrice}
+          />
         </Col>
-
-        <Col md={3}>
-          <Form.Group controlId="maxPrice">
-            <Form.Label>Giá tối đa</Form.Label>
-            <Form.Control
-              as="select"
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              className="price-select"
-            >
-              <option value="">Chọn giá tối đa</option>
-              <option value="500">50,000</option>
-              <option value="1000">100,000</option>
-              <option value="2000">200,000</option>
-              <option value="3000">300,000</option>
-              {/* Thêm nhiều mức giá hơn nếu cần */}
-            </Form.Control>
-          </Form.Group>
-        </Col>
-
-        <Col md={2} className="d-flex align-items-end">
+        <Col md={2} className="d-flex justify-content-end mt-3">
           <Button variant="primary" onClick={handleSearch} className="search-button">
             Tìm kiếm
           </Button>
         </Col>
       </Row>
 
-      <h4 className="text-dark mb-4">Kết quả tìm kiếm</h4>
-      <Row xs={1} sm={2} md={4} className="g-4">
-        {sortedProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            title={product.name}
-            price={product.price}
-            location={`${product.shop.city}, ${product.shop.province}`}
-            imageUrl={`http://localhost:8080/images/${product.prodImages[0]?.name}`}
-          />
-        ))}
-      </Row>
+      {/* Container with background color */}
+      <Card className="p-4" fluid style={{ backgroundColor: "#eee" }}>
+        <Row xs={1} sm={2} md={4} className="g-4">
+          {sortedProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              title={product.name}
+              price={product.price}
+              location={`${product.shop.city}, ${product.shop.province}`}
+              imageUrl={`http://localhost:8080/image/${product.prodImages[0]?.name}`}
+            />
+          ))}
+        </Row>
+      </Card>
 
-      <h4 className="text-dark mt-5 mb-4">Những sản phẩm có giá trị giảm dần</h4>
-      <Row xs={1} sm={2} md={4} className="g-4">
-        {sortedProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            title={product.name}
-            price={product.price}
-            location={`${product.shop.city}, ${product.shop.province}`}
-            imageUrl={`http://localhost:8080/images/${product.prodImages[0]?.name}`}
-          />
-        ))}
-      </Row>
 
       {/* Pagination */}
       <Pagination className="justify-content-center mt-4">

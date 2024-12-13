@@ -49,7 +49,7 @@ const ProductDetail = () => {
 
   // Destructure product and shop information
   const { name, price = 0, description, ratings = 0, prodImages, shop, quantity } = product;
-  const imageUrl = prodImages && prodImages[0] ? `http://localhost:8080/images/${prodImages[0].name}` : "https://via.placeholder.com/150";
+  const imageUrl = prodImages && prodImages[0] ? `http://localhost:8080/image/${product.prodImages[0]?.name}` : "https://via.placeholder.com/150";
 
   const shopInfo = shop
     ? {
@@ -105,7 +105,7 @@ const ProductDetail = () => {
       <Row>
         <Col md={5}>
           <img
-            src={imageUrl}
+            src={imageUrl} style={{width : "300px" , height : "400px"}}
             alt={name}
             className="productDetail-img"
           />
@@ -119,7 +119,7 @@ const ProductDetail = () => {
                 <FaStar key={i} />
               ))}
           </div>
-          <h3 className="productDetail-price">{price.toLocaleString()} Đ</h3>
+          <h3 className="productDetail-price"> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}</h3>
           <div className="productDetail-description">
             <h5>Mô tả sản phẩm:</h5>
             <p>{description}</p>
@@ -166,11 +166,13 @@ const ProductDetail = () => {
             <Col md={3} key={relatedProduct.id} className="mb-4 product-grid">
               <Card className="product-card" onClick={() => navigate(`/user/product/${relatedProduct.id}`)} style={{ cursor: 'pointer' }}>
                 <Card.Img variant="top" src={relatedProduct.prodImages && relatedProduct.prodImages[0]
-                  ? `http://localhost:8080/images/${relatedProduct.prodImages[0].name}`
+                  ? `http://localhost:8080/image/${product.prodImages[0]?.name}`
                   : "https://via.placeholder.com/150"} />
                 <Card.Body className="product-content mt-3">
                   <Card.Title className="product-title">{relatedProduct.name}</Card.Title>
-                  <Card.Text className="product-price">₫{relatedProduct.price.toLocaleString()}</Card.Text>
+                  <Card.Text className="product-price">   
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(relatedProduct.price)}</Card.Text>
+               
                 </Card.Body>
               </Card>
             </Col>

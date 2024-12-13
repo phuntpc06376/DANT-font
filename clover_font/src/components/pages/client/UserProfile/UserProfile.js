@@ -163,7 +163,7 @@ const UserProfile = () => {
       {/* Cover Section */}
       <div className="cover-section">
         <div className="avatar">
-        <img
+          <img
             src={profileData.avatar ? `http://localhost:8080/image/${profileData.avatar}` : "https://via.placeholder.com/150"}
             alt="User Avatar"
             className="avatar-img"
@@ -191,19 +191,19 @@ const UserProfile = () => {
             {posts.length === 0 ? (
               <p>Người dùng này chưa có bài đăng nào.</p>
             ) : (
-          
+
               posts.map((post) => (
                 <div className="card-post mb-3" key={post.id}>
                   <div className="d-flex align-items-center">
                     <img
                       className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px" }}
                       src={
-                        post.account?.avatar 
+                        post.account?.avatar
                           ? `http://localhost:8080/image/${post.account.avatar}`
                           : "https://via.placeholder.com/50"
                       }
                       alt="User Avatar"
-                      
+
                     />
                     <div className="mb-0">
                       <h4>{post.account?.fullname || "Người dùng"}</h4>
@@ -253,7 +253,10 @@ const UserProfile = () => {
                   <div className="product-content mt-3">
                     <h5 className="product-title">{prod.name}</h5>
                     <p className="product-description">{prod.description}</p>
-                    <p className="product-price">{prod.price} VND</p>
+                    <p className="product-price">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(prod.price)}
+                    </p>
+
                   </div>
                 </div>
               ))

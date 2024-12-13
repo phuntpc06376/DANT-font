@@ -61,7 +61,6 @@ const FacebookNavbar = () => {
               </Navbar.Brand>
               <Navbar.Toggle aria-controls="basic-navbar-nav" />
             </Col>
-
             {/* Search bar */}
             <Col className="p-3 d-flex justify-content-center align-items-center">
               <Form className="d-flex" style={{ width: '400px' }}>
@@ -73,19 +72,21 @@ const FacebookNavbar = () => {
                 />
               </Form>
             </Col>
-
             {/* Dropdown with user actions */}
             <Col xs="auto" className="d-flex align-items-center justify-content-end">
+              {/* Icon giỏ hàng với khoảng cách */}
+              <a href="/user/cart" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <FaCartShopping style={{ fontSize: '1.5rem', marginRight: '15px' }} />
+              </a>
+
+
+              {/* Dropdown menu */}
               <Dropdown align="end">
                 <Dropdown.Toggle variant="light" id="dropdown-basic" className="fs-4 no-caret">
                   <IoMdMenu style={{ fontSize: '1.5rem' }} />
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  {/* <Dropdown.Item href="cart">
-                    <FaCartShopping style={{ fontSize: '1.5rem', marginRight: '10px' }} />
-                    Giỏ hàng
-                  </Dropdown.Item> */}
                   <Dropdown.Item href="chat">
                     <RiMessengerLine style={{ fontSize: '1.5rem', marginRight: '10px' }} />
                     Nhắn tin
@@ -94,10 +95,6 @@ const FacebookNavbar = () => {
                     <CgProfile style={{ fontSize: '1.5rem', marginRight: '10px' }} />
                     Thông tin cá nhân
                   </Dropdown.Item>
-                  {/* <Dropdown.Item href="orderSummary">
-                    <RiBillLine style={{ fontSize: '1.5rem', marginRight: '10px' }} />
-                    Hóa đơn của bạn
-                  </Dropdown.Item> */}
                   <Dropdown.Item href="/seller/*">
                     <FaShop style={{ fontSize: '1.5rem', marginRight: '10px' }} />
                     Kênh người bán
@@ -109,7 +106,6 @@ const FacebookNavbar = () => {
                     </Dropdown.Item>
                   )}
                 </Dropdown.Menu>
-
               </Dropdown>
             </Col>
           </Row>

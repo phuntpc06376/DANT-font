@@ -30,6 +30,8 @@ const productService = {
 
   // Lấy sản phẩm theo người bán
   getProductsBySeller: async () => {
+    console.log("getProductBySeller");
+    
     const response = await axiosInstance.get("/getProductBySeller");
     return response.data;
   },

@@ -243,3 +243,6 @@
   object-fit: cover; /* Đảm bảo ảnh vừa khung và không bị méo */
   display: block;
 }
+.custom-dropdown-toggle::after {
+  display: none !important; /* Ẩn mũi tên */
+}
