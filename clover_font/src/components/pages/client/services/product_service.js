@@ -27,55 +27,127 @@ axiosInstance.interceptors.request.use(
     }
 );
 export const getProductsClassTrue = async () => {
-    const response = await axiosInstance.get(`${API_HOME_URL}/productClassTrue`).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`${API_HOME_URL}/productClassTrue`).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 export const getProductsClassFalse = async () => {
-    const response = await axiosInstance.get(`${API_HOME_URL}/productClassFalse`).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`${API_HOME_URL}/productClassFalse`).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 export const getBestSellerProd = async () => {
-    const response = await axiosInstance.get(`${API_HOME_URL}/prodBestSeller`).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`${API_HOME_URL}/prodBestSeller`).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const getDetailProductById = async (id) => {
-    const response = await axiosInstance.get(`${API_DETAILPRODUCT_URL}/${id}`).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`${API_DETAILPRODUCT_URL}/${id}`).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
-export const getAllProducts = async (page,size) => {
-    const response = await axiosInstance.get(`${API_LIST_URL}?page=${page}&size=${size}`).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+export const getAllProducts = async (page, size) => {
+    try {
+        const response = await axiosInstance.get(`${API_LIST_URL}?page=${page}&size=${size}`).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const getProductByType = async () => {
-    const response = await axiosInstance.get(API_TYPEE_URL).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(API_TYPEE_URL).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const getProductSave = async () => {
-    const response = await axiosInstance.get(API_LISTSAVE_URL).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(API_LISTSAVE_URL).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const getSaleProduct = async () => {
-    const response = await axiosInstance.get(API_SALE_PRODUCT_URL).catch(function (error) {
-        window.location = "/error";
-      });;
-    return response.data;
+    try {
+        const response = await axiosInstance.get(API_SALE_PRODUCT_URL).catch(function (error) {
+            window.location = "/error";
+        });;
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };

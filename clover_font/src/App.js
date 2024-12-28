@@ -20,6 +20,8 @@ import UserProfile from './components/pages/client/UserProfile/UserProfile';
 import ResultPayment from './components/pages/client/OderCilent/ResultPayment';
 import ShopRegister from './components/pages/client/ShopRegister/ShopRegister';
 import AddAddressForm from './components/pages/client/AddAddress/AddAddressForm';
+import ChanPass from  './components/pages/client/ChanPass/ChanPass'; // đổi mật khẩu
+import Friend from './components/pages/client/Friend/friend';
 
 
 
@@ -44,9 +46,7 @@ import Product from './components/pages/seller/Product/Product'
 import Promotion from './components/pages/seller/Promotions/Promotions';
 
 import Bill from './components/pages/seller/Bill/Bill';
-
-
-
+import ErrorPage from './components/pages/error/errorPage';
 
 //chat
 import ChatApp from './components/pages/client/chat/chat';
@@ -72,8 +72,10 @@ function UserLayout() {
           <Route path="orderSummary" element={<OrderSummary />} />
           <Route path="chat" element={<ChatApp />} />
           <Route path="resultpayment" element={<ResultPayment />} />
+          <Route path="friend" element={<Friend />} />
           {/* <Route exact path="chat" component={ChatScreen} /> */}
-          
+
+          <Route path="/ChanPass" element={<ChanPass />} /> đổi mật khẩu
           {/* <Route exact path="/chat" component={ChatScreen} />
           <Route path="/" component={WelcomeScreen} /> */}
 
@@ -84,66 +86,50 @@ function UserLayout() {
   );
 }
 
+
 // Layout component cho admin
 function AdminLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false); // State để điều khiển navbar thu gọn
-
   return (
-    <div className="admin-layout">
-      <NavAdmin isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} /> {/* Truyền trạng thái navbar vào */}
-      <div className={`content-container ${isCollapsed ? 'collapsed' : ''}`}>
-        <div style={{ padding: '20px', marginLeft: isCollapsed ? '50px' : '80px', width: isCollapsed ? 'calc(100% - 50px)' : 'calc(100% - 80px)' }}>
-          <Routes>
-            <Route path="account-management" element={<AccountManagement />} />
-            <Route path="supplier-management" element={<SupplierList />} />
-            <Route path="post-management" element={<PostList />} />
-            <Route path="stactial-management" element={<StaticalAd />} />
-            <Route path="property-management" element={<PropertyManager />} />
-            <Route path="properties-values-management" element={<PropertyValueManager />} />
-            <Route path="shopRegistration" element={<ShopRegistration />} />
-            
-            <Route path="*" element={<Navigate to="/admin/stactial-management" />} />
-          </Routes>
+      <div className="admin-layout">
+        <NavAdmin /> {/* Không cần truyền trạng thái navbar vào nữa */}
+        <div className="content-container1">
+          <div style={{padding: '10px', marginLeft: '50px', marginTop: '40px', width: 'calc(100% - 60px)'}}>
+            <Routes>
+              <Route path="account-management" element={<AccountManagement/>}/>
+              <Route path="supplier-management" element={<SupplierList/>}/>
+              <Route path="post-management" element={<PostList/>}/>
+              <Route path="stactial-management" element={<StaticalAd/>}/>
+              <Route path="property-management" element={<PropertyManager/>}/>
+              <Route path="properties-values-management" element={<PropertyValueManager/>}/>
+              <Route path="shopRegistration" element={<ShopRegistration/>}/>
+
+              <Route path="*" element={<Navigate to="/admin/stactial-management"/>}/>
+            </Routes>
+          </div>
         </div>
       </div>
-    </div>
   );
 }
 
 //layout component seller
+//layout component seller
 function SellerLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false); // State để điều khiển navbar thu gọn
   return (
-    <div className="admin-layout">
-      <NavSeller isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className={`content-container ${isCollapsed ? 'collapsed' : ''}`}>
-        <div style={{ padding: '20px', marginLeft: isCollapsed ? '50px' : '80px', width: isCollapsed ? 'calc(100% - 50px)' : 'calc(100% - 80px)' }}>
-          <Routes>
-            {/* Các route khác */}
-            <Route path="products" element={<Product />} />
-            <Route path="promotions" element={<Promotion />} />
-            
-            
-            <Route path="bill" element={<Bill />} />
-            {/* <Route path="feedback" element={<Feedback />} /> */}
-            <Route path="staticalseller" element={<StaticalSeller />} />
-            <Route path="*" element={<Navigate to="/seller/products" />} />
-            {/* <Route path="/oders" element={<Oder />} />
-            <Route path="/products" element={<Product />} />
-           
-            <Route path="/posts" element={<Posts />} />
-            <Route path="/add-posts" element={<AddPosts />} />
-            <Route path="/add-product" element={<AddProduct />} />
-            <Route path="/add-promotion" element={<AddPromotion />} />
-            <Route path="/detailoder" element={<DetailOderr />} />
-            <Route path="/notification" element={<Typenotification />} />
-            <Route path="/suppliers" element={<Suppliers />} />
-            <Route path="/add-suppliers" element={<AddSuppliers />} /> */}
-          </Routes>
+      <div className="admin-layout">
+        <NavSeller />
+        <div className="content-container1">
+          <div style={{ padding: '10px', marginLeft: '60px',marginTop:'40px', width: 'calc(100% - 60px)' }}>
+            <Routes>
+              {/* Các route khác */}
+              <Route path="products" element={<Product />} />
+              <Route path="promotions" element={<Promotion />} />
+              <Route path="bill" element={<Bill />} />
+              <Route path="staticalseller" element={<StaticalSeller />} />
+              <Route path="*" element={<Navigate to="/seller/products" />} />
+            </Routes>
           </div>
         </div>
       </div>
-    
   );
 }
 
@@ -182,6 +168,8 @@ function App() {
 
         {/* Điều hướng tới trang user nếu không khớp route */}
         <Route path="*" element={<Navigate to="/user/index" />} />
+
+        <Route path="/error/403" element={<ErrorPage errorCode="403" errorMessage="Quyền truy cập bị hạn chế!" />} />
       </Routes>
     </Router>
   );

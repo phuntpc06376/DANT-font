@@ -29,7 +29,11 @@ export const getAllSuppliers = async () => {
         return response.data; // Trả về danh sách các nhà cung cấp
     } catch (error) {
         console.error('Error fetching suppliers:', error);
-        throw error; // Ném lỗi nếu có
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -42,7 +46,11 @@ export const createSupplier = async (supplierData) => {
         return response.data; // Trả về thông tin nhà cung cấp vừa tạo
     } catch (error) {
         console.error('Error creating supplier:', error);
-        throw error; // Ném lỗi nếu có
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -55,7 +63,11 @@ export const updateSupplier = async (id, supplierData) => {
         return response.data; // Trả về thông tin nhà cung cấp đã cập nhật
     } catch (error) {
         console.error('Error updating supplier:', error);
-        throw error; // Ném lỗi nếu có
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -65,7 +77,11 @@ export const deleteSupplier = async (id) => {
         await axiosInstance.delete('/delete', { params: { id } }); // Truyền id qua params để xóa
     } catch (error) {
         console.error('Error deleting supplier:', error);
-        throw error; // Ném lỗi nếu có
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -77,6 +93,10 @@ export const getSuppliersByProduct = async (productId) => {
         return response.data; // Trả về danh sách nhà cung cấp
     } catch (error) {
         console.error('Error fetching suppliers by productId:', error);
-        throw error; // Ném lỗi nếu có
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };

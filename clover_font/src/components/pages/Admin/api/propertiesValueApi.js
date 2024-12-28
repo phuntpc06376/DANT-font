@@ -38,29 +38,74 @@ axiosInstance.interceptors.response.use(
 
 // Lấy tất cả PropertiesValue
 export const getAllPropertiesValues = async () => {
-    const response = await axiosInstance.get();
-    return response.data;
+    try {
+        const response = await axiosInstance.get();
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Lấy PropertiesValue theo ID
 export const getPropertyValueById = async (id) => {
-    const response = await axiosInstance.get(`/${id}`);
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`/${id}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Tạo mới PropertiesValue
 export const createPropertyValue = async (propertyValueBean) => {
-    const response = await axiosInstance.post('', propertyValueBean);
-    return response.data;
+    try {
+        const response = await axiosInstance.post('', propertyValueBean);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Cập nhật PropertiesValue
 export const updatePropertyValue = async (id, propertyValueBean) => {
-    const response = await axiosInstance.put(`/${id}`, propertyValueBean);
-    return response.data;
+    try {
+        const response = await axiosInstance.put(`/${id}`, propertyValueBean);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Xóa PropertiesValue
 export const deletePropertyValue = async (id) => {
-    await axiosInstance.delete(`/${id}`);
+    try {
+        await axiosInstance.delete(`/${id}`);
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };

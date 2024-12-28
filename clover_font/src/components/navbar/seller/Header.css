@@ -1,62 +1,57 @@
-/* Header.css */
+/* Container cho phần sidebar và navbar trên */
+.content-container2 {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
 
-/* Header container */
-.navbar-container1 {
+/* Top Navbar (navbar trên đầu trang) */
+.top-navbar2 {
+    position: fixed; /* Đặt navbar trên cùng */
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 90px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #90caf9; /* Màu nhạt hơn nữa */
+    /* Màu xanh giống sidebar */
+    padding: 10px 20px;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 1000; /* Đảm bảo navbar đè lên sidebar */
+}
+
+.top-navbar2 button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* Sidebar */
+.navbar-container2 {
     position: fixed;
-    height: 100%;
+    top: 90px; /* Đặt sidebar dưới navbar */
+    left: 0;
+    height: calc(100% - 60px); /* Giảm chiều cao trừ đi navbar */
     width: 250px;
     overflow-y: auto;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-    background: linear-gradient(180deg, #e3f2fd, #f8f9fa); /* Gradient nhẹ */
+    background: linear-gradient(180deg, #e3f2fd, #f8f9fa);
     display: flex;
     flex-direction: column;
     border-right: 1px solid #ddd;
     transition: width 0.3s ease;
     overflow: hidden;
+    z-index: 999; /* Đảm bảo sidebar dưới navbar */
 }
 
-/* Thu gọn navbar */
-.navbar-container1.collapsed {
-    width: 80px; /* Chiều rộng khi thu gọn */
-}
-
-/* Header content */
-.navbar-header1 {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 15px;
-    background: linear-gradient(90deg, #90caf9, #42a5f5); /* Gradient xanh nhạt */
-    color: white;
-    font-weight: bold;
-    font-size: 1.6rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    border-bottom: 2px solid #42a5f5;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.navbar-header1 span {
-    color: white;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.navbar-header1 button {
-    font-size: 1rem;
-    color: white;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    outline: none;
-}
-
-.navbar-container1.collapsed .navbar-header1 span {
-    display: none; /* Ẩn tiêu đề khi thu gọn */
-}
-
-/* Link trong navbar */
-.navbar-link1 {
+/* Liên kết trong Sidebar */
+.navbar-link2 {
     font-size: 1.1rem;
     font-weight: 600;
     color: #42a5f5;
@@ -69,89 +64,59 @@
     align-items: center;
 }
 
-/* Hiệu ứng hover cho link */
-.navbar-link1:hover {
-    background-color: #64b5f6; /* Xanh hover nhạt */
+.navbar-link2:hover {
+    background-color: #64b5f6;
     color: white;
-    transform: translateX(5px); /* Hiệu ứng di chuyển */
+    transform: translateX(5px);
 }
 
-/* Link khi active */
-.navbar-link1.active {
-    background-color: #42a5f5; /* Màu active */
+.navbar-link2.active {
+    background-color: #42a5f5;
     color: white;
     box-shadow: 0 3px 10px rgba(66, 165, 245, 0.4);
 }
 
-.navbar-container1.collapsed .navbar-link1 {
-    justify-content: center; /* Căn giữa icon */
-    margin: 5px; /* Giảm margin để gọn hơn */
-}
-
-.navbar-container1.collapsed .navbar-link1 span {
-    display: none; /* Ẩn text khi thu gọn */
-}
-
-.navbar-container1.collapsed .navbar-link1 .me-2 {
-    margin-right: 0; /* Xóa khoảng cách icon */
-}
-
-/* Footer */
-.navbar-footer1 {
+/* Footer Sidebar */
+.navbar-footer2 {
     margin-top: auto;
+    margin-bottom: 20px;
     padding: 20px;
-    background: #f1f1f1;
+    background: #90caf9;
     border-top: 1px solid #ddd;
     text-align: center;
 }
 
-.navbar-footer1 .btn {
+.navbar-footer2 .btn {
     font-size: 1rem;
     font-weight: bold;
-    color: #42a5f5; /* Xanh nút */
-    border-color: #42a5f5;
+    color: #42a5f5;
+    border-color: white;
     transition: all 0.3s ease;
     border-radius: 20px;
     padding: 10px 15px;
 }
 
-.navbar-footer1 .btn:hover {
-    background-color: #42a5f5; /* Hover nút */
+.navbar-footer2 .btn:hover {
+    background-color: #42a5f5;
     color: white;
     box-shadow: 0 3px 8px rgba(66, 165, 245, 0.3);
-    transform: scale(1.05); /* Phóng to nhẹ */
+    transform: scale(1.05);
 }
 
-.navbar-container1.collapsed .navbar-footer1 .btn {
-    justify-content: center; /* Giữ nút ở giữa */
-    font-size: 0.9rem;
-    padding: 8px;
-}
 
-/* Navbar khi thu gọn */
-.navbar-container1.collapsed ~ .content-container {
-    margin-left: 5px; /* Kích thước khi navbar thu gọn */
-}
 
-/* Navbar user info */
-.navbar-user-info {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #ddd;
-}
-
-.user-details {
+.shop-circle {
+    width: 80px; /* Kích thước hình tròn */
+    height: 80px;
+    border-radius: 50%; /* Tạo hình tròn */
+    background-color: #e3f2fd; /* Màu nền nhạt */
     display: flex;
+    justify-content: center;
     align-items: center;
-}
-
-.user-avatar {
-    border-radius: 50%;
-    object-fit: cover;
-    width: 40px;
-    height: 40px;
-}
-
-.user-name {
+    color: #42a5f5; /* Màu chữ */
     font-weight: bold;
-    margin-left: 10px;
+    font-size: 0.9rem;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2); /* Hiệu ứng bóng */
+    text-align: center;
+    margin-left: 10px; /* Khoảng cách với icon */
 }

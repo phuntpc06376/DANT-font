@@ -21,9 +21,15 @@ axiosInstance.interceptors.request.use(
 );
 
 export const getAllDenounceByPostId = async (id) => {
-    const response = await axiosInstance.get(`/denounce/${id}`);
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`/denounce/${id}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+   
 };
-
-
-

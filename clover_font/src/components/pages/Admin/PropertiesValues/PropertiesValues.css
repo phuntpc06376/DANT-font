@@ -85,10 +85,16 @@
 }
 
 /* Table */
+/* Table */
 .property-value-manager-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
+    font-size: 14px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden; /* Giữ bo góc khi có cuộn */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .property-value-manager-table th,
@@ -99,12 +105,37 @@
 }
 
 .property-value-manager-table th {
-    background-color: #343a40;
+    background-color: #007bff;
     color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: none;
+}
+
+.property-value-manager-table td {
+    color: #333;
 }
 
 .property-value-manager-table tr:nth-child(even) {
     background-color: #f8f9fa;
+}
+
+.property-value-manager-table tr:hover {
+    background-color: #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+.property-value-manager-table td:first-child,
+.property-value-manager-table th:first-child {
+    border-top-left-radius: 8px; /* Bo góc trái trên */
+    border-bottom-left-radius: 8px; /* Bo góc trái dưới */
+}
+
+.property-value-manager-table td:last-child,
+.property-value-manager-table th:last-child {
+    border-top-right-radius: 8px; /* Bo góc phải trên */
+    border-bottom-right-radius: 8px; /* Bo góc phải dưới */
 }
 
 /* Modal */

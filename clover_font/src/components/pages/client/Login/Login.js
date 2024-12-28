@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Form, Button, Container, Row, Col, Card, Alert } from "react-bootstrap";
 import { Input } from "mdb-ui-kit";
+import Swal from "sweetalert2"
 import "../Login/login.css"
 
 export default function LoginForm() {
@@ -24,17 +25,59 @@ export default function LoginForm() {
 
     try {
       // Gửi yêu cầu đăng nhập đến API
-      const response = await axios.get("http://localhost:8080/api/login",{
+      const response = await axios.get("http://localhost:8080/api/login", {
         params: {
           username,
           password,
         },
       });
-      
+
+      const responseRole = await axios.get("http://localhost:8080/api/login/checkRole", {
+        params: {
+          username,
+        },
+      });
+
+      const responseAccountLock = await axios.get("http://localhost:8080/api/login/checkAccLock", {
+        params: {
+          username,
+        },
+      });
+
+      // Kiểm tra phản hồi
       // Kiểm tra phản hồi
       if (response.status === 200 && response.data.status === "success") {
+        if (responseAccountLock.data && responseAccountLock.data.data) {
+          const accountLockData = responseAccountLock.data.data;
+          const { lockedAt, unlockedAt, isPermanent } = accountLockData;
+
+          // Lấy ngày giờ hiện tại
+          const now = new Date();
+
+          // Nếu tài khoản bị khóa vĩnh viễn hoặc chưa đến thời gian mở khóa
+          if (isPermanent || new Date(unlockedAt) > now) {
+            Swal.fire({
+              icon: "error",
+              title: "Tài khoản bị khóa!",
+              html: `
+                  <p>Ngày khóa: <b>${new Date(lockedAt).toLocaleString()}</b></p>
+                  <p>Ngày mở khóa: <b>${isPermanent ? "Vĩnh viễn" : new Date(unlockedAt).toLocaleString()}</b></p>
+                `,
+              confirmButtonText: "OK",
+            });
+
+            return; // Dừng thực hiện nếu tài khoản vẫn bị khóa
+          }
+        }
+        // Nếu không bị khóa, tiến hành đăng nhập
         localStorage.setItem("token", response.data.data); // Lưu token vào localStorage
-        navigate("/index"); // Chuyển hướng đến trang index
+
+        if (Number(responseRole.data.data) === 1) {
+          navigate("/admin/*");
+        } else {
+          navigate("/index");
+        }
+
       } else {
         setError(response.data.message || "Sai tên đăng nhập hoặc mật khẩu. Vui lòng thử lại.");
       }
@@ -49,16 +92,16 @@ export default function LoginForm() {
         <Col xs={12} md={6} lg={4}>
           <Card className="shadow-lg mb-5 bg-white rounded">
             <Card.Body>
-            <img
-              className="mx-auto d-block"
-              src="https://img.upanh.tv/2024/11/20/Logo4.png"
-              alt="logo"
-              style={{ maxWidth: "100px" }}
-            />
+              <img
+                className="mx-auto d-block"
+                src="https://img.upanh.tv/2024/11/20/Logo4.png"
+                alt="logo"
+                style={{ maxWidth: "100px" }}
+              />
               <h3 className="text-center mb-4 ">Đăng nhập</h3>
               {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleLogin}>
-                <Form.Group id="username" data-mdb-input-init className="form-outline mb-3">     
+                <Form.Group id="username" data-mdb-input-init className="form-outline mb-3">
                   <Form.Control
                     type="text"
                     value={username}
@@ -69,7 +112,7 @@ export default function LoginForm() {
                   />
                   <Form.Label className="form-label" htmlFor="inputUsername">Tên đăng nhập</Form.Label>
                 </Form.Group>
-    
+
                 <Form.Group id="password" data-mdb-input-init className="form-outline mb-4">
                   <Form.Control
                     type="password"
@@ -81,7 +124,7 @@ export default function LoginForm() {
                   />
                   <Form.Label className="form-label" htmlFor="inputPassword">Mật khẩu</Form.Label>
                 </Form.Group>
-          
+
                 <Button className="w-100 rounded-pill mb-5" type="submit" variant="primary">
                   Đăng Nhập
                 </Button>
@@ -93,16 +136,16 @@ export default function LoginForm() {
                     className="text-secondary-emphasis px-0 text-decoration-none hover-link"
                   >
                     Quên mật khẩu?
-                  </a> 
+                  </a>
                   {/* Sign Up Link */}
                   <a
                     href="/register"
                     className="text-secondary-emphasis px-0 text-decoration-none hover-link"
                   >
                     Đăng ký
-                  </a>                 
+                  </a>
                 </div>
-    
+
               </Form>
             </Card.Body>
           </Card>

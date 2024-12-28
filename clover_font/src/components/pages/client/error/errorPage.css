@@ -1,0 +1,22 @@
+/* ErrorPage.css */
+body {
+    background-color: #f8f9fa;
+  }
+  
+  h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #dc3545;
+  }
+  
+  p {
+    font-size: 1.5rem;
+    color: #6c757d;
+  }
+  
+  button {
+    font-size: 1rem;
+    padding: 10px 20px;
+    margin-top: 20px;
+  }
+  

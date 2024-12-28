@@ -5,6 +5,7 @@ class WebSocketService {
   constructor() {
     this.client = null;
     this.productUpdateCallback = null;
+    this.postDenounceCallback = null;
   }
 
    // Kết nối WebSocket với token xác thực
@@ -25,6 +26,14 @@ class WebSocketService {
             this.productUpdateCallback(message.body);
           }
         });
+
+        // Đăng ký nhận tin nhắn cập nhật tố cáo từ server
+        this.client.subscribe('/topic/reportPost', (message) => {
+          if (this.postDenounceCallback) {
+            this.postDenounceCallback(message.body);
+          }
+        });
+
       },
       onWebSocketError: (error) => {
         console.error('Lỗi WebSocket:', error);
@@ -44,6 +53,11 @@ class WebSocketService {
   // Đặt callback để xử lý cập nhật sản phẩm
   onProductUpdate(callback) {
     this.productUpdateCallback = callback;
+  }
+
+  // Đặt callback để xử lý cập nhật sản phẩm
+  onPostDenounce(callback) {
+    this.postDenounceCallback = callback;
   }
 }
 

@@ -1,0 +1,139 @@
+/* Container của form đổi mật khẩu */
+.change-password-container {
+  max-width: 400px; /* Giới hạn chiều rộng của form */
+  margin: 0 auto; /* Căn giữa form trên trang */
+  padding: 20px; /* Khoảng cách bên trong form */
+  background-color: #f9f9f9; /* Màu nền sáng cho form */
+  border-radius: 8px; /* Bo tròn các góc của form */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Tạo hiệu ứng bóng đổ nhẹ */
+}
+
+/* Tiêu đề của form */
+h2 {
+  text-align: center; /* Căn giữa tiêu đề */
+  margin-bottom: 20px; /* Khoảng cách dưới tiêu đề */
+}
+
+/* Các nhóm input (input groups) */
+.form-group {
+  display: flex; /* Đặt các phần tử trong nhóm thành hàng ngang */
+  flex-direction: column; /* Đặt các phần tử theo chiều dọc */
+  margin-bottom: 15px; /* Khoảng cách dưới mỗi nhóm */
+}
+
+/* Nhãn cho các input */
+label {
+  font-weight: bold; /* In đậm nhãn */
+  margin-bottom: 5px; /* Khoảng cách dưới nhãn */
+}
+
+/* Định dạng cho các input */
+input {
+  width: 100%; /* Đảm bảo input chiếm toàn bộ chiều rộng */
+  padding: 10px; /* Khoảng cách bên trong input */
+  border: 1px solid #ccc; /* Đường viền nhẹ cho input */
+  border-radius: 4px; /* Bo tròn các góc của input */
+  box-sizing: border-box; /* Tính padding vào kích thước tổng thể của input */
+  font-size: 1rem; /* Cỡ chữ mặc định */
+}
+
+/* Container cho input mật khẩu và biểu tượng mắt */
+.password-input-container {
+  position: relative; /* Cho phép vị trí tuyệt đối cho icon */
+  display: flex; /* Hiển thị theo dạng hàng ngang */
+  align-items: center; /* Căn giữa các phần tử theo chiều dọc */
+}
+
+/* Định dạng cho icon mắt */
+.password-input-container i {
+  position: absolute; /* Vị trí tuyệt đối để biểu tượng nằm bên phải input */
+  right: 10px; /* Khoảng cách từ bên phải của input */
+  cursor: pointer; /* Đặt con trỏ chuột thành hình bàn tay */
+}
+
+/* Thông báo lỗi */
+.error-message {
+  color: red; /* Màu đỏ cho thông báo lỗi */
+  margin-top: 10px; /* Khoảng cách trên thông báo lỗi */
+}
+
+/* Thông báo thành công */
+.success-message {
+  color: green; /* Màu xanh lá cho thông báo thành công */
+  margin-top: 10px; /* Khoảng cách trên thông báo thành công */
+}
+
+/* Container cho các nút */
+.button-container {
+  display: flex; /* Hiển thị nút theo dạng hàng ngang */
+  justify-content: space-between; /* Căn giữa các nút */
+  gap: 10px; /* Khoảng cách giữa các nút */
+  margin-top: 20px; /* Khoảng cách trên container */
+}
+
+/* Định dạng cho nút success */
+.btn-success {
+  background-color: #28a745; /* Màu nền xanh lá */
+  color: white; /* Màu chữ trắng */
+  border: none; /* Không viền */
+  flex: 1; /* Nút chiếm đều không gian */
+  padding: 10px; /* Khoảng cách bên trong nút */
+  font-size: 1rem; /* Cỡ chữ */
+  border-radius: 5px; /* Bo tròn các góc của nút */
+  cursor: pointer; /* Đặt con trỏ chuột thành hình bàn tay */
+  box-sizing: border-box; /* Tính padding vào kích thước tổng thể của nút */
+}
+
+/* Định dạng cho nút hủy */
+.btn-light {
+  background-color: #6bd085; /* Màu nền xanh nhạt */
+  color: #155724; /* Màu chữ xanh đậm */
+  border: none; /* Không viền */
+  flex: 1; /* Nút chiếm đều không gian */
+  padding: 10px; /* Khoảng cách bên trong nút */
+  font-size: 1rem; /* Cỡ chữ */
+  border-radius: 5px; /* Bo tròn các góc của nút */
+  cursor: pointer; /* Đặt con trỏ chuột thành hình bàn tay */
+  box-sizing: border-box; /* Tính padding vào kích thước tổng thể của nút */
+}
+
+/* Định dạng khi nút được focus */
+button:focus {
+  outline: none; /* Bỏ viền khi nút được focus */
+}
+
+/* Liên kết quên mật khẩu */
+.forgot-password-text {
+  text-align: center; /* Căn giữa */
+  margin-top: 15px; /* Khoảng cách trên */
+  font-size: 0.9rem; /* Cỡ chữ nhỏ hơn một chút */
+}
+
+/* Định dạng cho liên kết quên mật khẩu */
+.forgot-password-text a {
+  color: #28a745; /* Màu xanh lá cho liên kết */
+  text-decoration: none; /* Bỏ gạch chân */
+}
+
+/* Hiệu ứng khi hover lên liên kết */
+.forgot-password-text a:hover {
+  text-decoration: underline; /* Gạch chân khi hover */
+}
+
+/* Định dạng cho biểu tượng và input mật khẩu */
+.password-input-container input {
+  width: 100%; /* Đảm bảo input chiếm toàn bộ chiều rộng */
+  padding: 10px; /* Khoảng cách bên trong input */
+  border: 1px solid #ccc; /* Đường viền nhẹ cho input */
+  border-radius: 4px; /* Bo tròn các góc của input */
+  box-sizing: border-box; /* Tính padding vào kích thước tổng thể của input */
+  font-size: 1rem; /* Cỡ chữ mặc định */
+}
+
+/* Định dạng cho icon mắt */
+.password-input-container i {
+  position: absolute; /* Vị trí tuyệt đối để biểu tượng nằm bên phải input */
+  right: 10px; /* Khoảng cách từ bên phải của input */
+  cursor: pointer; /* Đặt con trỏ chuột thành hình bàn tay */
+}
+

@@ -34,8 +34,13 @@ const StaticalSeller = () => {
 
     // Hàm gộp dữ liệu theo ngày
     const groupByDate = (data) => {
+        console.log(data);
+        
         const grouped = data.reduce((acc, item) => {
-            const { buyDay, discount, totalPayment } = item;
+            console.log(acc);
+            
+            const { buyDay, discount, totalPayment, shipMoney } = item;
+
 
             if (!acc[buyDay]) {
                 acc[buyDay] = {
@@ -47,8 +52,9 @@ const StaticalSeller = () => {
             }
 
             acc[buyDay].discount += discount;
-            acc[buyDay].totalPayment += totalPayment;
-            acc[buyDay].netRevenue += (totalPayment - discount); // Tính toán netRevenue
+            acc[buyDay].totalPayment += (totalPayment-shipMoney);
+            acc[buyDay].netRevenue += ((totalPayment-shipMoney) - discount); // Tính toán netRevenue
+
 
             return acc;
         }, {});
@@ -60,10 +66,50 @@ const StaticalSeller = () => {
     const fetchStaticalSellers = async (filterStartDate, filterEndDate, filterShopId) => {
         setLoading(true);
         try {
-            const data = await getAllStaticalSellers(filterStartDate, filterEndDate, filterShopId);
-            const groupedData = groupByDate(data); // Gộp dữ liệu
-            setStaticalSellers(groupedData);
-            setError(null);
+            try {
+                const token = localStorage.getItem("token");
+                if (token) {
+                  // Gọi API backend
+                  fetch('http://localhost:8080/api/account', {
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`, // Gửi token trong header Authorization
+                    },
+                  })
+                    .then((response) => {
+                      if (response.ok) {
+                        response.json().then(async (data) => {
+                          console.log("data === ", data);
+            
+                          const currentUserName1 = data;
+                            console.log(currentUserName1.shop.id);
+                            
+                            const dataShow = await getAllStaticalSellers(filterStartDate, filterEndDate, currentUserName1.shop.id);
+                            console.log(dataShow);
+                            
+                            const groupedData = groupByDate(dataShow); // Gộp dữ liệu
+                            setStaticalSellers(groupedData);
+                            setError(null);
+                        }); // Chờ phản hồi JSON từ API
+                      } else {
+                        throw new Error('Lỗi khi lấy tài khoản');
+                      }
+                    })
+            
+                    .catch((err) => {
+                      console.error(err);
+            
+                    });
+                } else {
+            
+                }
+                
+            } catch (err) {
+                setError('Có lỗi xảy ra. Vui lòng thử lại!');
+            } finally {
+                setLoading(false);
+            }
+          
         } catch (err) {
             setError('Có lỗi xảy ra. Vui lòng thử lại!');
         } finally {

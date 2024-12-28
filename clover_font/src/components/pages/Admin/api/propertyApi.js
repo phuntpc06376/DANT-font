@@ -37,31 +37,76 @@ axiosInstance.interceptors.response.use(
     }
 );
 
-// Lấy tất cả tài sản
+/// Lấy tất cả tài sản
 export const getAllProperties = async () => {
-    const response = await axiosInstance.get();
-    return response.data;
+    try {
+        const response = await axiosInstance.get();
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Lấy tài sản theo ID
 export const getPropertyById = async (id) => {
-    const response = await axiosInstance.get(`/${id}`);
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`/${id}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Tạo mới tài sản
 export const createProperty = async (propertyBean) => {
-    const response = await axiosInstance.post('', propertyBean);
-    return response.data;
+    try {
+        const response = await axiosInstance.post('', propertyBean);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Cập nhật tài sản
 export const updateProperty = async (id, propertyBean) => {
-    const response = await axiosInstance.put(`/${id}`, propertyBean);
-    return response.data;
+    try {
+        const response = await axiosInstance.put(`/${id}`, propertyBean);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 // Xóa tài sản
 export const deleteProperty = async (id) => {
-    await axiosInstance.delete(`/${id}`);
+    try {
+        await axiosInstance.delete(`/${id}`);
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };

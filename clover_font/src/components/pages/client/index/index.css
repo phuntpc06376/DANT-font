@@ -123,6 +123,7 @@
 
 /* List Group Styling */
 .card-post .list-group-item {
+  
   border: none;
   padding: 10px 15px;
   font-size: 14px;
@@ -134,14 +135,14 @@
 }
 
 .card-post .list-group-item:hover {
-  background-color: #007bff;
+  background-color: #bdbcc1;
   color: white; /* Chữ trắng khi hover */
+  border-radius: 5px;
 }
 /* Nút đồng nhất về kích thước */
 .btn-custom {
-  background-color: white; /* Xanh lá nhạt */
-  border: 2px solid white; /* Viền xanh đậm */
-  color: #0d0e0d; /* Màu chữ */
+  background-color: white; /* Xanh lá nhạt */ /* Viền xanh đậm */
+  color: "#eee"; /* Màu chữ */
   padding: 12px 24px; /* Đệm đồng nhất */
   text-align: center;
   font-size: 16px; /* Kích thước chữ đồng đều */
@@ -195,11 +196,6 @@
 
 
 /* Wrapper của tất cả hình ảnh */
-.fb-post-images {
-  display: flex;
-  flex-wrap: wrap; /* Cho phép hình ảnh xuống dòng */
-  gap: 8px; /* Khoảng cách giữa các hình ảnh */
-}
 
 /* Bố cục khi có 1 ảnh */
 .fb-images-1 .fb-post-image-wrapper {
@@ -229,20 +225,17 @@
 
 /* Wrapper của từng ảnh */
 .fb-post-image-wrapper {
-  width: 300px;
-  height: 300px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px; /* Bo góc hình ảnh */
+  width: 100%; /* Chiều rộng của phần chứa hình ảnh */
+  height: 100%; /* Chiều cao của phần chứa hình ảnh bằng 100% chiều cao màn hình */
+  overflow: hidden; /* Đảm bảo hình ảnh không bị tràn ra ngoài */
 }
 
 /* Hình ảnh */
-.fb-post-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Đảm bảo ảnh vừa khung và không bị méo */
-  display: block;
-}
 .custom-dropdown-toggle::after {
   display: none !important; /* Ẩn mũi tên */
+}
+
+.fb-post-image {
+  width: 100%; /* Đặt chiều rộng của hình ảnh bằng 100% */
+  object-fit: cover; /* Đảm bảo hình ảnh đầy đủ nhưng không bị vỡ hoặc bị méo */
 }

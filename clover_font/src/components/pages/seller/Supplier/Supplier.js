@@ -15,7 +15,6 @@ export default function Suppliers() {
         const fetchSuppliers = async () => {
             try {
                 const data = await getSuppliersByProduct();
-                console.log(data);
                 setSuppliers(data);
             } catch (error) {
                 setError("Không thể tải danh sách nhà cung cấp.");

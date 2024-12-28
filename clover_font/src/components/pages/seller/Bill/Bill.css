@@ -1,0 +1,248 @@
+/* Container tổng */
+.bill-container {
+    max-width: 100%; /* Tăng chiều rộng tối đa */
+    width: 100%; /* Chiếm 100% chiều rộng màn hình */
+    height: 100%;
+    margin: 0 auto;
+    padding: 20px; /* Tăng padding để nội dung thoáng hơn */
+    border: 1px solid #ccc; /* Viền màu xám nhạt */
+    border-radius: 5px; /* Bo góc nhẹ */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+}
+
+/* Tiêu đề hóa đơn */
+.bill-header {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Tìm kiếm hóa đơn */
+.bill-search {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.bill-search input {
+    width: 70%;
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.bill-search button {
+    width: 28%;
+    padding: 8px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bill-search button i {
+    margin-right: 8px;
+}
+
+.bill-search button:hover {
+    background-color: #0056b3;
+}
+
+/* Bảng hóa đơn */
+.bill-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    border-radius: 8px; /* Bo tròn viền bảng */
+}
+
+.bill-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.bill-table thead {
+    background-color: #007bff; /* Màu xanh chủ đạo */
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.bill-table th,
+.bill-table td {
+    text-align: left;
+    padding: 12px 15px; /* Tăng padding để nội dung thoáng hơn */
+    border: 1px solid #e0e0e0;
+}
+
+.bill-table th {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase; /* Viết hoa chữ cái */
+}
+
+.bill-table tbody tr {
+    transition: background-color 0.3s ease;
+}
+
+.bill-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* Màu xen kẽ cho từng dòng */
+}
+
+.bill-table tbody tr:hover {
+    background-color: #eaf4ff; /* Màu xanh nhạt khi hover */
+}
+
+.bill-table-actions {
+    display: flex;
+    gap: 5px; /* Khoảng cách giữa các button */
+}
+
+.bill-table-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 12px;
+}
+
+.bill-table-actions button.edit {
+    background-color: #28a745; /* Màu xanh lá */
+    color: white;
+}
+
+.bill-table-actions button.delete {
+    background-color: #dc3545; /* Màu đỏ */
+    color: white;
+}
+
+.bill-table-actions button:hover {
+    opacity: 0.9;
+}
+
+/* Modal Bill */
+.bill-modal {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.bill-modal .modal-dialog {
+    max-width: 55%;
+}
+
+.bill-modal .modal-header {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.bill-modal .modal-body {
+    padding: 20px;
+}
+
+.bill-modal .modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+.bill-modal .form-group {
+    margin-bottom: 15px;
+}
+
+.bill-modal .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.bill-modal .form-group input,
+.bill-modal .form-group textarea,
+.bill-modal .form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.bill-modal .form-group input[type="file"] {
+    padding: 4px;
+}
+
+.bill-modal .btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.bill-modal .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.bill-modal .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.bill-modal .btn-secondary:hover {
+    background-color: #565e64;
+}
+
+/* Pagination Container */
+.pagination {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    padding: 8px 15px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.page-item.active .page-link {
+    background-color: #007bff;
+    color: white;
+}
+
+.page-link:hover {
+    background-color: #f1f1f1;
+}
+
+.page-item.disabled .page-link {
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.page-item .page-link {
+    font-weight: bold;
+}
+
+.page-item .page-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-item .page-link:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}

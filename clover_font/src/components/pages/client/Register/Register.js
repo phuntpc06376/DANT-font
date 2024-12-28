@@ -135,7 +135,7 @@ export default function RegisterForm() {
                                         </Form.Group>
                                     </Col>
                                     <Col xs={12} md={6} className="mb-3">
-                                        <Form.Group className="mt-1">
+                                        <Form.Group className="mt-1"> 
                                             <Form.Label className="me-3">Giới tính</Form.Label>
                                             <span>
                                                 <Form.Check

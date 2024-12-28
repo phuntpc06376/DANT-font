@@ -1,51 +1,186 @@
-
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
+/* Container cho promotion */
+.promotion-container {
+    max-width: 100%; /* Tăng chiều rộng tối đa */
+    width: 100%; /* Chiếm 90% chiều rộng màn hình */
+    height: 100%;
+    margin: 0 auto;
+    padding: 20px; /* Tăng padding để nội dung thoáng hơn */
+    border: 1px solid #ccc; /* Viền màu xám nhạt */
+    border-radius: 5px; /* Bo góc nhẹ */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
 }
 
-.page-item {
-    margin: 0 5px;
-}
-
-.page-link {
-    padding: 8px 15px;
-    cursor: pointer;
-    text-decoration: none;
-    color: #007bff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.page-item.active .page-link {
-    background-color: #007bff;
-    color: white;
-}
-
-.page-link:hover {
-    background-color: #f1f1f1;
-}
-
-.page-item.disabled .page-link {
-    color: #ccc;
-    cursor: not-allowed;
-}
-
-.page-item .page-link {
+/* Tiêu đề */
+.promotion-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
     font-weight: bold;
+    color: #333;
 }
 
-.page-item .page-link {
+/* Input tìm kiếm */
+.promotion-search input {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+/* Nút thêm khuyến mãi */
+.promotion-add-btn {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.promotion-add-btn button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+}
+
+.promotion-add-btn button:hover {
+    background-color: #0056b3;
+}
+
+/* Bảng danh sách */
+.promotion-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+    border-radius: 8px; /* Bo tròn viền bảng */
+}
+.promotion-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.promotion-table th {
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+}
+
+.promotion-table td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Nút thao tác */
+.promotion-action-btns .btn {
+    margin-right: 5px;
+}
+
+.promotion-action-btns .btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+}
+
+.promotion-action-btns .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.promotion-action-btns .btn:hover {
+    opacity: 0.85;
+}
+
+/* Phân trang */
+/* Phân trang */
+.promotion-pagination {
+    margin-top: 15px;
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
-.page-item .page-link:focus {
-    outline: none;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+.promotion-pagination .pagination .page-item {
+    margin: 0 2px; /* Khoảng cách giữa các nút */
+}
+
+.promotion-pagination .pagination .page-link {
+    color: #495057; /* Màu chữ tối hơn cho nút */
+    background-color: #fff; /* Nền trắng cho nút */
+     /* Viền nhẹ */
+    transition: all 0.3s ease; /* Hiệu ứng mượt mà */
+}
+
+.promotion-pagination .pagination .page-link:hover {
+    color: #fff; /* Màu chữ khi hover */
+    background-color: #007bff; /* Màu nền xanh dương */
+    border-color: #007bff; /* Viền xanh dương */
+}
+
+.promotion-pagination .pagination .active .page-link {
+    background-color: #007bff; /* Nền cho trang hiện tại */
+    border-color: #007bff; /* Viền trang hiện tại */
+    color: #fff; /* Màu chữ trắng */
+    font-weight: bold; /* In đậm */
+    pointer-events: none; /* Vô hiệu hóa click */
+}
+
+.promotion-pagination .pagination .disabled .page-link {
+    color: #6c757d; /* Màu chữ xám nhạt cho trang bị vô hiệu */
+    pointer-events: none; /* Không cho phép click */
+
+    border-color: #dee2e6; /* Viền nhạt */
+}
+
+/* Form khuyến mãi */
+/* Modal khuyến mãi */
+.promotion-form{
+    background-color: #fefefe;
+}
+/* Chia form thành 2 cột */
+.promotion-form .modal-body .row {
+    margin-bottom: 15px;
+}
+
+.promotion-form .modal-body .col-md-6 {
+    margin-bottom: 10px;
+}
+
+/* Điều chỉnh khoảng cách và màu sắc */
+.promotion-form .modal-header {
+    background-color: #007bff; /* Màu nền xanh biển */
+    color: #fff;
+    padding: 15px;
+}
+
+.promotion-form .form-label {
+    font-weight: 600; /* Nhấn mạnh label */
+    color: #495057; /* Màu chữ trung tính */
+}
+
+.promotion-form .form-control {
+    border: 1px solid #ced4da; /* Viền nhẹ */
+    border-radius: 5px; /* Bo tròn nhẹ các ô input */
+}
+
+.promotion-form .form-control:focus {
+    border-color: #007bff; /* Viền xanh khi focus */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Hiệu ứng shadow nhẹ */
+}
+
+
+.promotion-form .btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.promotion-form .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.promotion-form .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.promotion-form .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
 }

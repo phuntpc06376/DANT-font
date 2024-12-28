@@ -9,9 +9,9 @@ const axiosInstance = axios.create({
 // Thêm interceptor để tự động thêm JWT vào các yêu cầu
 axiosInstance.interceptors.request.use(
     (config) => {
-        
+
         const token = localStorage.getItem('token'); // Lấy token từ localStorage
-        
+
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
@@ -27,7 +27,11 @@ export const getAllBills = async () => {
         return response.data;
     } catch (error) {
         console.error('Error fetching bills:', error);
-        throw error;
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -38,7 +42,11 @@ export const getBillsByShop = async () => {
         return response.data;
     } catch (error) {
         console.error('Error fetching bills by shop:', error);
-        throw error;
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -51,7 +59,11 @@ export const confirmBill = async (id) => {
         return response.data;
     } catch (error) {
         console.error('Error confirming bill:', error.response ? error.response.data : error.message);
-        throw error;
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 
@@ -64,7 +76,11 @@ export const cancelBill = async (id) => {
         return response.data;
     } catch (error) {
         console.error('Error canceling bill:', error.response ? error.response.data : error.message);
-        throw error;
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };
 

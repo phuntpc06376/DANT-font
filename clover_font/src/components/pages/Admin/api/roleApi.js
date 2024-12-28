@@ -20,25 +20,70 @@ axiosInstance.interceptors.request.use(
 );
 
 export const getAllRoles = async () => {
-    const response = await axiosInstance.get();
-    return response.data;
+    try {
+        const response = await axiosInstance.get();
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 export const getRoleById = async (id) => {
-    const response = await axiosInstance.get(`/${id}`);
-    return response.data;
+    try {
+        const response = await axiosInstance.get(`/${id}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 export const createRole = async (accountBean) => {
-    const response = await axiosInstance.post('', accountBean);
+    try {
+        const response = await axiosInstance.post('', accountBean);
     return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 export const updateRole = async (id, accountBean) => {
-    const response = await axiosInstance.put(`/${id}`, accountBean);
+    try {
+        const response = await axiosInstance.put(`/${id}`, accountBean);
     return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };
 
 export const deleteRole = async (id) => {
-    await axiosInstance.delete(`/${id}`);
+    try {
+        await axiosInstance.delete(`/${id}`);
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+    
 };

@@ -20,24 +20,60 @@ axiosInstance.interceptors.request.use(
 );
 
 export const getAllPromotionsByShop = async () => {
-    const response = await axiosInstance.get('/getAllPromotionByShop');
-    return response.data;
+    try {
+        const response = await axiosInstance.get('/getAllPromotionByShop');
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const createPromotion = async (promotionData) => {
-    const response = await axiosInstance.post('/create', null, {
-        params: promotionData
-    });
-    return response.data;
+    try {
+        const response = await axiosInstance.post('/create', null, {
+            params: promotionData
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const updatePromotion = async (id, promotionData) => {
-    const response = await axiosInstance.put(`/update`, null, {
-        params: { ...promotionData, id }
-    });
-    return response.data;
+    try {
+        const response = await axiosInstance.put(`/update`, null, {
+            params: { ...promotionData, id }
+        });
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
 
 export const deletePromotion = async (id) => {
-    await axiosInstance.delete(`/delete`, { params: { id } });
+    try {
+        await axiosInstance.delete(`/delete`, { params: { id } });
+    } catch (error) {
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
 };
