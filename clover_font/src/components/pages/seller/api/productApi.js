@@ -13,7 +13,7 @@ axiosInstance.interceptors.request.use(
     const token = localStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
- 
+
     }
     return config;
   },
@@ -24,24 +24,41 @@ axiosInstance.interceptors.request.use(
 const productService = {
   // Lấy tất cả sản phẩm
   getAllProducts: async () => {
-    const response = await axiosInstance.get("");
-    return response.data;
+    try {
+      const response = await axiosInstance.get("");
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+        // window.location.href = '/error/403';
+      }
+      throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
   },
 
   // Lấy sản phẩm theo người bán
   getProductsBySeller: async () => {
     console.log("getProductBySeller");
-    
-    const response = await axiosInstance.get("/getProductBySeller");
-    return response.data;
+
+    try {
+      const response = await axiosInstance.get("/getProductBySeller");
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+        // window.location.href = '/error/403';
+      }
+      throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
   },
 
   // Thêm sản phẩm mới
   createProduct: async (productData) => {
-   console.log(productData);
-   
+    console.log(productData);
+
     try {
-     
 
       for (let pair of productData.entries()) {
         console.log(`${pair[0]}: ${pair[1]}`);
@@ -52,19 +69,21 @@ const productService = {
       return response.data;
     } catch (error) {
       console.error("Error creating product:", error);
-      throw error; // Hoặc xử lý lỗi theo cách bạn muốn
+      if (error.response && error.response.status === 403) {
+        // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+        // window.location.href = '/error/403';
+      }
+      throw error; // Ném lỗi để xử lý ở nơi gọi 
     }
   },
 
   // Cập nhật sản phẩm
   updateProduct: async (productData) => {
-    
-    
-  
+
     for (let pair of productData.entries()) {
       console.log(`${pair[0]}: ${pair[1]}`);
     }
-  
+
     // Gửi yêu cầu PUT
     try {
       const response = await axiosInstance.put("/update", productData, {
@@ -74,17 +93,30 @@ const productService = {
     } catch (error) {
       // In chi tiết lỗi để dễ dàng debug
       console.error("Error updating product:", error.response ? error.response.data : error);
-      throw error;
+      if (error.response && error.response.status === 403) {
+        // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+        // window.location.href = '/error/403';
+      }
+      throw error; // Ném lỗi để xử lý ở nơi gọi
     }
   },
-  
-  
+
+
 
 
   // Xóa sản phẩm
   deleteProduct: async (id) => {
-    const response = await axiosInstance.delete("/delete", { params: { id } });
-    return response.data;
+    try {
+      const response = await axiosInstance.delete("/delete", { params: { id } });
+      return response.data;
+    } catch (error) {
+      if (error.response && error.response.status === 403) {
+        // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+        // window.location.href = '/error/403';
+      }
+      throw error; // Ném lỗi để xử lý ở nơi gọi
+    }
+
   },
 };
 

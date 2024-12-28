@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import {getAllAccountsRegisterSeller, censorRegisterSeller} from '../api/accountApi'
-
+import { getAllAccountsRegisterSeller, censorRegisterSeller } from '../api/accountApi';
+import './RegisterSeller.css';
 export default function RegisterSeller() {
     const [accountRegisters, setAccountRegister] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -27,7 +27,7 @@ export default function RegisterSeller() {
         try {
             const response = await censorRegisterSeller(id);
             console.log(response);
-            
+
             if (response) {
                 Swal.fire('Xác nhận thành công', 'Đã xác nhận thành người bán!', 'success');
                 setAccountRegister((prev) => prev.filter((account) => account.id !== id));
@@ -39,14 +39,13 @@ export default function RegisterSeller() {
             Swal.fire('Lỗi', error.message, 'error');
         }
     };
-    
 
     const filteredAccountRegister = accountRegisters.filter((account) =>
         account.fullname.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div className="container">
+        <div className="product-registration-container">
             <h2 className="mb-4 text-center">Danh sách tài khoản đăng ký người bán</h2>
             <div className="row mb-3">
                 <div className="col-md-8">
@@ -63,11 +62,11 @@ export default function RegisterSeller() {
             {loading ? (
                 <div className="text-center">Đang tải...</div>
             ) : (
-                <div className="table-responsive">
-                    <table className="table table-striped table-bordered">
-                        <thead className="table-dark">
+                <div className="product-list-container">
+                    <table className="table">
+                        <thead className="thead">
                             <tr>
-                            <th scope="col">id</th>
+                                <th scope="col">ID</th>
                                 <th scope="col">Họ tên</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Tên cửa hàng</th>
@@ -86,7 +85,7 @@ export default function RegisterSeller() {
                                         <td>{account?.shop?.name}</td>
                                         <td>{account?.shop?.phone}</td>
                                         <td>{account?.shop?.address}</td>
-                                        <td className="text-center">                                           
+                                        <td className="text-center">
                                             <button
                                                 onClick={() => handleConfirm(account.id)}
                                                 className="btn btn-sm btn-success me-2"
@@ -98,13 +97,14 @@ export default function RegisterSeller() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="9" className="text-center">
+                                    <td colSpan="7" className="text-center">
                                         Không tìm thấy tài khoản.
                                     </td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
+
                 </div>
             )}
         </div>

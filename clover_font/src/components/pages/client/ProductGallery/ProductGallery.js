@@ -6,7 +6,7 @@ import PriceRangeSelector from './PriceRangeSelector'; // Đường dẫn phù h
 import WebSocketService from '../../webSocket/WebSocketService';
 
 // Component ProductCard to display each product
-const ProductCard = ({ id, title, price, location, imageUrl }) => {
+const ProductCard = ({ id, title, price, location, imageUrl, nameShop }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -32,6 +32,8 @@ const ProductCard = ({ id, title, price, location, imageUrl }) => {
           <Card.Title className="product-price text-danger">
             {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
           </Card.Title>
+          <p style={{ fontSize: "12px", margin: 0 }}>{nameShop}</p>
+
         </Card.Body>
       </Card>
     </Col>
@@ -47,11 +49,13 @@ const ProductGallery = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Current page state
-  const [productsPerPage] = useState(8); // Number of products per page
+  const [productsPerPage] = useState(16); // Number of products per page
   const token = localStorage.getItem('token');
 
   const fetchProducts = async () => {
+
     try {
+
       const response = await fetch('http://localhost:8080/api/user/shopping/product', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -97,16 +101,21 @@ const ProductGallery = () => {
     };
   }, [token]);
 
+  
   const handleSearch = () => {
     const keyword = searchKeyword.toLowerCase();
+    const min = minPrice || 0;
+    const max = maxPrice || Infinity;
+
     const filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(keyword) &&
-        product.price >= minPrice &&
-        product.price <= maxPrice
+        product.price >= min &&
+        product.price <= max
     );
+
     setFilteredProducts(filtered);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset về trang đầu tiên
   };
 
   const indexOfLastProduct = currentPage * productsPerPage;
@@ -119,11 +128,12 @@ const ProductGallery = () => {
     setCurrentPage(pageNumber);
   };
 
+  // Sắp xếp sản phẩm theo giá giảm dần
+  const sortedProducts = [...currentProducts].sort((a, b) => b.price - a.price);
+
   if (loading) {
     return <h2 className="loading-message">Loading data...</h2>;
   }
-
-  const sortedProducts = [...currentProducts].sort((a, b) => b.price - a.price);
 
   return (
     <Container className="mt-4 product-gallery">
@@ -167,8 +177,10 @@ const ProductGallery = () => {
               price={product.price}
               location={`${product.shop.city}, ${product.shop.province}`}
               imageUrl={`http://localhost:8080/image/${product.prodImages[0]?.name}`}
+              nameShop={product.shop.name}
             />
           ))}
+
         </Row>
       </Card>
 

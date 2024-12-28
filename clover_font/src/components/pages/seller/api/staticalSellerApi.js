@@ -34,6 +34,10 @@ export const getAllStaticalSellers = async (startDate, endDate, shopId) => {
         return response.data; // Trả về dữ liệu nhận được
     } catch (error) {
         console.error('Lỗi khi gọi API:', error); // Ghi log lỗi
-        throw error; // Ném lỗi lên để xử lý ở nơi gọi
+        if (error.response && error.response.status === 403) {
+            // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+            // window.location.href = '/error/403';
+        }
+        throw error; // Ném lỗi để xử lý ở nơi gọi
     }
 };

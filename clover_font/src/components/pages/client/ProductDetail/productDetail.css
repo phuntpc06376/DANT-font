@@ -111,4 +111,48 @@
     font-size: 14px;
     color: #e74c3c;
   }
+  .productDetail-title {
+    font-size: 28px; /* Kích thước tiêu đề */
+    font-weight: bold;
+    text-align: left; /* Căn thẳng lề trái */
+    color: #333; /* Màu tiêu đề */
+    margin-bottom: 10px; /* Khoảng cách phía dưới */
+    display: block; /* Đảm bảo chiếm toàn bộ dòng */
+  }
+  
+  .productDetail-stars {
+    display: flex; /* Hiển thị các sao trên cùng một dòng */
+    align-items: center; /* Canh giữa các sao theo trục dọc */
+    margin-bottom: 10px; /* Khoảng cách giữa sao và phần giá */
+  }
+  
+  .productDetail-price {
+    font-size: 24px; /* Kích thước chữ giá tiền */
+    font-weight: 600; /* Độ đậm chữ */
+    margin-bottom: 20px; /* Khoảng cách phía dưới */
+    color: #e53935; /* Màu chữ giá tiền */
+    text-align: left; /* Đảm bảo giá tiền căn thẳng lề trái */
+  }
+  
+  .productDetail-description {
+    text-align: left; /* Căn mô tả sản phẩm thẳng lề trái */
+    line-height: 1.5; /* Tăng khoảng cách dòng để dễ đọc */
+    margin-top: 15px; /* Khoảng cách trên */
+  }
+  
+  .productDetail-cartButton {
+    margin-top: 20px; /* Khoảng cách giữa nút và các phần tử khác */
+    width: auto; /* Chiều rộng nút vừa nội dung */
+    text-align: center; /* Căn chữ trong nút giữa */
+    font-size: 16px; /* Kích thước chữ trong nút */
+  }
+  .product-thumbnails img {
+    border-radius: 4px;
+    transition: transform 0.2s ease-in-out, border 0.2s ease-in-out;
+  }
+  
+  .product-thumbnails img:hover {
+    transform: scale(1.1); /* Hiệu ứng khi rê chuột */
+    border: 2px solid #007bff; /* Màu viền khi rê chuột */
+  }
   

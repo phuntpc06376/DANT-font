@@ -13,6 +13,10 @@ export const getEvaluateByShop = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching evaluations by shop:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+      // window.location.href = '/error/403';
+  }
+  throw error; // Ném lỗi để xử lý ở nơi gọi
   }
 };

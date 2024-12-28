@@ -4,7 +4,7 @@ import { AiOutlinePlus, AiOutlineMinus, AiOutlineDelete } from 'react-icons/ai';
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from 'axios';
-
+import Swal from 'sweetalert2';
 export default function ProductCards() {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -109,15 +109,65 @@ export default function ProductCards() {
     }
   };
 
-  const handlePayment = () => {
-    if (selectedItems.length === 0) {
-      toast.error("Vui lòng chọn sản phẩm để đặt hàng.");
-      return;
+
+
+
+
+  
+
+const handlePayment = async () => {
+  if (selectedItems.length === 0) {
+    // Hiển thị thông báo khi không chọn sản phẩm
+    Swal.fire({
+      icon: 'error',
+      title: 'Lỗi',
+      text: 'Vui lòng chọn sản phẩm để đặt hàng.',
+    });
+    return;
+  }
+
+  // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
+  localStorage.setItem('ids', selectedItems);
+  console.log(selectedItems);
+
+  try {
+    const response = await axios.get('http://localhost:8080/api/user/shopping/cart/checkCart', {
+      headers: {
+        Authorization: `Bearer ${token}`, // Gửi token cho API
+      },
+      params: {
+        prod: selectedItems.join(','), // Gửi danh sách ID sản phẩm dưới dạng chuỗi ngăn cách bằng dấu phẩy
+      },
+    });
+
+    // Xử lý phản hồi từ API
+    if (response.data.status === 'success') {
+      Swal.fire({
+        icon: 'success',
+        title: 'Thành công!',
+      }).then(() => {
+        // Chuyển hướng sau khi hiển thị thông báo
+        navigate("/user/order");
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi',
+        text: response.data.message, // Hiển thị thông báo lỗi từ server
+      });
     }
-    // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
-    localStorage.setItem('ids', selectedItems);
-    navigate("/user/order");
-  };
+  } catch (error) {
+    // Xử lý lỗi khi gửi yêu cầu
+    Swal.fire({
+      icon: 'error',
+      title: 'Có lỗi xảy ra',
+      text: 'Không thể kiểm tra giỏ hàng.',
+    });
+    console.error(error);
+  }
+};
+
+
 
 
   const handleSelect = (itemId) => {

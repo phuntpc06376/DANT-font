@@ -14,7 +14,11 @@ export const getEvaluateFeedback = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching feedback list:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+      // window.location.href = '/error/403';
+    }
+    throw error; // Ném lỗi để xử lý ở nơi gọi
   }
 };
 
@@ -36,7 +40,11 @@ export const createEvaluateFeedback = async (params, imageFile) => {
     return response.data;
   } catch (error) {
     console.error('Error creating feedback:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+      // window.location.href = '/error/403';
+    }
+    throw error; // Ném lỗi để xử lý ở nơi gọi
   }
 };
 
@@ -58,7 +66,11 @@ export const updateEvaluateFeedback = async (params, imageFile) => {
     return response.data;
   } catch (error) {
     console.error('Error updating feedback:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+      // window.location.href = '/error/403';
+    }
+    throw error; // Ném lỗi để xử lý ở nơi gọi
   }
 };
 
@@ -74,6 +86,10 @@ export const deleteEvaluateFeedback = async (id) => {
     return response.data;
   } catch (error) {
     console.error('Error deleting feedback:', error);
-    throw error;
+    if (error.response && error.response.status === 403) {
+      // Chuyển hướng đến trang đăng nhập khi bị từ chối truy cập
+      // window.location.href = '/error/403';
+    }
+    throw error; // Ném lỗi để xử lý ở nơi gọi
   }
 };

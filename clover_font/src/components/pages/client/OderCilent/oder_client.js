@@ -10,7 +10,7 @@ import {
   setBillAsPaid,
   updateBillOrderId
 } from "../services/order_servide";
-import {  
+import {
   createOrder
   , getProvince
   , getDistrict
@@ -20,7 +20,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
-
+import Swal from "sweetalert2";
 const Order = () => {
   const navigate = useNavigate();
   const ids = localStorage.getItem("ids");
@@ -73,19 +73,19 @@ const Order = () => {
   const [usePoint, setUsePoint] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [payMent, setPayMent] = useState(0);
- const [province, setProvince] = useState([]);
- const [distrinct, setDistrict] = useState([]);
- const [ward, setWard] = useState([]);
- const [fee, setFee] = useState(0);
- const [groupedCartItems, setGroupedCartItems] = useState(null);
+  const [province, setProvince] = useState([]);
+  const [distrinct, setDistrict] = useState([]);
+  const [ward, setWard] = useState([]);
+  const [fee, setFee] = useState(0);
+  const [groupedCartItems, setGroupedCartItems] = useState(null);
 
-useEffect(() => {
-  const fetchGroupedItems = async () => {
-    const grouped = await groupByShop(cartPay);
-    setGroupedCartItems(grouped);
-  };
-  fetchGroupedItems();
-}, [cartPay]);
+  useEffect(() => {
+    const fetchGroupedItems = async () => {
+      const grouped = await groupByShop(cartPay);
+      setGroupedCartItems(grouped);
+    };
+    fetchGroupedItems();
+  }, [cartPay]);
 
   useEffect(() => {
     if (!ids) {
@@ -107,10 +107,10 @@ useEffect(() => {
 
         setCartPay(cart);
         const provinces = await getProvince();
-       
+
         setProvince(provinces.data);
         console.log(province);
-        
+
         // const total = cart.reduce((sum, item) => sum + (item.products.price * item.quantity), 0);
         // setTotalPrice(total);
       } catch (error) {
@@ -120,8 +120,9 @@ useEffect(() => {
 
     fetchUserData();
   }, [token, ids, navigate]);
-  const calculateGhnFeeForShop = async  (bill) => {
- 
+  const calculateGhnFeeForShop = async (bill) => {
+
+
     const updatedOrder = {
       items: bill.map((itemDetail) => ({
         name: itemDetail.prod.name,
@@ -132,26 +133,45 @@ useEffect(() => {
         weight: 12,
         height: 12,
       })),
-      from_district_id:bill[0].prod.shop.districtId,
-      from_ward_code:bill[0].prod.shop.wardCode,
-      service_id:53321,
-      service_type_id:5,
-      to_ward_code: accounts.addresses.wardCode,
-      to_district_id: accounts.addresses.districtId,
+      from_district_id: bill[0].prod.shop.districtId,
+      from_ward_code: bill[0].prod.shop.wardCode,
+      service_id: 53321,
+      service_type_id: 5,
+      to_ward_code: accounts.addresses?.wardCode || (() => {
+        Swal.fire({
+          icon: "warning",
+          title: "Chưa có địa chỉ",
+          text: "Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ trước khi tiếp tục!",
+          confirmButtonText: "Thêm địa chỉ",
+        }).then(() => {
+          navigate("/user/addAddressForm");
+        });
+      })(),
+      to_district_id: accounts.addresses?.districtId || (() => {
+        Swal.fire({
+          icon: "warning",
+          title: "Chưa có địa chỉ",
+          text: "Bạn chưa có địa chỉ giao hàng. Vui lòng thêm địa chỉ trước khi tiếp tục!",
+          confirmButtonText: "Thêm địa chỉ",
+        }).then(() => {
+          navigate("/user/addAddressForm");
+        });
+      })(),
       height: 10,
       length: 1,
       weight: 200,
       width: 19,
     };
-  
+
+
     console.log("Order:", bill[0].id);
-  
+
     try {
       // Gửi đơn hàng tới GHN
-      
-      const ghnResponse = await calculateGhnFee(updatedOrder,bill[0].prod.shop.shopGhnId);
+
+      const ghnResponse = await calculateGhnFee(updatedOrder, bill[0].prod.shop.shopGhnId);
       console.log("GHN Response - fe:", ghnResponse.data.total);
-      
+
       if (ghnResponse.status === 400) {
         console.error("Lỗi từ GHN:", ghnResponse);
       }
@@ -159,41 +179,41 @@ useEffect(() => {
     } catch (err) {
       console.error("Lỗi khi tạo đơn hàng GHN:", err);
     }
-  
-}
-const groupByShop = async (items) => {
-  const groups = items.reduce((acc, item) => {
-    const shopId = item?.prod?.shop?.id || "unknown"; 
-    const shopName = item?.prod?.shop?.name || "Unknown Shop"; 
-    if (!acc[shopId]) {
-      acc[shopId] = { name: shopName, items: [], Ghnfee: 0 };
-    }
-    acc[shopId].items.push(item);
-    return acc;
-  }, {});
 
-  // Tạo biến tạm để lưu tổng phí
-  let totalFee = 0;
-
-  // Tính phí GHN cho từng nhóm shop
-  for (const shopId in groups) {
-    const group = groups[shopId];
-    const shopGhnFee = await calculateGhnFeeForShop(group.items);
-    group.Ghnfee = shopGhnFee;
-
-    // Cộng dồn phí vào biến tạm
-    totalFee += shopGhnFee;
   }
+  const groupByShop = async (items) => {
+    const groups = items.reduce((acc, item) => {
+      const shopId = item?.prod?.shop?.id || "unknown";
+      const shopName = item?.prod?.shop?.name || "Unknown Shop";
+      if (!acc[shopId]) {
+        acc[shopId] = { name: shopName, items: [], Ghnfee: 0 };
+      }
+      acc[shopId].items.push(item);
+      return acc;
+    }, {});
 
-  // Sau khi tính toán xong, cập nhật state fee một lần
-  setFee(totalFee);
-setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
-  console.log("Total Fee:", totalFee);
-  return groups;
-};
+    // Tạo biến tạm để lưu tổng phí
+    let totalFee = 0;
+
+    // Tính phí GHN cho từng nhóm shop
+    for (const shopId in groups) {
+      const group = groups[shopId];
+      const shopGhnFee = await calculateGhnFeeForShop(group.items);
+      group.Ghnfee = shopGhnFee;
+
+      // Cộng dồn phí vào biến tạm
+      totalFee += shopGhnFee;
+    }
+
+    // Sau khi tính toán xong, cập nhật state fee một lần
+    setFee(totalFee);
+    setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
+    console.log("Total Fee:", totalFee);
+    return groups;
+  };
 
 
-   
+
 
   useEffect(() => {
     const handlePaymentResponse = async () => {
@@ -216,7 +236,7 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
 
     handlePaymentResponse();
   }, [cartPay, inputValue, token]);
- 
+
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleInputChange = (event) => setInputValue(event.target.value);
@@ -225,7 +245,7 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
     const total = cartPay.reduce((sum, item) => sum + (item.prod.price * item.quantity), 0);
     setTotalPrice(total);
   }, [cartPay]); // Tính toán lại khi `cartPay` thay đổi
-  
+
   // const handleInput = async (event) => {
   //   event.preventDefault();
 
@@ -249,40 +269,43 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
     const shopID = null;
     const formdata = new FormData();
     formdata.append("shipMoney", fee);
-    formdata.append("paymentMethods", "new");
     formdata.append("voucher", 4);
-    formdata.append("toAddress",  accounts.addresses.address);
-    formdata.append("toDistrictId",  accounts.addresses.districtId);
+    formdata.append("toAddress", accounts.addresses.address);
+    formdata.append("toDistrictId", accounts.addresses.districtId);
     formdata.append("toWardCode", accounts.addresses.wardCode);
     formdata.append("toDistrictName", accounts.addresses.districtName);
     formdata.append("toWardName", accounts.addresses.wardName);
-    
+
     cartPay.forEach((item) => {
       console.log("item: " + item.id);
-   
-    //   shopID = item.prod.shop.id
+
+      //   shopID = item.prod.shop.id
       formdata.append("list", JSON.stringify(item.id));
 
     });
     console.log(payMent);
     let bill = []; // Sửa `const` thành `let` để có thể gán lại giá trị.
-    let totalPriceToPay = 0; 
+    let totalPriceToPay = 0;
     try {
       if (parseInt(payMent) === 0) {
+        formdata.append("paymentMethods", "Thanh toán COD");
+
         if (formdata.has("status")) {
           formdata.delete("status"); // Xóa nếu key tồn tại
-      }
-      // formdata.append("status", "1"); // Thêm lại giá trị mới
+        }
+        // formdata.append("status", "1"); // Thêm lại giá trị mới
         console.log("COD");
         bill = await addCartToBill(formdata); // Dùng token
         toast.success("Tạo hóa đơn thành công!");
-        navigate("/user/index");
+
       } else if (parseInt(payMent) === 1) {
+        formdata.append("paymentMethods", "Thanh Toán qua ngân hàng");
+
         if (parseInt(payMent) === 0) {
           if (formdata.has("status")) {
             formdata.delete("status"); // Xóa nếu key tồn tại
+          }
         }
-      }
         // formdata.append("status", "5"); // Thêm lại giá trị mới
         // Tạo hóa đơn
         // Duyệt qua tất cả các cặp key-value trong FormData
@@ -291,25 +314,25 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
         }
         bill = await addCartToBill(formdata); // Dùng token
         console.log("Bill:", bill);
-        
+
         let billIds = '';
-        bill.forEach( (item, index) => {
-          if(index === 0) {
-              billIds = item.id;
+        bill.forEach((item, index) => {
+          if (index === 0) {
+            billIds = item.id;
           } else {
-              billIds += '-'+item.id;
+            billIds += '-' + item.id;
           }
-          item.detailBills.forEach( (item, index) => {
-            totalPriceToPay +=  (item.price *item.quantity);//cần xác đinh discuont
+          item.detailBills.forEach((item, index) => {
+            totalPriceToPay += (item.price * item.quantity);//cần xác đinh discuont
           })
         })
         // Thanh toán qua VNPay
-        console.log('total price: '+totalPriceToPay);
-        console.log('total fee: '+fee);
-        console.log(fee+totalPriceToPay);
-        const payUrl = await payment(totalPriceToPay+fee, billIds);
+        console.log('total price: ' + totalPriceToPay);
+        console.log('total fee: ' + fee);
+        console.log(fee + totalPriceToPay);
+        const payUrl = await payment(totalPriceToPay + fee, billIds);
         console.log("Payment URL:", payUrl);
-    
+
         if (payUrl?.data?.paymentUrl) {
           // Chuyển hướng đến trang thanh toán VNPay
           window.location.href = payUrl.data.paymentUrl;
@@ -318,33 +341,33 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
         } else {
           throw new Error("Không thể lấy URL thanh toán.");
         }
-    
+
         toast.success("Tạo hóa đơn thành công!");
 
-        
-        
- // Cập nhật order ngay trong hàm
+
+
+        // Cập nhật order ngay trong hàm
 
       }
     } catch (error) {
       console.error("Lỗi trong quá trình tạo hóa đơn hoặc thanh toán:", error);
       toast.error("Đã xảy ra lỗi trong quá trình xử lý!");
     }
-    
+
   };
-  
-  /*GHN*/ 
+
+  /*GHN*/
   // privince GHN
   const [selectedProvince, setSelectedProvince] = useState(''); // Dùng để lưu tỉnh đã chọn
 
   const handleChange = (event) => {
-    
+
     setSelectedProvince(event.target.value); // Cập nhật tỉnh được chọn
     console.log(selectedProvince);
-    
-};
-// district GHN
- 
+
+  };
+  // district GHN
+
   const [selectedDistrict, setSelectedDistrict] = useState(''); // Dùng để lưu quận đã chọn
 
   const handleChangeDistrict = (event) => {
@@ -365,143 +388,143 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
         const district = await getDistrict(selectedProvince);
         setDistrict(district.data)
         console.log(district.data);
-        
-    } 
-    // Gọi hàm lấy quận/huyện khi selectedProvince thay đổi
-    getDistrictGHN();
-    if (selectedDistrict) {
-      const getWardGHN = async () => {
-        const ward = await getWard(selectedDistrict);
-        setWard(ward.data)
-        console.log(ward.data);
-      };
-      getWardGHN();
+
+      }
+      // Gọi hàm lấy quận/huyện khi selectedProvince thay đổi
+      getDistrictGHN();
+      if (selectedDistrict) {
+        const getWardGHN = async () => {
+          const ward = await getWard(selectedDistrict);
+          setWard(ward.data)
+          console.log(ward.data);
+        };
+        getWardGHN();
+      }
     }
-    }
-   
-}, [selectedDistrict, selectedProvince]); // Chỉ theo dõi selectedProvince thay đổi
+
+  }, [selectedDistrict, selectedProvince]); // Chỉ theo dõi selectedProvince thay đổi
 
   return (
-    
-<div className="App">
-  <div className="container-fluid py-5">
-    <div className="container py-5">
-      <h1 className="mb-4 text-center">Chi tiết thanh toán</h1>
-      <form noValidate>
-        <div className="row justify-content-center">
-          <div className="col-lg-8">
-            <div className="table-responsive">
-              <table className="table text-center align-middle">
-                <thead>
-                  <tr>
-                    <th>Sản phẩm</th>
-                    <th>Tên sản phẩm</th>
-                    <th>Giá</th>
-                    <th>Số lượng</th>
-                    <th>Tổng</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {groupedCartItems
-  ? Object.entries(groupedCartItems).map(([shopId, group]) => (
-      <React.Fragment key={shopId}>
-        <tr className="table-light">
-          <td colSpan="5">
-            <strong className="text-primary">{group.name}</strong>
-          </td>
-        </tr>
-        {group.items.map((p) => (
-          <tr key={p.id}>
-            <td>
-              <img
-                className="img-fluid rounded"
-                src={`http://localhost:8080/image/${p?.prod?.prodImages[0]?.name}`}
-                alt={p.prod?.prodImages[0] || "Product"}
-                style={{ width: "80px", height: "80px" }}
-              />
-            </td>
-            <td>{p.prod?.name || "Không rõ tên sản phẩm"}</td>
-            <td>
-              {p.prod?.price?.toLocaleString("vi", {
-                style: "currency",
-                currency: "VND",
-              }) || "0 VND"}
-            </td>
-            <td>{p.quantity || 0}</td>
-            <td>
-              {(p.prod?.price * p.quantity)?.toLocaleString("vi", {
-                style: "currency",
-                currency: "VND",
-              }) || "0 VND"}
-            </td>
-          </tr>
-        ))}
-        <tr>
-          <td className="text-secondary fw-bold fs-6">
-          Phí vận chuyển:   {group.Ghnfee?.toLocaleString("vi", {
-              style: "currency",
-              currency: "VND",
-            }) || "Đang tải..."}
-          </td>
-        </tr>
-      </React.Fragment>
-    ))
-  : "Đang tải..."}
- <tr className="address-row">
-                    <td colSpan="2"><strong>Địa chỉ:</strong></td>
-                    <td colSpan="3" className="text-center">
-                      {accounts.addresses ? (
-                        <p className="mb-0">
-                          {accounts.addresses.address}, {accounts.addresses.wardName},{" "}
-                          {accounts.addresses.districtName}
-                        </p>
-                      ) : (
-                        <p>Không có thông tin địa chỉ</p>
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan="2"><strong>Phương thức thanh toán:</strong></td>
-                    <td colSpan="3">
-                      <select
-                        name="selectedPayment"
-                        className="form-select"
-                        onChange={(e) => setPayMent(e.target.value)}
-                      >
-                        <option value="0" selected>Thanh toán khi nhận hàng</option>
-                        <option value="1">Thanh toán qua VNpay</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan="2"><strong>Tổng:</strong></td>
-                    <td colSpan="3">
-                      <strong>
-                        {totalPrice?.toLocaleString("vi", {
-                          style: "currency",
-                          currency: "VND",
-                        })}
-                      </strong>
-                    </td>
-                  </tr>
-</tbody>
 
-              </table>
-     
+    <div className="App">
+      <div className="container-fluid py-5">
+        <div className="container py-5">
+          <h1 className="mb-4 text-center">Chi tiết thanh toán</h1>
+          <form noValidate>
+            <div className="row justify-content-center">
+              <div className="col-lg-8">
+                <div className="table-responsive">
+                  <table className="table text-center align-middle">
+                    <thead>
+                      <tr>
+                        <th>Sản phẩm</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Giá</th>
+                        <th>Số lượng</th>
+                        <th>Tổng</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupedCartItems
+                        ? Object.entries(groupedCartItems).map(([shopId, group]) => (
+                          <React.Fragment key={shopId}>
+                            <tr className="table-light">
+                              <td colSpan="5">
+                                <strong className="text-primary">{group.name}</strong>
+                              </td>
+                            </tr>
+                            {group.items.map((p) => (
+                              <tr key={p.id}>
+                                <td>
+                                  <img
+                                    className="img-fluid rounded"
+                                    src={`http://localhost:8080/image/${p?.prod?.prodImages[0]?.name}`}
+                                    alt={p.prod?.prodImages[0] || "Product"}
+                                    style={{ width: "80px", height: "80px" }}
+                                  />
+                                </td>
+                                <td>{p.prod?.name || "Không rõ tên sản phẩm"}</td>
+                                <td>
+                                  {p.prod?.price?.toLocaleString("vi", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }) || "0 VND"}
+                                </td>
+                                <td>{p.quantity || 0}</td>
+                                <td>
+                                  {(p.prod?.price * p.quantity)?.toLocaleString("vi", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }) || "0 VND"}
+                                </td>
+                              </tr>
+                            ))}
+                            <tr>
+                              <td colSpan="100%" className="text-secondary fw-bold fs-6">
+                                Phí vận chuyển:   {group.Ghnfee?.toLocaleString("vi", {
+                                  style: "currency",
+                                  currency: "VND",
+                                }) || "Đang tải..."}
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        ))
+                        : "Đang tải..."}
+                      <tr className="address-row">
+                        <td colSpan="2"><strong>Địa chỉ:</strong></td>
+                        <td colSpan="3" className="text-center">
+                          {accounts.addresses ? (
+                            <p className="mb-0">
+                              {accounts.addresses.address}, {accounts.addresses.wardName},{" "}
+                              {accounts.addresses.districtName}
+                            </p>
+                          ) : (
+                            <p>Không có thông tin địa chỉ</p>
+                          )}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan="2"><strong>Phương thức thanh toán:</strong></td>
+                        <td colSpan="3">
+                          <select
+                            name="selectedPayment"
+                            className="form-select"
+                            onChange={(e) => setPayMent(e.target.value)}
+                          >
+                            <option value="0" selected>Thanh toán khi nhận hàng</option>
+                            <option value="1">Thanh toán bằng ngân hàng</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colSpan="2"><strong>Tổng:</strong></td>
+                        <td colSpan="3">
+                          <strong>
+                            {totalPrice?.toLocaleString("vi", {
+                              style: "currency",
+                              currency: "VND",
+                            })}
+                          </strong>
+                        </td>
+                      </tr>
+                    </tbody>
+
+                  </table>
+
+                </div>
+                <button
+                  onClick={handlePayment}
+                  className="btn btn-primary w-100 mt-4"
+                >
+                  Đặt hàng
+                </button>
+                <Toaster />
+              </div>
             </div>
-            <button
-              onClick={handlePayment}
-              className="btn btn-primary w-100 mt-4"
-            >
-              Đặt hàng
-            </button>
-            <Toaster />
-          </div>
+          </form>
         </div>
-      </form>
-    </div>
-  </div>
-  {/* <div>
+      </div>
+      {/* <div>
             <h2>Chọn tỉnh</h2>
             <select 
                 value={selectedProvince} 
@@ -549,10 +572,10 @@ setTotalPrice((prevTotalPrice) => prevTotalPrice + totalFee);
             </select>
             {selectedDistrict && <div>Đã chọn Phường/Xã: {selectedDistrict}</div>}
         </div> */}
-</div>
+    </div>
 
   );
-            
+
 };
 
 export default Order;

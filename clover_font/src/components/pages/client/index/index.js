@@ -8,39 +8,66 @@ import CryptoJS from 'crypto-js';
 import Swal from "sweetalert2";
 import './index.css';
 import axios from 'axios';
+import { acceptFriend, getAllFriendsByUsernameToConfirm } from "../services/friend_service.js";
+import { deleteFriend } from '../services/friend_service.js';
+import { addToFriend } from '../services/friend_service.js';
+import { getAllFriendsByUsername } from '../services/friend_service.js';
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
-const Sidebar = () => (
+const Sidebar = (userImage) => (
   <Nav
     defaultActiveKey="home"
-    className="flex-column mt-3 p-3shadow-sm sidebar bg-white border-5"
-    style={{ width: "250px" }}
+    className="flex-column mt-3 p-3shadow-sm sidebar "
+    style={{ width: "250px", backgroundColor: "#eee" }}
   >
     {/* <Nav.Link href="profile" className="text-dark mb-2 p-2">
       <FaUserFriends className="me-2" /> Bạn bè
     </Nav.Link> */}
+    {/* <div className="imgAt">
+              <img
+                src={userImage || 'default-avatar.png'}
+                alt="user-avatar"
+                className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px" }}
+              />
+      </div> */}
     <div className="btn-wrapper ">
-      <button
+      <div
         className="btn-custom"
+        style={{ backgroundColor: "#eee" }}
+
         onClick={() => (window.location.href = "ProductGallery")}
+
       >
         <FaStore className="me-2" />Marketplace
-      </button>
+      </div>
     </div>
     <div className="btn-wrapper  mt-3">
-      <button
+      <div
         className="btn-custom"
+        style={{ backgroundColor: "#eee" }}
         onClick={() => (window.location.href = "orderSummary")}
       >
         <RiBillLine className="me-2" /> Hóa đơn
-      </button>
+      </div>
     </div>
     <div className="btn-wrapper mt-3">
-      <button
+      <div
         className="btn-custom"
+        style={{ backgroundColor: "#eee" }}
         onClick={() => (window.location.href = "cart")}
       >
         <FaCartShopping className="me-2" /> Giỏ hàng
-      </button>
+      </div>
+    </div>
+    <div className="btn-wrapper mt-3">
+      <div
+        className="btn-custom"
+        style={{ backgroundColor: "#eee" }}
+        onClick={() => (window.location.href = "friend")}
+      >
+        <FaUserFriends className="me-2" /> Bạn bè
+      </div>
     </div>
   </Nav>
 );
@@ -52,17 +79,41 @@ const MainContent = () => {
   const [loading, setLoading] = useState(true);
   const [newPostContent, setNewPostContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [currentUser2, setCurrentUser2] = useState("");
+  const [checklikePost, setCheckLikePost] = useState(false);
+  const [likedPosts, setLikedPosts] = useState([]);
 
 
   useEffect(() => {
     fetchPosts();
-   
+
   }, []);
 
 
   const fetchPosts = async () => {
     const token = localStorage.getItem("token");
     // if (!token) return console.error("No token found. Redirecting to login...");
+    if (token) {
+      // Gọi API backend
+      fetch('http://localhost:8080/api/account', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Gửi token trong header Authorization
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            response.json().then((data) => {
+
+
+              const currentUserName2 = data;
+              setCurrentUser2(currentUserName2);
+            })
+          }
+        })
+    }
+
+
     try {
       const response = await fetch("http://localhost:8080/api/post", {
         headers: {
@@ -175,34 +226,56 @@ const MainContent = () => {
           <Form.Group controlId="fileInput" className="mt-2">
             <FormControl type="file" multiple onChange={handleFileSelect} />
           </Form.Group>
-          <Button type="submit" className="mt-2 text-dark bg-white hover-shadow border-0">
+          <Button type="submit" className="mt-2 text-dark  hover-shadow border-0">
             Đăng bài
           </Button>
         </Form>
       </Card>
-      {loading ? (
-        <p>Loading...</p>
-      ) : posts.length > 0 ? (
-        posts.map((post) => (
-          <Post
-            key={post.id}
-            postId={post.id}
-            userImage={post?.account?.avatar ? `http://localhost:8080/image/${post.account.avatar}` : "default-avatar.png"}
-            userName={post?.account?.username || "Unknown User"}
-            userFullname={post?.account?.fullname}
-            timeStamp={new Date(post.postDay).toLocaleString()}
-            Img={post?.postImages}
-            content={post.content}
-            likes={post.likes || []}
-            initialComments={post.comments || []}
-            accountId={post.account.id} // Make sure this is correct
-            onPostDeleted={handlePostDeleted} // Truyền hàm xóa bài đăng
-            fetchPosts={fetchPosts}
-          />
-        ))
-      ) : (
-        <p>Không có bài viết nào.</p>
-      )}
+      {
+        loading ? (
+          <p>Loading...</p>
+        ) : posts.length > 0 ? (
+          [...posts]
+            .map((post) => (
+              <Post
+                key={post.id}
+                postId={post.id}
+                userImage={
+                  post?.account?.avatar
+                    ? `http://localhost:8080/image/${post.account.avatar}`
+                    : "default-avatar.png"
+                }
+                currentUser2={currentUser2.username}
+                userName={post?.account?.username || "Unknown User"}
+                userFullname={post?.account?.fullname}
+                timeStamp={new Date(post.postDay).toLocaleString()}
+                Img={post?.postImages}
+                content={post.content}
+                likes={post.likes || []}
+                initialComments={post.comments || []}
+                accountId={post.account.id} // Make sure this is correct
+                onPostDeleted={handlePostDeleted} // Truyền hàm xóa bài đăng
+                fetchPosts={fetchPosts}
+                checklikePost={
+                  currentUser2.id ?
+                    post.likes?.some((like) => {
+                      if (isNaN(like.account.id) || isNaN(currentUser2.id)) {
+                        console.log('Một trong hai id không phải là số hợp lệ');
+                        return false;
+                      }
+                      return like.account.id === currentUser2.id;
+                    }) || false
+                    : false
+                }
+                accountLogin={currentUser2}
+                postShare={post?.sharePost || []}
+              />
+            ))
+        ) : (
+          <p>Không có bài viết nào.</p>
+        )
+      }
+
 
     </div>
   );
@@ -210,10 +283,10 @@ const MainContent = () => {
 };
 
 // Post Component
-const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes,
-  initialComments, accountId, onPostDeleted, fetchPosts, userFullname, Img }) => {
+const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content, likes, accountLogin, postShare,
+  initialComments, accountId, onPostDeleted, fetchPosts, userFullname, Img, currentUser2, checklikePost }) => {
   // const [likesCount, setLikesCount] = useState(likes.length);
-  const [liked, setLiked] = useState(false);
+  const [liked, setLiked] = useState(checklikePost);
   const [likesCount, setLikesCount] = useState(likes.length);
   // const [comments, setComments] = useState(initialComments || []);
   const [comment, setComment] = useState('');
@@ -222,15 +295,14 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
   const [showReplies, setShowReplies] = useState({});
   const [showReplyForm, setShowReplyForm] = useState(null); // Hiển thị form trả lời cho bình luận
   const [replyContent, setReplyContent] = useState(''); // Nội dung phản hồi
+  const [editingReplyId, setEditingReplyId] = useState(null); // ID phản hồi đang chỉnh sửa
+  const [editedReplyContent, setEditedReplyContent] = useState(''); // Nội dung mới
 
-
+  const [showLikesAccModal, setShowLikesAccModal] = useState(false);//Hiển thị danh sách người đã like
+  const [likeAccounts, setLikeAccounts] = useState([]);//Danh sách người đã like
 
   // Lấy accountId của người dùng từ localStorage
-  const user = localStorage.getItem('user');
-  const currentUserAccountId = user ? JSON.parse(user).accountId : null; // Kiểm tra và parse thông tin người dùng
 
-
-  
 
   const handleLikePost = () => {
     const token = localStorage.getItem('token');
@@ -245,12 +317,13 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
         .then((response) => response.json())
         .then((data) => {
           setLikesCount(data.likes.length);
-          setLiked(!liked);
+          setLiked((prevLiked) => !prevLiked);
           fetchPosts();
         })
         .catch((error) => console.error('Error liking post:', error));
     }
   };
+
 
   const handleCommentSubmit = (e) => {
     e.preventDefault();
@@ -447,18 +520,56 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
 
 
   const navigate = useNavigate();
+
+
   const handleClick = (e) => {
-    if (userName === currentUserName) {
-      e.preventDefault(); // Ngăn không cho chuyển hướng mặc định
-      navigate('/user/profile'); // Điều hướng đến trang cá nhân
+    console.log(e)
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Gọi API backend
+      fetch('http://localhost:8080/api/account', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Gửi token trong header Authorization
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            response.json().then((data) => {
+              console.log("data === ", data);
+
+              const currentUserName1 = data.username;
+
+              if (userName === currentUserName1) {
+                // e.preventDefault();
+                navigate('/user/profile');
+              } else {
+                navigate(`/profiles/${e}`);
+              }
+            }); // Chờ phản hồi JSON từ API
+          } else {
+            throw new Error('Lỗi khi lấy tài khoản');
+          }
+        })
+
+        .catch((err) => {
+          console.error(err);
+
+        });
+    } else {
+
     }
   };
+
   //mã hóa userName
   const [showReportModal, setShowReportModal] = useState(false);
   const [denunciationId, setdenunciationId] = useState("");
   const [denounceContent, setDenounceContent] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false); // Kiểm tra xem việc tố cáo có đang được gửi hay không
+
+  const [stompClient, setStompClient] = useState(null);
+  const [posts, setPosts] = useState([]);
 
   const fetchDenounceContent = async () => {
     const token = localStorage.getItem("token");
@@ -483,6 +594,36 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
 
   useEffect(() => {
     fetchDenounceContent();  // Fetch data when the component mounts
+    setLiked(checklikePost);
+  }, [checklikePost]);
+
+  useEffect(() => {
+    // Tạo kết nối SockJS
+    const socket = new SockJS("http://localhost:8080/ws"); // URL của WebSocket server
+
+    // Tạo đối tượng StompClient để sử dụng với SockJS
+    const stompClient = Stomp.over(socket);
+    stompClient.connect({}, () => {
+      // Lắng nghe các sự kiện từ server qua SockJS
+      setStompClient(stompClient);
+      stompClient.subscribe("/topic/reportPost", handlePostUpdated);
+    });
+
+    const handlePostUpdated = (message) => {
+      const updatedPostDenounce = JSON.parse(message.body);
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post.id === updatedPostDenounce.id ? updatedPostDenounce : post
+        )
+      );
+    };
+
+    // Cleanup WebSocket khi component unmount
+    return () => {
+      if (stompClient) {
+        stompClient.disconnect();
+      }
+    };
   }, []);
 
   // Hàm mở modal khi nhấn vào nút "Tố cáo"
@@ -495,15 +636,16 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
     setShowReportModal(false);
   };
 
+
   // Hàm khi chọn lý do tố cáo
   const handleReportSubmit = async () => {
     if (!denunciationId) {
-      alert("Vui lòng chọn lý do tố cáo");
+      Swal.fire("Lỗi!", "Vui lòng chọn lý do tố cáo!", "error");
       return;
     }
 
     if (!postId) {
-      alert("Không có ID bài viết");
+      Swal.fire("Lỗi!", "Không có ID bài viết!", "error");
       return;
     }
 
@@ -524,10 +666,15 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       });
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
-      alert("Tố cáo thành công!");
+
+      Swal.fire("Thành công!", "Tố cáo bài viết thành công!", "success");
+      stompClient.send("/app/reportPost", {}, JSON.stringify({
+        postId: postId,
+        denunciationId: denunciationId,
+      }));
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("Có lỗi xảy ra, vui lòng thử lại!");
+      Swal.fire("Lỗi!", "Có lỗi xảy ra, vui lòng thử lại!", "error");
     } finally {
       setIsSubmitting(false);
       handleCloseModal();
@@ -539,12 +686,17 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
   const handleReplyComment = (commentId) => {
     if (!responses[commentId]) {
       fetchResponses(commentId); // Lấy phản hồi nếu chưa có
+
     }
     setShowReplies((prev) => ({
       ...prev,
       [commentId]: !prev[commentId], // Đổi trạng thái hiển thị phản hồi
     }));
+
+    fetchPosts();
+
   };
+
   const fetchResponses = async (commentId) => {
     try {
       setLoading(true); // Bắt đầu loading
@@ -553,30 +705,36 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
       const token = localStorage.getItem('token'); // Hoặc cách bạn lưu token
 
       // Thêm header Authorization vào yêu cầu
-      const response = await axios.get(`http://localhost:8080/api/social/responseComment/getAllByComment?commentId=${commentId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`, // Thêm token vào header
-        },
-      });
+      const response = await axios.get(
+        `http://localhost:8080/api/social/responseComment/getAllByComment?commentId=${commentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Thêm token vào header
+          },
+        }
+      );
 
       console.log(response.data); // In ra dữ liệu trả về từ API
 
-      // Xử lý dữ liệu ở đây (lưu vào state chẳng hạn)
+      // Lưu phản hồi của mỗi bình luận vào state
       setResponses((prev) => ({
         ...prev,
-        [commentId]: response.data, // Lưu phản hồi của mỗi bình luận vào state
+        [commentId]: response.data, // Lưu phản hồi của mỗi bình luận
       }));
+
+      // Nếu cần refresh lại danh sách bình luận, hãy giữ `fetchPosts`
       fetchPosts();
     } catch (error) {
       console.error("Có lỗi xảy ra khi tải phản hồi:", error);
-      // Xử lý lỗi nếu có
     } finally {
       setLoading(false); // Kết thúc loading
     }
   };
 
+
   const handleReplyClick = (commentId) => {
-    setShowReplyForm(commentId); // Hiển thị form trả lời cho bình luận cụ thể
+    setShowReplyForm((prevId) => (prevId === commentId ? null : commentId)); // Hiển thị/Ẩn form
+    fetchPosts();
   };
 
   const handleReplyChange = (e) => {
@@ -618,30 +776,30 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
           },
         }
       );
+      fetchPosts();
       console.log(response)
       // Nếu gửi thành công, cập nhật phản hồi
       setReplyContent(''); // Làm trống ô nhập liệu
       setShowReplyForm(null); // Ẩn form trả lời
-      fetchPosts();
     } catch (error) {
       console.error('Lỗi khi gửi phản hồi', error);
       alert('Có lỗi xảy ra khi gửi phản hồi!');
     } finally {
       setIsSubmitting(false);
-     
+
     }
   };
 
-  const handleDeleteReply = async (replyId, e) => {
-    e.preventDefault();
+
+  const handleDeleteReply = async (replyId) => {
     if (isSubmitting) return; // Prevent multiple submissions
     setIsSubmitting(true);
-  
+
     try {
       // Get token from localStorage
       const token = localStorage.getItem('token'); // Ensure the correct token is stored
       // Send DELETE request to the backend API
-      const response = await axios.delete(
+      await axios.delete(
         `http://localhost:8080/api/social/responseComment/delete?id=${replyId}`,
         {
           headers: {
@@ -649,24 +807,209 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
           },
         }
       );
-  
-      console.log(response);
-      alert('Phản hồi đã được xóa!');
-  
-      // Optimistically update the state by filtering out the deleted reply
+
+      // Show success alert with SweetAlert2
+      Swal.fire({
+        icon: 'success',
+        title: 'Phản hồi đã được xóa!',
+        showConfirmButton: false,
+        timer: 1500, // Close the alert after 1.5 seconds
+      });
+
+      // Optimistically update state
+      setResponses((prevResponses) => {
+        const updatedResponses = { ...prevResponses };
+        for (const key in updatedResponses) {
+          updatedResponses[key] = updatedResponses[key].filter(
+            (response) => response.id !== replyId
+          );
+        }
+        return updatedResponses;
+      });
     } catch (error) {
       console.error('Lỗi khi xóa phản hồi', error);
-      alert('Có lỗi xảy ra khi xóa phản hồi!');
+      Swal.fire({
+        icon: 'error',
+        title: 'Có lỗi xảy ra khi xóa phản hồi!',
+        showConfirmButton: true,
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
 
 
 
 
+  const startEditReply = (replyId, currentContent) => {
+    setEditingReplyId(replyId);
+    setEditedReplyContent(currentContent);
+
+  };
+
+  const cancelEditReply = () => {
+    setEditingReplyId(null);
+    setEditedReplyContent('');
+
+  };
+
+
+
+
+  const handleUpdateReply = async (replyId, updatedContent) => {
+    if (!updatedContent.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Nội dung không được để trống!',
+        showConfirmButton: true,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Tạo FormData
+      const formData = new FormData();
+      formData.append('id', replyId);
+      formData.append('content', updatedContent);
+
+      // Gửi yêu cầu cập nhật đến API
+      const token = localStorage.getItem('token'); // Đảm bảo token đã được lưu trữ
+      const response = await axios.put(
+        `http://localhost:8080/api/social/responseComment/update`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      fetchPosts();
+
+      // Xử lý khi cập nhật thành công
+      Swal.fire({
+        icon: 'success',
+        title: 'Cập nhật phản hồi thành công!',
+        showConfirmButton: false,
+        timer: 1500, // Tự động đóng sau 1.5 giây
+      });
+
+      setResponses((prevResponses) => {
+        const updatedResponses = { ...prevResponses };
+        for (const commentId in updatedResponses) {
+          updatedResponses[commentId] = updatedResponses[commentId].map((response) =>
+            response.id === replyId ? { ...response, content: updatedContent } : response
+          );
+        }
+        return updatedResponses;
+      });
+
+      cancelEditReply();
+    } catch (error) {
+      console.error('Lỗi khi cập nhật phản hồi:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Có lỗi xảy ra khi cập nhật phản hồi!',
+        showConfirmButton: true,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+
+  const fetchLikeAccounts = async () => {
+    try {
+      if (!likes && likes.length <= 0) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Không có người thích!',
+          showConfirmButton: true,
+        });
+      }
+      const accounts = likes.map((like) => like.account); // Lấy danh sách các account
+      setLikeAccounts(accounts);
+      setShowLikesAccModal(true);
+    } catch (error) {
+      console.error("Error fetching like accounts:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Lỗi!',
+        text: 'Đã xảy ra lỗi khi hiển thị danh sách người thích.',
+        showConfirmButton: true,
+      });
+    }
+  };
+
+  const [shareContent, setShareContent] = useState('');  // Nội dung chia sẻ
+  const [isShareSubmitting, setIsShareSubmitting] = useState(false);  // Trạng thái khi gửi bài chia sẻ
+  const [showShareModal, setShowShareModal] = useState(false); // State để quản lý modal chia sẻ
+
+  // Mở modal chia sẻ
+  const handleShowShareModal = () => setShowShareModal(true);
+
+  // Đóng modal chia sẻ
+  const handleCloseShareModal = () => setShowShareModal(false);
+
+  // Hàm xử lý chia sẻ bài viết
+  const handleSharePost = async () => {
+    if (!content.trim()) {
+      alert("Nội dung chia sẻ không thể để trống.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Lấy token từ localStorage hoặc cookie
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Vui lòng đăng nhập!");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Tạo dữ liệu gửi lên server
+      const postData = {
+        content: shareContent,
+      };
+
+      // Gửi request chia sẻ bài viết
+      const response = await axios.post(`http://localhost:8080/api/post/sharePost?postId=${postId}`, postData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 200) {
+        alert("Chia sẻ bài viết thành công!");
+        setShareContent("");  // Xóa nội dung sau khi chia sẻ thành công
+        handleCloseShareModal();
+      } else {
+        alert("Có lỗi xảy ra khi chia sẻ bài viết.");
+      }
+    } catch (error) {
+      console.error("Có lỗi khi gửi request:", error);
+      alert("Có lỗi khi chia sẻ bài viết.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImageClick = (postId) => {
+    navigate(`/user/post/${postId}`); // Điều hướng đến trang chi tiết bài viết
+  };
+
+
+  const currentUser = userName;
   const encodedUserName = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(userName));
+  const encodedUserNameInPostShare = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(postShare?.account?.username));
+
   return (
     <Card className="mb-3 mt-3 p-3 border shadow-sm card-post">
       <Card.Body>
@@ -676,17 +1019,23 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
               <img
                 src={userImage || 'default-avatar.png'}
                 alt="user-avatar"
-                className="rounded-circle me-3 border-3 " style={{ width: "60px", height: "45px" }}
+                className="rounded-circle me-3 border-3 "
+                style={{ width: '50px', height: '50px', marginRight: '10px', borderRadius: '50%' }}
               />
             </div>
           </Col>
           <Col xs={10}>
             <div>
+              {/* {console.log(userName)}
+            {console.log(currentUserName)} */}
+
+              {/* {console.log(userName)
+              } */}
               <Link
                 key={userName}
-                to={`/profiles/${encodedUserName}`}
+                // to={userName === currentUserName ? '/user/profile' : `/profiles/${encodedUserName}`} // Điều hướng tùy thuộc vào người dùng
                 className="text-decoration-none text-dark"
-                onClick={handleClick}
+                onClick={handleClick.bind(this, encodedUserName)} // Kiểm tra sự kiện khi nhấn vào tên
               >
                 <h5>{userFullname}</h5>
               </Link>
@@ -727,21 +1076,88 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
         </Row>
         <Row className="mt-2">
           <Col>
-            <p>{content}</p>
+            <Col>{content}</Col>
+            {/* Nếu có bài viết chia sẻ, hiển thị bài viết chia sẻ */}
+            {postShare && postShare.content ? (
+              <>
+                <Card className="mb-2 p-3 shadow-sm border-1">
+                  <Card.Body>
+                    <Row>
+                      <Col xs={2}>
+                        <div className="imgAt">
+                          <img
+                            src={`http://localhost:8080/image/${postShare?.account?.avatar}` || 'default-avatar.png'}
+                            alt="user-avatar"
+                            className="rounded-circle me-3 border-3 "
+                            style={{ width: '50px', height: '50px', marginRight: '10px', borderRadius: '50%' }}
+                          />
+                        </div>
+                      </Col>
+                      <Col xs={10}>
+                        <div>
+                          <Link
+                            key={postShare?.account?.username}
+                            // to={userName === currentUserName ? '/user/profile' : `/profiles/${encodedUserName}`} // Điều hướng tùy thuộc vào người dùng
+                            className="text-decoration-none text-dark"
+                            onClick={handleClick.bind(this, encodedUserNameInPostShare)} // Kiểm tra sự kiện khi nhấn vào tên
+                          >
+                            {console.log(encodedUserNameInPostShare, encodedUserName)}
+                            <h5>{postShare.account.fullname}</h5>
+                          </Link>
+                          <p>{new Date(postShare.postDay).toLocaleString()}</p>
+                        </div>
 
+                        {/* Dropdown menu "⋮" */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            right: "10px",
+                          }}
+                        >
+                        </div>
+                      </Col>
+                    </Row>
+                    <p>{postShare?.content}</p>
+                    <div className={`fb-post-images fb-images-${postShare?.postImages?.length || 0}`}>
+                      {postShare?.postImages?.map((image, index) => (
+                        <div key={index} className="fb-post-image-wrapper">
+                          <img
+                            src={`http://localhost:8080/image/${image?.nameImage}`}
+                            alt={`Image ${index + 1}`}
+                            className="fb-post-image"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </Card.Body>
+                </Card>
+              </>
+            ) : (
+              // Nếu không có bài viết chia sẻ, hiển thị bài viết bình thường
+              <>
+                <div className={`fb-post-images fb-images-${Img.length}`}>
+                  {Img.map((image, index) => (
+                    <div key={index} className="fb-post-image-wrapper">
+                      <img
+                        src={`http://localhost:8080/image/${image?.nameImage}`}
+                        alt={`Image ${index + 1}`}
+                        className="fb-post-image"
+                        onClick={() => handleImageClick(postId)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </Col>
-          <div className={`fb-post-images fb-images-${Img.length}`}>
-            {Img.map((image, index) => (
-              <div key={index} className="fb-post-image-wrapper">
-                <img
-                  src={`http://localhost:8080/image/${image?.nameImage}`}
-                  alt={`Image ${index + 1}`}
-                  className="fb-post-image"
-                />
-              </div>
-            ))}
-          </div>
-
+        </Row>
+        <Row className="mt-2">
+          <Col>
+            <div className="text-dark" onClick={() => fetchLikeAccounts()}>
+              <FaThumbsUp /> {likes.length}
+            </div>
+          </Col>
         </Row>
         <hr />
         <Row className="text-center mt-3">
@@ -750,9 +1166,11 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
               variant="link"
               className="text-dark"
               onClick={handleLikePost}
-              style={{ color: liked ? 'hotpink' : 'inherit' }} // Thêm style để thay đổi màu khi liked
+            // Thêm style để thay đổi màu khi liked
             >
-              <FaThumbsUp /> {liked ? 'Thích' : 'Thích'} ({likes.length})
+              <div style={{ color: liked ? 'dodgerBlue' : 'inherit' }}>
+                <FaThumbsUp /> {liked ? 'Thích' : 'Thích'} ({likes.length})
+              </div>
             </div>
           </Col>
           <Col>
@@ -761,9 +1179,9 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
             </div>
           </Col>
           <Col>
-            {/* <div variant="link" className="text-dark">
-          <FaShare /> Chia sẻ
-        </div> */}
+            <div variant="link" className="text-dark" onClick={() => handleShowShareModal()}>
+              <FaShare /> Chia sẻ
+            </div>
           </Col>
         </Row>
         {showCommentBox && (
@@ -789,94 +1207,85 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
                     <ListGroup.Item
                       style={{
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
+                        flexDirection: 'column', // Chỉnh sửa thành dạng cột
+                        justifyContent: 'flex-start',
                         padding: '10px',
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <strong>{commentItem?.account?.fullname || 'Người dùng ẩn'}:</strong>
-                        {isEditing === commentItem.id ? (
-                          <textarea
-                            value={editedComment}
-                            onChange={(e) => setEditedComment(e.target.value)}
-                            rows={3}
-                            style={{
-                              width: '100%',
-                              marginLeft: '10px',
-                              resize: 'none',
-                              padding: '5px',
-                              borderRadius: '4px',
-                              border: '1px solid #ccc',
-                              marginBottom: '5px',
-                            }}
-                          />
-                        ) : (
-                          <span style={{ marginLeft: '10px' }}>{commentItem.content}</span>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {isEditing === commentItem.id ? (
-                          <div
-                            className="text-success"
-                            onClick={() => handleUpdateComment(commentItem.id)}
-                            style={{ cursor: 'pointer', marginLeft: '10px' }}
-                          >
-                            <FaSave />
-                          </div>
-                        ) : (
-                          <div
-                            className="text-warning"
-                            onClick={() => handleEditComment(commentItem.id, commentItem.content)}
-                            style={{ cursor: 'pointer', marginRight: '10px' }}
-                          >
-                            <FaEdit />
-                          </div>
-                        )}
-                        <div
-                          className="text-danger"
-                          onClick={() => handleDeleteComment(commentItem.id)}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <FaTrash />
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        {console.log(commentItem)}
+                        {console.log(currentUser.username)}
+                        <strong>{commentItem?.account?.fullname || 'Người dùng ẩn'}</strong>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          {/* Kiểm tra nếu người dùng hiện tại là chủ sở hữu của bình luận */}
+                          {currentUser2 === commentItem?.account?.username && (
+                            <div>
+                              {isEditing === commentItem.id ? (
+                                <div
+                                  className="text-success"
+                                  onClick={() => handleUpdateComment(commentItem.id)}
+                                  style={{ cursor: 'pointer', marginLeft: '10px' }}
+                                >
+                                  <FaSave />
+                                </div>
+                              ) : (
+                                <div
+                                  className="text-warning"
+                                  onClick={() => handleEditComment(commentItem.id, commentItem.content)}
+                                  style={{ cursor: 'pointer', marginRight: '10px' }}
+                                >
+                                  <FaEdit />
+                                </div>
+                              )}
+                              <div
+                                className="text-danger"
+                                onClick={() => handleDeleteComment(commentItem.id)}
+                                style={{ cursor: 'pointer' }}
+                              >
+                                <FaTrash />
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      {(
-                        <ListGroup.Item
+                      {isEditing === commentItem.id ? (
+                        <textarea
+                          value={editedComment}
+                          onChange={(e) => setEditedComment(e.target.value)}
+                          rows={3}
                           style={{
-                            display: 'flex',
-                            justifyContent: 'flex-start',
-                            alignItems: 'center',
-                            padding: '10px',
-                            backgroundColor: '#f8f9fa', // optional for a different background
+                            width: '100%',
+                            marginTop: '10px',
+                            resize: 'none',
+                            padding: '5px',
+                            borderRadius: '4px',
+                            border: '1px solid #ccc',
                           }}
-                        >
-                          <div
-                            className="text-info"
-                            onClick={() => handleReplyComment(commentItem.id)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            Xem phản hồi
-                          </div>
-                        </ListGroup.Item>
+                        />
+                      ) : (
+                        <span style={{ marginTop: '10px' }}>{commentItem.content}</span>
                       )}
 
-
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        {/* Nút Trả lời */}
+                      {/* Nút Trả lời và Xem phản hồi */}
+                      <div style={{ marginTop: '10px', display: 'flex', gap: '10px' }}>
                         <div
-                          variant="info"
+                          className="text-info"
+                          onClick={() => handleReplyComment(commentItem.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          Xem phản hồi
+                        </div>
+                        <div
+                          className="text-primary"
                           onClick={() => handleReplyClick(commentItem.id)}
-                          style={{ marginLeft: '10px' }}
+                          style={{ cursor: 'pointer' }}
                         >
                           Trả lời
                         </div>
-
-                        {/* Nút Xóa */}
                       </div>
 
                       {/* Hiển thị form trả lời */}
+
                       {showReplyForm === commentItem.id && (
                         <div style={{ marginTop: '10px', paddingLeft: '20px' }}>
                           <Form>
@@ -899,34 +1308,70 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
                           </Form>
                         </div>
                       )}
-
-
-
                     </ListGroup.Item>
 
-
-
-                    {/* Tách nút "Xem phản hồi" ra ngoài */}
-
-
-                    {/* Hiển thị các phản hồi nếu có và nếu "Xem phản hồi" được nhấn */}
+                    {/* Hiển thị các phản hồi */}
                     {showReplies[commentItem.id] && responses[commentItem.id] && responses[commentItem.id].length > 0 && (
                       <div className="mt-2" style={{ paddingLeft: '20px' }}>
                         {responses[commentItem.id].map((response, idx) => (
-                          <div key={idx} style={{ textAlign: 'left' }}>
-                            <strong>{response?.account?.fullname || 'Người dùng ẩn'}:</strong> {response.content}
-
-
-
-                            <div
-                              variant="danger"
-                              onClick={(e) => handleDeleteReply(response.id,e)}
-                              style={{ marginLeft: '10px', cursor: 'pointer', color: 'red' }}
-                            >
-                              Xóa
-                            </div>
-
-
+                          <div key={idx} style={{ textAlign: 'left', marginBottom: '10px' }}>
+                            <strong>{response?.account?.fullname || 'Người dùng ẩn'}:</strong>
+                            {editingReplyId === response.id ? (
+                              <textarea
+                                value={editedReplyContent}
+                                onChange={(e) => setEditedReplyContent(e.target.value)}
+                                rows={2}
+                                style={{
+                                  width: '100%',
+                                  resize: 'none',
+                                  padding: '5px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #ccc',
+                                  marginTop: '5px',
+                                  marginBottom: '5px',
+                                }}
+                              />
+                            ) : (
+                              <span style={{ marginLeft: '10px' }}>{response.content}</span>
+                            )}
+                            {console.log(currentUser2)
+                            }
+                            {currentUser2 === response?.account?.username && (<div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
+                              {editingReplyId === response.id ? (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="success"
+                                    onClick={() => handleUpdateReply(response.id, editedReplyContent)}
+                                    disabled={isSubmitting || !editedReplyContent.trim()}
+                                  >
+                                    Lưu
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => cancelEditReply()}
+                                  >
+                                    Hủy
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="warning"
+                                  onClick={() => startEditReply(response.id, response.content)}
+                                >
+                                  Sửa
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                onClick={() => handleDeleteReply(response.id)}
+                              >
+                                Xóa
+                              </Button>
+                            </div>)}
                           </div>
                         ))}
                       </div>
@@ -937,6 +1382,7 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
                 <p>Chưa có bình luận nào.</p>
               )}
             </ListGroup>
+
 
 
           </div>
@@ -980,6 +1426,104 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
           </Modal.Footer>
         </Modal>
 
+        {/* Modal hiển thị danh sách người dùng đã thích bài viết */}
+        <Modal show={showLikesAccModal} onHide={() => setShowLikesAccModal(false)} centered>
+          <Modal.Body
+            style={{
+              maxHeight: '300px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: likeAccounts.length <= 0 ? 'center' : '',
+              justifyContent: likeAccounts.length <= 0 ? 'center' : 'flex-start',
+            }}
+          >
+            {likeAccounts.length > 0 ? (
+              <ListGroup>
+                {likeAccounts.map((account) => (
+                  <ListGroup.Item key={account.id} className="border-0">
+                    {/* Hiển thị ảnh đại diện */}
+                    <img
+                      src={account?.avatar
+                        ? `http://localhost:8080/image/${account.avatar}`
+                        : "default-avatar.png"} // Đường dẫn ảnh đại diện hoặc ảnh mặc định
+                      alt="avatar"
+                      className="rounded-circle me-3"
+                      style={{ width: '40px', height: '40px' }}
+                    />
+                    {/* Hiển thị tên người dùng */}
+                    <strong>{account.fullname}</strong>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            ) : (
+              <p>Chưa có người dùng nào thích bài viết này.</p>
+            )}
+          </Modal.Body>
+        </Modal>
+
+        {/* Modal chia sẻ */}
+        <Modal show={showShareModal} onHide={handleCloseShareModal}>
+          <Modal.Header>
+            {/* Hiển thị thông tin người dùng đã đăng nhập */}
+            <div className="row w-100">
+              {/* Cột thông tin người dùng */}
+              <Col xs={12} className="mt-2">
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                  <img
+                    src={accountLogin?.avatar
+                      ? `http://localhost:8080/image/${accountLogin?.avatar}`
+                      : "default-avatar.png"} // Đường dẫn ảnh đại diện hoặc ảnh mặc định
+                    alt="avatar"
+                    className="rounded-circle me-3"
+                    style={{ width: '40px', height: '40px' }}
+                  />
+                  <strong>{accountLogin?.fullname || 'Người dùng ẩn'}</strong>
+                </div>
+              </Col>
+
+              {/* Cột nhập nội dung chia sẻ */}
+              <Form onSubmit={handleSharePost}>
+                <Col xs={12} className="mt-2">
+                  {/* Trường nhập nội dung chia sẻ */}
+                  <Form.Group controlId="shareContent">
+                    <Form.Label>Nội dung chia sẻ</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      placeholder="Thêm nội dung chia sẻ..."
+                      value={shareContent}
+                      onChange={(e) => setShareContent(e.target.value)} // Hàm thay đổi giá trị nội dung chia sẻ
+                    />
+                  </Form.Group>
+                </Col>
+
+                {/* Nút chia sẻ nằm bên phải */}
+                <Col xs={12} className="mt-3 d-flex justify-content-end">
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    disabled={isSubmitting || !shareContent.trim()} // Vô hiệu nút chia sẻ nếu không có nội dung
+                  >
+                    {isSubmitting ? "Đang chia sẻ..." : "Chia sẻ"}
+                  </Button>
+                </Col>
+              </Form>
+            </div>
+          </Modal.Header>
+
+          <Modal.Body>
+            <p>Chia sẻ bài viết này lên các mạng xã hội:</p>
+            <Button variant="primary" className="mb-2 w-100">
+              Chia sẻ lên Facebook
+            </Button>
+            <Button variant="info" className="mb-2 w-100">
+              Chia sẻ lên Twitter
+            </Button>
+            {/* Thêm các nút chia sẻ khác nếu cần */}
+          </Modal.Body>
+        </Modal>
+
 
       </Card.Body>
     </Card>
@@ -988,21 +1532,128 @@ const Post = ({ currentUserName, postId, userImage, userName, timeStamp, content
 };
 
 // Contacts Component
-const Contacts = () => (
-  <Card className="mt-3 p-3 bg-white shadow-sm contacts">
-    <Card.Title>Danh sách bạn bè</Card.Title>
-    <ListGroup variant="flush">
-      <ListGroup.Item className="d-flex align-items-center">
-        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
-        Danh Piy Truong
-      </ListGroup.Item>
-      <ListGroup.Item className="d-flex align-items-center">
-        <Image src="https://via.placeholder.com/30" roundedCircle className="me-3" />
-        Trí Tài
-      </ListGroup.Item>
-    </ListGroup>
-  </Card>
-);
+const Contacts = ({ username }) => {
+  const [friends, setFriends] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
+
+  // Fetch danh sách bạn bè
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        const data = await getAllFriendsByUsername(username);
+        setFriends(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách bạn bè:", error);
+      }
+    };
+    fetchFriends();
+  }, [username]);
+
+  // Fetch thông tin người dùng hiện tại
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get("http://localhost:8080/api/account", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response && response.data) {
+          setCurrentUser(response.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // Xử lý click vào bạn bè
+  const handleFriendClick = (friendUsername) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Gọi API backend để lấy thông tin current user
+      fetch("http://localhost:8080/api/account", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => {
+          if (response.ok) {
+            response.json().then((data) => {
+              const currentUsername = data.username;
+
+              // Điều hướng tùy vào người dùng hiện tại
+              if (currentUsername === friendUsername) {
+                navigate("/user/profile");
+              } else {
+                const encodedUsername = CryptoJS.enc.Base64.stringify(
+                  CryptoJS.enc.Utf8.parse(friendUsername)
+                );
+                navigate(`/profiles/${encodedUsername}`);
+              }
+            });
+          } else {
+            throw new Error("Lỗi khi lấy thông tin người dùng hiện tại");
+          }
+        })
+        .catch((error) => {
+          console.error("Lỗi khi điều hướng:", error);
+        });
+    }
+  };
+
+  return (
+    <div className="mt-3 p-3  shadow-sm contacts" style={{ backgroundColor: "#eee" }}>
+      <Card.Title>Danh sách bạn bè</Card.Title>
+      <ListGroup variant="flush">
+        {friends.length === 0 ? (
+          <ListGroup.Item>Không có bạn bè nào.</ListGroup.Item>
+        ) : (
+          friends.map((friend) => {
+            const accountId2 = friend.accountId2 || {};
+            const accountId1 = friend.accountId1 || {};
+            const friendUsername =
+              accountId2.username !== currentUser?.username
+                ? accountId2.username
+                : accountId1.username;
+
+            const friendName =
+              accountId2.username !== currentUser?.username
+                ? accountId2.fullname
+                : accountId1.fullname;
+
+            const friendAvatar =
+              accountId2.username !== currentUser?.username
+                ? (accountId2.avatar ? `http://localhost:8080/image/${accountId2.avatar}` : "https://via.placeholder.com/150")
+                : (accountId1.avatar ? `http://localhost:8080/image/${accountId1.avatar}` : "https://via.placeholder.com/150");
+            return (
+              <ListGroup.Item
+                key={friend.id}
+                className="d-flex align-items-center"
+                style={{ cursor: "pointer" }}
+                onClick={() => handleFriendClick(friendUsername)}
+              >
+                <Image
+                  src={friendAvatar || "https://via.placeholder.com/150"}
+                  roundedCircle
+                  className="me-3"
+                  style={{ width: "50px", height: "50px" }}
+                />
+                <div className="flex-grow-1">
+                  <div>{friendName}</div>
+                </div>
+              </ListGroup.Item>
+            );
+          })
+        )}
+      </ListGroup>
+    </div>
+  );
+};
 
 // HomePage Component
 const HomePage = () => (
@@ -1017,7 +1668,7 @@ const HomePage = () => (
       <Col md={6} className="main-content">
         <MainContent />
       </Col>
-      <Col md={3}>
+      <Col md={3} >
         <Contacts />
       </Col>
     </Row>

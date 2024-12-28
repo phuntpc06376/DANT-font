@@ -4,6 +4,8 @@ import { getDenouncePosts, countDenounce, getPostById, denouncePost} from '../ap
 import { getAllDenounceByPostId } from '../api/denounceApi';
 import './Post.css';
 import { Modal, Button, Card, Table, Spinner } from 'react-bootstrap';
+import WebSocketService from '../../webSocket/WebSocketService';
+
 
 const PostList = () => {
     const [posts, setPosts] = useState([]);
@@ -12,10 +14,27 @@ const PostList = () => {
     const [denounceDetails, setDenounceDetails] = useState([]); // Danh sách nội dung tố cáo
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
        fetchPostDenounce();
     }, []);
+
+    // Tích hợp WebSocket để nhận cập nhật theo thời gian thực
+  useEffect(() => {
+    WebSocketService.connect(token);
+
+    WebSocketService.onPostDenounce((message) => {
+      console.log('Cập nhật bài viết tố cáo nhận được:', message);
+      // Lấy lại bài viết mới sau khi bị tố cáo
+      fetchPostDenounce();
+    });
+
+    // Dọn dẹp kết nối WebSocket khi component unmount
+    return () => {
+      WebSocketService.disconnect();
+    };
+  }, [token]);
 
     const fetchPostDenounce = async () => {
         try{
@@ -97,7 +116,6 @@ const PostList = () => {
             <table className="post-table">
                 <thead className="table-primary">
                     <tr>
-                        <th>Tên bài viết</th>
                         <th>Ngày đăng</th>
                         <th>Nội dung</th>
                         <th>Người đăng</th>
@@ -108,16 +126,16 @@ const PostList = () => {
                 <tbody>
                     {posts.map(post => (
                         <tr key={post.id}>
-                            <td>{post.title}</td>
                             <td>{new Date(post.postDay).toLocaleDateString()}</td>
                             <td>{post.content}</td>
                             <td>{post.account ? post.account.fullname : 'N/A'}</td>
                             <td>{denounceCount[post.id] || "Đang tải..."}</td>
                             <td>
                                 <button className="btn btn-success me-1" onClick={() => fetchDenounceDetails(post.id)} >Chi tiết</button>
-                                <button className="btn btn-warning me-1" onClick={() => handleDenouncePost(post.id)} disabled={loading}>
+                                {post.status.id == 3 && (<button className="btn btn-warning me-1" onClick={() => handleDenouncePost(post.id)} disabled={loading}>
                                     {loading ? <Spinner animation="border" size="sm" /> : 'Cảnh cáo'}
-                                </button>
+                                </button>)}
+                                
                             </td>
                         </tr>
                     ))}
@@ -136,10 +154,10 @@ const PostList = () => {
                             <Card>
                                 <Card.Body>
                                     <Card.Title className='text-center mb-3'>Thông tin bài viết</Card.Title>
-                                    <Card.Text><strong>Tiêu đề:</strong> {selectedPost?.title}</Card.Text>
                                     <Card.Text><strong>Ngày đăng:</strong> {new Date(selectedPost?.postDay).toLocaleDateString()}</Card.Text>
                                     <Card.Text><strong>Nội dung:</strong> {selectedPost?.content}</Card.Text>
                                     <Card.Text><strong>Người đăng:</strong> {selectedPost?.account?.fullname || 'N/A'}</Card.Text>
+                                    <Card.Text><strong>Trạng thái:</strong> {selectedPost?.status?.name}</Card.Text>
                                      {/* Hiển thị hình ảnh (nếu có) */}
                                      {selectedPost?.postImages && selectedPost.postImages.length > 0 && (
                                         <div>

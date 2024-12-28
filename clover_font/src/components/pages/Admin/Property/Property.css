@@ -3,6 +3,9 @@
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 8px;
+    max-width: 100%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    
 }
 
 /* Tiêu đề */
@@ -47,7 +50,12 @@
 .property-manager-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
+    margin-top: 15px;
+    font-size: 14px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden; /* Giữ bo góc khi có cuộn */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .property-manager-table th, .property-manager-table td {
