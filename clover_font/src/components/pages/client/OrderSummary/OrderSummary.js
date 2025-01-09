@@ -116,8 +116,9 @@ const OrderSummary = () => {
 
             <div className="productOrder-row">
               {bill.detailBills && bill.detailBills.length > 0 ? (
-                bill.detailBills.map((detail, index) => (
+                bill.detailBills.map((detail, index) => (                 
                   <div className="productOrder-card" key={index}>
+                    {console.log(detail)}
                     <img
                       src={
                         detail.prod?.prodImages[0]?.name
@@ -127,6 +128,12 @@ const OrderSummary = () => {
                       alt="productOrder"
                     />
                     <h6>{detail.prodName}</h6>
+                    {detail.prodProperties && (
+                      <div className="text-muted">
+                      {detail.prodProperties}
+                    </div>
+                    )}
+                    
                     <div className="text-muted">
                       Đơn giá: {formatCurrency(detail.price)}
                     </div>

@@ -6,7 +6,7 @@ import PriceRangeSelector from './PriceRangeSelector'; // Đường dẫn phù h
 import WebSocketService from '../../webSocket/WebSocketService';
 
 // Component ProductCard to display each product
-const ProductCard = ({ id, title, price, location, imageUrl, nameShop }) => {
+const ProductCard = ({ id, title, price, location, imageUrl, nameShop, salePrice }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
@@ -16,7 +16,7 @@ const ProductCard = ({ id, title, price, location, imageUrl, nameShop }) => {
   return (
     <Col className="product-grid">
       <Card
-        className="h-100 product-card shadow-sm"
+        className="h-100 product-card shadow-sm w-100"
         style={{ cursor: 'pointer' }}
         onClick={handleCardClick}
       >
@@ -29,9 +29,28 @@ const ProductCard = ({ id, title, price, location, imageUrl, nameShop }) => {
         </div>
         <Card.Body className="text-dark border-5 product-content">
           <Card.Text className="fw-bold product-title">{title}</Card.Text>
-          <Card.Title className="product-price text-danger">
-            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
-          </Card.Title>
+
+          {salePrice > 0 ? (
+            <div>
+              <div
+                style={{
+                  textDecoration: 'line-through',
+                  fontSize: '14px',
+                  color: '#6c757d'
+                }}
+              >
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+              </div>
+              <Card.Title className="product-price text-danger">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(salePrice)}
+              </Card.Title>
+            </div>
+          ) : (
+            <Card.Title className="product-price text-danger">
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+            </Card.Title>
+          )}
+
           <p style={{ fontSize: "12px", margin: 0 }}>{nameShop}</p>
 
         </Card.Body>
@@ -101,7 +120,7 @@ const ProductGallery = () => {
     };
   }, [token]);
 
-  
+
   const handleSearch = () => {
     const keyword = searchKeyword.toLowerCase();
     const min = minPrice || 0;
@@ -178,10 +197,16 @@ const ProductGallery = () => {
               location={`${product.shop.city}, ${product.shop.province}`}
               imageUrl={`http://localhost:8080/image/${product.prodImages[0]?.name}`}
               nameShop={product.shop.name}
+              salePrice={
+                product?.promotion?.percentDiscount
+                  ? product.price - (product.price * product?.promotion?.percentDiscount / 100)
+                  : 0
+              }
             />
           ))}
 
         </Row>
+        {console.log(sortedProducts)}
       </Card>
 
 

@@ -1226,11 +1226,6 @@ const ProfilePage = () => {
             </Col>
             <Col xs={10}>
               <div>
-                {/* {console.log(userName)}
-              {console.log(currentUserName)} */}
-  
-                {console.log(userName)
-                }
                 <Link
                   key={userName}
                   // to={userName === currentUserName ? '/user/profile' : `/profiles/${encodedUserName}`} // Điều hướng tùy thuộc vào người dùng
@@ -1696,15 +1691,13 @@ const ProfilePage = () => {
             <p>Đang tải...</p>
           ) : (
             <div>
-              <div className="product-grid">
+              <div className="product-grid" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
                 {paginateProducts(products).map((prod) => (
                   <div
                     key={prod.id}
                     className="product-card"
                     onClick={() => handleCardClick(prod.id)}
                   >
-                    {console.log(prod.prodImages[0]?.name)
-                    }
                     <img
                       src={prod.prodImages[0]?.name
                         ? `http://localhost:8080/image/${prod.prodImages[0].name}`

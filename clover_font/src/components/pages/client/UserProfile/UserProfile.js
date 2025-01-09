@@ -1567,7 +1567,7 @@ const UserProfile = () => {
           <MainContent />
         </Tab>
         <Tab eventKey="store" title="Cửa hàng" className="text-center">
-          <div className="product-grid">
+          <div className="product-grid" style={{gridTemplateColumns: 'repeat(3, 1fr)'}}>
             {loading ? (
               <p>Đang tải...</p>
             ) : products.length > 0 ? ( // Ensure products is always an array

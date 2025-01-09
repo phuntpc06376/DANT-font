@@ -56,7 +56,21 @@ export default function ProductCards() {
   }, [token]);
 
   const calculateTotal = (items) => {
-    const total = items.reduce((acc, item) => acc + (item.prod?.price || 0) * item.quantity, 0);
+    // const total = items.reduce((acc, item) => acc + (item.prod?.price || 0) * item.quantity, 0);
+
+    const total = items.reduce((acc, item) => {
+      // Lấy giá sản phẩm
+      const basePrice = item.prod?.price || 0;
+  
+      // Áp dụng giảm giá nếu có
+      const discount = item.prod?.promotion?.percentDiscount || 0;
+      const discountedPrice = basePrice * (1 - discount / 100);
+  
+      // Tính tổng giá trị
+      return acc + discountedPrice * item.quantity;
+    }, 0);
+  
+
     setTotalPrice(total);
   };
 
@@ -109,66 +123,57 @@ export default function ProductCards() {
     }
   };
 
-
-
-
-
-  
-
-const handlePayment = async () => {
-  if (selectedItems.length === 0) {
-    // Hiển thị thông báo khi không chọn sản phẩm
-    Swal.fire({
-      icon: 'error',
-      title: 'Lỗi',
-      text: 'Vui lòng chọn sản phẩm để đặt hàng.',
-    });
-    return;
-  }
-
-  // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
-  localStorage.setItem('ids', selectedItems);
-  console.log(selectedItems);
-
-  try {
-    const response = await axios.get('http://localhost:8080/api/user/shopping/cart/checkCart', {
-      headers: {
-        Authorization: `Bearer ${token}`, // Gửi token cho API
-      },
-      params: {
-        prod: selectedItems.join(','), // Gửi danh sách ID sản phẩm dưới dạng chuỗi ngăn cách bằng dấu phẩy
-      },
-    });
-
-    // Xử lý phản hồi từ API
-    if (response.data.status === 'success') {
-      Swal.fire({
-        icon: 'success',
-        title: 'Thành công!',
-      }).then(() => {
-        // Chuyển hướng sau khi hiển thị thông báo
-        navigate("/user/order");
-      });
-    } else {
+  const handlePayment = async () => {
+    if (selectedItems.length === 0) {
+      // Hiển thị thông báo khi không chọn sản phẩm
       Swal.fire({
         icon: 'error',
         title: 'Lỗi',
-        text: response.data.message, // Hiển thị thông báo lỗi từ server
+        text: 'Vui lòng chọn sản phẩm để đặt hàng.',
       });
+      return;
     }
-  } catch (error) {
-    // Xử lý lỗi khi gửi yêu cầu
-    Swal.fire({
-      icon: 'error',
-      title: 'Có lỗi xảy ra',
-      text: 'Không thể kiểm tra giỏ hàng.',
-    });
-    console.error(error);
-  }
-};
 
+    // Lưu danh sách ID các sản phẩm đã chọn vào localStorage
+    localStorage.setItem('ids', selectedItems);
+    console.log(selectedItems);
 
+    try {
+      const response = await axios.get('http://localhost:8080/api/user/shopping/cart/checkCart', {
+        headers: {
+          Authorization: `Bearer ${token}`, // Gửi token cho API
+        },
+        params: {
+          prod: selectedItems.join(','), // Gửi danh sách ID sản phẩm dưới dạng chuỗi ngăn cách bằng dấu phẩy
+        },
+      });
 
+      // Xử lý phản hồi từ API
+      if (response.data.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Thành công!',
+        }).then(() => {
+          // Chuyển hướng sau khi hiển thị thông báo
+          navigate("/user/order");
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Lỗi',
+          text: response.data.message, // Hiển thị thông báo lỗi từ server
+        });
+      }
+    } catch (error) {
+      // Xử lý lỗi khi gửi yêu cầu
+      Swal.fire({
+        icon: 'error',
+        title: 'Có lỗi xảy ra',
+        text: 'Không thể kiểm tra giỏ hàng.',
+      });
+      console.error(error);
+    }
+  };
 
   const handleSelect = (itemId) => {
     setSelectedItems((prevSelected) =>
@@ -233,8 +238,20 @@ const handlePayment = async () => {
                               alt={item.prod?.name || "Product Image"}
                             />
                           </Col>
-                          <Col md="3">
+                          <Col md="2">
                             <p className="lead fw-normal mb-2">{item.prod?.name || "Unknown Product"}</p>
+                          </Col>
+                          <Col md="2">
+                            <p className="lead fw-normal mb-2" style={{
+                              wordWrap: 'break-word', // Tự động xuống dòng nếu vượt quá chiều rộng
+                              wordBreak: 'break-word', // Chia từ nếu cần để xuống dòng
+                              whiteSpace: 'normal', // Cho phép xuống dòng tự nhiên
+                            }}>
+                              <div>Thuộc tính:</div>
+                              <span>
+                                {item.prod.propertiesValues.map((propertiesValue) => propertiesValue?.name).join(', ')}
+                              </span>
+                            </p>
                           </Col>
                           <Col md="2" className="d-flex align-items-center justify-content-around">
                             <Button variant="link" className="px-2" onClick={() => handleDecrease(item.id)}>
@@ -245,11 +262,32 @@ const handlePayment = async () => {
                               <AiOutlinePlus />
                             </Button>
                           </Col>
-                          <Col md="2" className="d-flex align-items-center justify-content-end">
-                            <h5 className="mb-0">
-                              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.prod?.price * item.quantity)}
+                          <Col md="2" className="d-flex align-items-center justify-content-start">
+                            <h5 className="mb-0 me-3">
+                              {item.prod?.promotion?.percentDiscount ? (
+                                <>
+                                  <div
+                                    style={{
+                                      textDecoration: 'line-through',
+                                      fontSize: '14px',
+                                      color: '#6c757d',
+                                      marginRight: '10px',
+                                    }}
+                                  >
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.prod.price * item.quantity)}
+                                  </div>
+                                  <div className="text-danger">
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                                      item.prod.price * item.quantity * (1 - item.prod.promotion.percentDiscount / 100)
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.prod.price * item.quantity)
+                              )}
                             </h5>
                           </Col>
+
                           <Col md="1" className="d-flex align-items-center justify-content-end">
                             <Button variant="link" className="text-danger" onClick={() => handleRemove(item.id)}>
                               <AiOutlineDelete size={24} />

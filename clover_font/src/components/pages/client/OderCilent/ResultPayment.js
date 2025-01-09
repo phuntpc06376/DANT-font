@@ -133,7 +133,7 @@ const [responseMessage, setResponseMessage] = useState(null);
                 </div>
                 <div className="detail">
                     <label>Tổng tiền:</label>
-                    <span>{amount} VND</span>
+                    <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)}</span>
                 </div>
                 <div className="detail">
                     <label>Mã giao dịch:</label>

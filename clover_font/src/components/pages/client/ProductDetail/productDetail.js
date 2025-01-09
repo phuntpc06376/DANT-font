@@ -9,6 +9,7 @@ import Swal from 'sweetalert2';
 import { Carousel } from "react-bootstrap";
 import { FaChevronLeft } from "react-icons/fa";
 import { FaChevronRight } from "react-icons/fa";
+import { Label } from "recharts";
 
 const ProductDetail = () => {
   const { id } = useParams(); // Get the ID from the URL
@@ -22,35 +23,35 @@ const ProductDetail = () => {
     const fetchProductDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-    if (token) {
-      // Gọi API backend
-      fetch('http://localhost:8080/api/account', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`, // Gửi token trong header Authorization
-        },
-      })
-        .then((response) => {
-          if (response.ok) {
-            response.json().then((data) => {
-              console.log("data === ", data);
+        if (token) {
+          // Gọi API backend
+          fetch('http://localhost:8080/api/account', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`, // Gửi token trong header Authorization
+            },
+          })
+            .then((response) => {
+              if (response.ok) {
+                response.json().then((data) => {
+                  console.log("data === ", data);
 
-              const currentUserName1 = data;
+                  const currentUserName1 = data;
 
-              setCurrentUser(currentUserName1);
-            }); // Chờ phản hồi JSON từ API
-          } else {
-            throw new Error('Lỗi khi lấy tài khoản');
-          }
-        })
+                  setCurrentUser(currentUserName1);
+                }); // Chờ phản hồi JSON từ API
+              } else {
+                throw new Error('Lỗi khi lấy tài khoản');
+              }
+            })
 
-        .catch((err) => {
-          console.error(err);
+            .catch((err) => {
+              console.error(err);
 
-        });
-    } else {
+            });
+        } else {
 
-    }
+        }
         const response = await fetch(`http://localhost:8080/api/user/shopping/product/getProductById?id=${id}`);
         const data = await response.json();
         setProduct(data);
@@ -82,7 +83,7 @@ const ProductDetail = () => {
   }
 
   // Destructure product and shop information
-  const { name, price = 0, description, ratings = 0, prodImages, shop, quantity } = product;
+  const { name, price = 0, description, ratings = 0, prodImages, shop, quantity, promotion = {} } = product;
   const imageUrls = prodImages && prodImages.length > 0
     ? prodImages.map(image => `http://localhost:8080/image/${image.name}`)
     : ["https://via.placeholder.com/150"]; // Default image if no images exist
@@ -96,6 +97,11 @@ const ProductDetail = () => {
       nation: "Vietnam", // Nếu quốc gia luôn cố định
     }
     : null;
+
+  // Tính salePrice nếu có promotion
+  const salePrice = promotion.percentDiscount
+    ? price - (price * promotion.percentDiscount / 100)
+    : 0;
 
 
   // Handle add to cart
@@ -188,24 +194,77 @@ const ProductDetail = () => {
           <div className="product-detail-content">
             <h2 className="productDetail-title">{name}</h2>
             <h3 className="productDetail-price">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+              {salePrice > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span
+                      style={{
+                        textDecoration: 'line-through',
+                        fontSize: '16px',
+                        color: '#6c757d',
+                        marginRight: '10px',
+                      }}
+                    >
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '16px',
+                        color: '#ff6f00',
+                        marginLeft: '10px',
+                      }}
+                    >
+                      {`(Giảm ${promotion.percentDiscount}% )`}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <span className="text-danger" style={{ fontSize: '25px', marginTop: '5px' }}>
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(salePrice)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <span>
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}
+                </span>
+              )}
             </h3>
+
+
             <div className="productDetail-description border-1">
-              <h5>Mô tả sản phẩm:</h5>
+              <div style={{ fontWeight: "bold" }}>Mô tả sản phẩm:</div>
               <p>{description}</p>
-              <h6 className="mt-2">Số lượng: {quantity}</h6>
+              <h6 className="mt-2"><strong>Loại sản phẩm:</strong> {product?.prodType.name}</h6>
+              <h6 className="mt-2"><strong>Thuộc tính:</strong>
+                {product.propertiesValues.map((propertiesValue, index) => (
+                  <span key={index}
+                    style={{
+                      display: 'inline-block',
+                      marginLeft: '5px',
+                      padding: '5px 10px',
+                      backgroundColor: '#f0f0f0', // Màu nền
+                      border: '1px solid #ccc', // Viền
+                      borderRadius: '5px', // Bo góc
+                      cursor: 'default', // Con trỏ không cho nhấn
+                      fontSize: '14px',
+                    }}
+                  >
+                    {propertiesValue?.name}
+                  </span>
+                ))}
+              </h6>
+              <h6 className="mt-2"><strong>Số lượng:</strong> {quantity}</h6>
             </div>
-            {console.log(shop?.id)
-            }
             {currentUser?.shop?.id !== shop?.id ? (<div className="mt-5">
               <Button className="productDetail-cartButton" onClick={handleAddToCart}>
                 <FaShoppingCart /> Thêm vào giỏ hàng
               </Button>
-            </div>):(<div className="mt-5">
-              <Button className="productDetail-cartButton"  disabled>
+            </div>) : (<div className="mt-5">
+              <Button className="productDetail-cartButton" disabled>
                 <FaShoppingCart /> Thêm vào giỏ hàng
               </Button>
-            </div>) }
+            </div>)}
           </div>
         </Col>
 
@@ -248,8 +307,23 @@ const ProductDetail = () => {
                   : "https://via.placeholder.com/150"} />
                 <Card.Body className="product-content mt-3">
                   <Card.Title className="product-title">{relatedProduct.name}</Card.Title>
+
                   <Card.Text className="product-price">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(relatedProduct.price)}</Card.Text>
+                    {(relatedProduct.price - (relatedProduct.price * relatedProduct.promotion.percentDiscount / 100)) > 0 ? (
+                      <>
+                        <div style={{ textDecoration: 'line-through', fontSize: '14px', color: '#6c757d', marginRight: '10px' }}>
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(relatedProduct.price)}
+                        </div>
+                        <div className="text-danger" style={{ fontSize: '16px' }}>
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format((relatedProduct.price - (relatedProduct.price * relatedProduct.promotion.percentDiscount / 100)))}
+                        </div>
+                      </>
+                    ) : (
+                      new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(relatedProduct.price)
+                    )}
+                  </Card.Text>
+
+                  <p style={{ fontSize: "12px", margin: 0 }}>{relatedProduct?.shop?.name}</p>
 
                 </Card.Body>
               </Card>

@@ -364,7 +364,7 @@ font-size: 18px;
 /* Grid danh sách sản phẩm */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Hiển thị 3 cột */
+  /*grid-template-columns: repeat(3, 1fr);  Hiển thị 3 cột */
   gap: 10px; /* Giữ khoảng cách giữa các sản phẩm */
   padding: 10px;
 }

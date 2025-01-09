@@ -242,7 +242,15 @@ const Order = () => {
   const handleInputChange = (event) => setInputValue(event.target.value);
   useEffect(() => {
     // Tính tổng giá trị giỏ hàng
-    const total = cartPay.reduce((sum, item) => sum + (item.prod.price * item.quantity), 0);
+    // const total = cartPay.reduce((sum, item) => sum + (item.prod.price * item.quantity), 0);
+
+    const total = cartPay.reduce((sum, item) => {
+      const price = item.prod?.promotion?.percentDiscount
+        ? item.prod.price * (1 - item.prod.promotion.percentDiscount / 100) // Giá sau giảm
+        : item.prod.price; // Giá gốc nếu không có giảm giá
+      return sum + (price * item.quantity);
+    }, 0);
+    
     setTotalPrice(total);
   }, [cartPay]); // Tính toán lại khi `cartPay` thay đổi
 
@@ -419,6 +427,7 @@ const Order = () => {
                       <tr>
                         <th>Sản phẩm</th>
                         <th>Tên sản phẩm</th>
+                        <th>Thuộc tính</th>
                         <th>Giá</th>
                         <th>Số lượng</th>
                         <th>Tổng</th>
@@ -429,7 +438,7 @@ const Order = () => {
                         ? Object.entries(groupedCartItems).map(([shopId, group]) => (
                           <React.Fragment key={shopId}>
                             <tr className="table-light">
-                              <td colSpan="5">
+                              <td colSpan="6">
                                 <strong className="text-primary">{group.name}</strong>
                               </td>
                             </tr>
@@ -445,18 +454,60 @@ const Order = () => {
                                 </td>
                                 <td>{p.prod?.name || "Không rõ tên sản phẩm"}</td>
                                 <td>
-                                  {p.prod?.price?.toLocaleString("vi", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }) || "0 VND"}
+                                  {p.prod.propertiesValues.map((propertiesValue) => propertiesValue?.name).join(', ')}
+                                </td>
+                                <td>
+                                  {p.prod?.promotion?.percentDiscount ? (
+                                    <>
+                                      <div
+                                        style={{
+                                          textDecoration: "line-through",
+                                          color: "#6c757d",
+                                          marginRight: "5px",
+                                          fontSize: "14px"
+                                        }}
+                                      >
+                                        {p.prod?.price?.toLocaleString("vi-VN", {
+                                          style: "currency",
+                                          currency: "VND",
+                                        })}
+                                      </div>
+                                      <div style={{ color: "#ff6f00", fontWeight: "bold" }}>
+                                        {(
+                                          p.prod.price *
+                                          (1 - p.prod.promotion.percentDiscount / 100)
+                                        ).toLocaleString("vi-VN", {
+                                          style: "currency",
+                                          currency: "VND",
+                                        })}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    p.prod?.price?.toLocaleString("vi-VN", {
+                                      style: "currency",
+                                      currency: "VND",
+                                    }) || "0 VND"
+                                  )}
                                 </td>
                                 <td>{p.quantity || 0}</td>
                                 <td>
-                                  {(p.prod?.price * p.quantity)?.toLocaleString("vi", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }) || "0 VND"}
+                                  {p.prod?.promotion?.percentDiscount ? (
+                                    // Nếu có khuyến mãi
+                                    (
+                                      (p.prod.price * (1 - p.prod.promotion.percentDiscount / 100) * p.quantity)
+                                    ).toLocaleString("vi-VN", {
+                                      style: "currency",
+                                      currency: "VND",
+                                    })
+                                  ) : (
+                                    // Nếu không có khuyến mãi
+                                    (p.prod?.price * p.quantity)?.toLocaleString("vi-VN", {
+                                      style: "currency",
+                                      currency: "VND",
+                                    }) || "0 VND"
+                                  )}
                                 </td>
+
                               </tr>
                             ))}
                             <tr>
@@ -472,7 +523,7 @@ const Order = () => {
                         : "Đang tải..."}
                       <tr className="address-row">
                         <td colSpan="2"><strong>Địa chỉ:</strong></td>
-                        <td colSpan="3" className="text-center">
+                        <td colSpan="4" className="text-center">
                           {accounts.addresses ? (
                             <p className="mb-0">
                               {accounts.addresses.address}, {accounts.addresses.wardName},{" "}
@@ -485,7 +536,7 @@ const Order = () => {
                       </tr>
                       <tr>
                         <td colSpan="2"><strong>Phương thức thanh toán:</strong></td>
-                        <td colSpan="3">
+                        <td colSpan="4">
                           <select
                             name="selectedPayment"
                             className="form-select"
@@ -498,7 +549,7 @@ const Order = () => {
                       </tr>
                       <tr>
                         <td colSpan="2"><strong>Tổng:</strong></td>
-                        <td colSpan="3">
+                        <td colSpan="6">
                           <strong>
                             {totalPrice?.toLocaleString("vi", {
                               style: "currency",
